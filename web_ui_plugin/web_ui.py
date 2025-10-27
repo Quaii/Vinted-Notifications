@@ -256,8 +256,10 @@ def items():
                 "timestamp": datetime.fromtimestamp(item[4]).strftime(
                     "%Y-%m-%d %H:%M:%S"
                 ),
+                # Ugly Ugly Ugly very Ugly eeew but I have to do a proper migration of existing db later else it'll break
+                # Eeew bad me >:c
                 "query": (
-                    parse_qs(urlparse(item[5]).query).get("search_text", [None])[0]
+                    item[7] if item[7] else parse_qs(urlparse(item[5]).query).get("search_text", [None])[0]
                     if parse_qs(urlparse(item[5]).query).get("search_text", [None])[0]
                     else item[5]
                 ),
