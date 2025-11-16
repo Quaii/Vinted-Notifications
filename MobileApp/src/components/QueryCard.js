@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
-import Icon from '@react-native-vector-icons/material-icons';
+import MaterialIcons from '@react-native-vector-icons/material-icons';
 import {useThemeColors, SPACING, FONT_SIZES} from '../constants/theme';
 
 /**
@@ -67,7 +67,7 @@ const QueryCard = ({query, onPress, onDelete, isLast = false}) => {
       onPress={() => onPress && onPress(query)}
       activeOpacity={0.6}>
       <View style={styles.iconContainer}>
-        <Icon name="search" size={18} color={COLORS.primary} />
+        <MaterialIcons name="search" size={18} color={COLORS.primary} />
       </View>
       <View style={styles.content}>
         <Text style={styles.title} numberOfLines={1}>
@@ -85,11 +85,11 @@ const QueryCard = ({query, onPress, onDelete, isLast = false}) => {
             onDelete(query);
           }}
           activeOpacity={0.6}>
-          <Icon name="delete" size={20} color={COLORS.error} />
+          <MaterialIcons name="delete" size={20} color={COLORS.error} />
         </TouchableOpacity>
       )}
       <View style={styles.chevron}>
-        <Icon name="chevron-right" size={20} color={COLORS.textTertiary} />
+        <MaterialIcons name="chevron-right" size={20} color={COLORS.textTertiary} />
       </View>
     </TouchableOpacity>
   );

@@ -6,7 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import Icon from '@react-native-vector-icons/material-icons';
+import MaterialIcons from '@react-native-vector-icons/material-icons';
 import {PageHeader} from '../components';
 import LogService from '../services/LogService';
 import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
@@ -82,7 +82,7 @@ const LogsScreen = () => {
         <View style={styles.logHeader}>
           <View style={styles.logHeaderLeft}>
             <View style={[styles.levelBadge, {backgroundColor: `${levelColor}20`}]}>
-              <Icon name={levelIcon} size={14} color={levelColor} />
+              <MaterialIcons name={levelIcon} size={14} color={levelColor} />
               <Text style={[styles.levelText, {color: levelColor}]}>
                 {item.level || 'INFO'}
               </Text>
@@ -98,7 +98,7 @@ const LogsScreen = () => {
 
   const renderEmpty = () => (
     <View style={styles.emptyState}>
-      <Icon name="description" size={64} color={COLORS.textTertiary} />
+      <MaterialIcons name="description" size={64} color={COLORS.textTertiary} />
       <Text style={styles.emptyText}>No logs yet</Text>
       <Text style={styles.emptySubtext}>
         Application events will appear here

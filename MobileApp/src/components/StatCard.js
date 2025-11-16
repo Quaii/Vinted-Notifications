@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
-import Icon from '@react-native-vector-icons/material-icons';
+import MaterialIcons from '@react-native-vector-icons/material-icons';
 import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS, SHADOWS} from '../constants/theme';
 
 /**
@@ -47,7 +47,7 @@ const StatCard = ({icon, label, value, color}) => {
   return (
     <View style={[styles.card, {borderLeftColor: cardColor}]}>
       <View style={[styles.iconContainer, {backgroundColor: cardColor + '20'}]}>
-        <Icon name={icon} size={32} color={cardColor} />
+        <MaterialIcons name={icon} size={32} color={cardColor} />
       </View>
       <View style={styles.content}>
         <Text style={styles.value}>{value}</Text>
