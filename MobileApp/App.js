@@ -6,6 +6,7 @@ import AppNavigator from './src/navigation/AppNavigator';
 import DatabaseService from './src/services/DatabaseService';
 import NotificationService from './src/services/NotificationService';
 import MonitoringService from './src/services/MonitoringService';
+import VintedAPI from './src/api/VintedAPI';
 import {useThemeColors} from './src/constants/theme';
 
 /**
@@ -28,6 +29,10 @@ const AppContent = () => {
       // Initialize database
       await DatabaseService.init();
       console.log('Database initialized');
+
+      // Load VintedAPI settings from database (user agents, headers, proxies)
+      await VintedAPI.loadSettingsFromDatabase(DatabaseService);
+      console.log('VintedAPI settings loaded');
 
       // Configure notifications
       await NotificationService.configure();

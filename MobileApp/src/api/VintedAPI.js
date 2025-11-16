@@ -13,7 +13,58 @@ export class VintedAPI {
     this.axiosInstance = null;
     this.MAX_RETRIES = 3;
     this.currentProxy = null;
+    this.userAgents = USER_AGENTS; // Can be overridden from database
+    this.defaultHeaders = DEFAULT_HEADERS; // Can be overridden from database
+    this.proxies = []; // Proxy list from database
     this.initializeSession();
+  }
+
+  /**
+   * Load custom settings from database (called after DB initialization)
+   * @param {Object} DatabaseService - The database service instance
+   */
+  async loadSettingsFromDatabase(DatabaseService) {
+    try {
+      // Load custom user agents
+      const userAgentsJson = await DatabaseService.getParameter('user_agents', null);
+      if (userAgentsJson) {
+        try {
+          const customUserAgents = JSON.parse(userAgentsJson);
+          if (Array.isArray(customUserAgents) && customUserAgents.length > 0) {
+            this.userAgents = customUserAgents;
+            console.log(`[VintedAPI] Loaded ${customUserAgents.length} custom user agents from database`);
+          }
+        } catch (e) {
+          console.warn('[VintedAPI] Failed to parse custom user agents, using defaults');
+        }
+      }
+
+      // Load custom default headers
+      const headersJson = await DatabaseService.getParameter('default_headers', null);
+      if (headersJson) {
+        try {
+          const customHeaders = JSON.parse(headersJson);
+          if (typeof customHeaders === 'object' && customHeaders !== null) {
+            this.defaultHeaders = {...DEFAULT_HEADERS, ...customHeaders};
+            console.log('[VintedAPI] Loaded custom headers from database');
+          }
+        } catch (e) {
+          console.warn('[VintedAPI] Failed to parse custom headers, using defaults');
+        }
+      }
+
+      // Load proxy list
+      const proxyList = await DatabaseService.getParameter('proxy_list', '');
+      if (proxyList && proxyList.trim()) {
+        this.proxies = proxyList.split(';').map(p => p.trim()).filter(p => p);
+        console.log(`[VintedAPI] Loaded ${this.proxies.length} proxies from database`);
+      }
+
+      // Reinitialize session with new settings
+      this.initializeSession();
+    } catch (error) {
+      console.error('[VintedAPI] Failed to load settings from database:', error);
+    }
   }
 
   /**
@@ -23,24 +74,45 @@ export class VintedAPI {
     const userAgent = this.getRandomUserAgent();
 
     this.headers = {
-      ...DEFAULT_HEADERS,
+      ...this.defaultHeaders,
       'User-Agent': userAgent,
       'Host': this.locale,
     };
 
-    this.axiosInstance = axios.create({
+    const config = {
       timeout: APP_CONFIG.API_TIMEOUT,
       headers: this.headers,
       withCredentials: true,
       validateStatus: null, // Don't throw on any status code
-    });
+    };
+
+    // Add proxy if available
+    if (this.proxies.length > 0) {
+      const proxy = this.getRandomProxy();
+      if (proxy) {
+        // Note: axios proxy config requires http-proxy-agent for React Native
+        // For now, we log it but don't apply (would need native proxy support)
+        console.log(`[VintedAPI] Proxy available but not applied (requires native support): ${proxy}`);
+        this.currentProxy = proxy;
+      }
+    }
+
+    this.axiosInstance = axios.create(config);
   }
 
   /**
-   * Get a random user agent
+   * Get a random user agent (from database or defaults)
    */
   getRandomUserAgent() {
-    return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
+    return this.userAgents[Math.floor(Math.random() * this.userAgents.length)];
+  }
+
+  /**
+   * Get a random proxy from the list
+   */
+  getRandomProxy() {
+    if (this.proxies.length === 0) return null;
+    return this.proxies[Math.floor(Math.random() * this.proxies.length)];
   }
 
   /**
@@ -58,7 +130,7 @@ export class VintedAPI {
         // Update headers with new locale
         const userAgent = this.getRandomUserAgent();
         this.headers = {
-          ...DEFAULT_HEADERS,
+          ...this.defaultHeaders,
           'User-Agent': userAgent,
           'Host': this.locale,
         };
