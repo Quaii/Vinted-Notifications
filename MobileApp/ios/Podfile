@@ -34,6 +34,19 @@ target 'VintedNotifications' do
       # :ccache_enabled => true
     )
 
+    # CRITICAL: Explicitly disable Fabric preprocessor macros
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
+        # Ensure RCT_NEW_ARCH_ENABLED is not defined
+        config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'].delete('RCT_NEW_ARCH_ENABLED=1')
+        # Explicitly set it to 0
+        unless config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'].include?('RCT_NEW_ARCH_ENABLED=0')
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'RCT_NEW_ARCH_ENABLED=0'
+        end
+      end
+    end
+
     # Enforce iOS 17.0 minimum deployment target for all pods
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
