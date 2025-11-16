@@ -55,28 +55,37 @@ reason: '-[RCTView setSheetLargestUndimmedDetent:]: unrecognized selector sent t
 ```
 
 **Root Cause:**
-- React Native 0.78 introduced new iOS sheet presentation APIs
-- When Modal uses `transparent={true}` + `animationType="slide"`, RN attempts to apply sheet-specific props
-- The `sheetLargestUndimmedDetent` property is part of iOS 15+ UISheetPresentationController API
-- RCTView doesn't implement this selector, causing a crash on modal display
+- **Incompatible react-native-screens version**: Using v3.34.0 with React Native 0.78
+- React Native 0.76+ requires react-native-screens 4.x (minimum 4.8.0)
+- The v3.x line doesn't support Fabric (new React Native architecture, default since RN 0.76)
+- `sheetLargestUndimmedDetent` is a sheet presentation property that v3.x tries to set incorrectly
+- This causes a crash when navigation/modals are rendered with the new architecture
 
 **Fix:**
-- ✅ Added `presentationStyle="overFullScreen"` to Modal component
-- This explicitly sets the presentation style and prevents automatic sheet detection
-- Maintains the same visual effect (bottom sheet with transparent background)
+- ✅ **Primary Fix**: Upgraded `react-native-screens` from `3.34.0` → `4.8.0`
+- ✅ **Secondary Fix**: Added `presentationStyle="overFullScreen"` to Modal component (defensive measure)
+- Version 4.x includes full Fabric/New Architecture support for RN 0.76+
 
 **Files Changed:**
-- `src/screens/QueriesScreen.js` line 323
+- `package.json` line 19 - Updated react-native-screens version
+- `src/screens/QueriesScreen.js` line 323 - Added presentationStyle prop (defensive)
 
 **Technical Details:**
-- This is a known issue in React Native 0.78/0.79 with the New Architecture (Fabric)
-- The crash occurs when React Native tries to configure iOS sheet presentation
-- `overFullScreen` presentation style bypasses sheet-specific property setters
-- Alternative fixes: use `fullScreen` or third-party modal libraries
+- React Native switched to Fabric (new architecture) as default in 0.76
+- react-native-screens v3.x was built for the old architecture
+- v4.x was rebuilt to support Fabric and new sheet presentation APIs
+- This is a known compatibility issue tracked in GitHub issues #2870 and #2718
+- Expo SDK 52 (RN 0.77) recommends react-native-screens ~4.8.0
+
+**Version Requirements:**
+- React Native 0.76+ → react-native-screens 4.x minimum
+- React Native 0.77/0.78 → react-native-screens >=4.8.0 recommended
+- React Native 0.79+ → react-native-screens >=4.10.0 recommended
 
 **References:**
-- [React Native Issue - setSheetLargestUndimmedDetent crash](https://stackoverflow.com/questions/79632518/)
-- [React Native Commit - Modal navigation crash fix](https://github.com/facebook/react-native/commit/33ca0204f5491f27f00686e4eb966eb9fee3f7f9)
+- [GitHub Issue #2870 - setSheetLargestUndimmedDetent crash](https://github.com/software-mansion/react-native-screens/issues/2870)
+- [GitHub Issue #2718 - Error setting sheetLargestUndimmedDetent](https://github.com/software-mansion/react-native-screens/issues/2718)
+- [React Native Screens 4.0 Release](https://blog.swmansion.com/introducing-react-native-screens-4-0-0-1b833ff98a55)
 
 ---
 
