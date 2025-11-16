@@ -174,26 +174,33 @@ const DashboardScreen = ({navigation}) => {
       backgroundColor: COLORS.secondaryGroupedBackground,
       borderRadius: BORDER_RADIUS.lg,
       padding: SPACING.md,
-      flexDirection: 'row',
-      alignItems: 'flex-start',
       borderWidth: 1,
       borderColor: COLORS.separator,
-      borderLeftWidth: 3,
+      borderLeftWidth: 4,
     },
-    logIcon: {
-      width: 28,
-      height: 28,
-      borderRadius: 14,
-      justifyContent: 'center',
+    logHeader: {
+      flexDirection: 'row',
       alignItems: 'center',
+      marginBottom: SPACING.xs,
+    },
+    levelBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.xs,
+      paddingVertical: 2,
+      borderRadius: BORDER_RADIUS.sm,
+      gap: 4,
       marginRight: SPACING.sm,
     },
-    logContent: {
-      flex: 1,
+    levelText: {
+      fontSize: FONT_SIZES.caption2,
+      fontWeight: '700',
+      letterSpacing: 0.5,
     },
     logMessage: {
       fontSize: FONT_SIZES.subheadline,
       color: COLORS.text,
+      lineHeight: 20,
       marginBottom: 2,
     },
     logTime: {
@@ -298,15 +305,18 @@ const DashboardScreen = ({navigation}) => {
                 const levelIcon = getLevelIcon(log.level);
                 return (
                   <View key={log.id} style={[styles.logEntry, {borderLeftColor: levelColor}]}>
-                    <View style={[styles.logIcon, {backgroundColor: `${levelColor}15`}]}>
-                      <Icon name={levelIcon} size={16} color={levelColor} />
-                    </View>
-                    <View style={styles.logContent}>
-                      <Text style={styles.logMessage} numberOfLines={2}>
-                        {log.message}
-                      </Text>
+                    <View style={styles.logHeader}>
+                      <View style={[styles.levelBadge, {backgroundColor: `${levelColor}20`}]}>
+                        <Icon name={levelIcon} size={14} color={levelColor} />
+                        <Text style={[styles.levelText, {color: levelColor}]}>
+                          {log.level || 'INFO'}
+                        </Text>
+                      </View>
                       <Text style={styles.logTime}>{formatLogTime(log.timestamp)}</Text>
                     </View>
+                    <Text style={styles.logMessage} numberOfLines={2}>
+                      {log.message}
+                    </Text>
                   </View>
                 );
               })}
