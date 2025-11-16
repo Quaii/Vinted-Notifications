@@ -17,8 +17,10 @@ import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/t
 /**
  * Settings Screen
  * Configure app settings
+ * iOS NATIVE DESIGN - iOS Settings app style with grouped lists
  */
 const SettingsScreen = () => {
+  const COLORS = useThemeColors();
   const [settings, setSettings] = useState({
     refreshDelay: APP_CONFIG.DEFAULT_REFRESH_DELAY,
     itemsPerQuery: APP_CONFIG.DEFAULT_ITEMS_PER_QUERY,
@@ -159,154 +161,189 @@ const SettingsScreen = () => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.groupedBackground,
     },
-    header: {
-      padding: SPACING.md,
-      paddingTop: SPACING.lg,
-      backgroundColor: COLORS.surface,
-      borderBottomWidth: 1,
-      borderBottomColor: COLORS.border,
-    },
-    headerTitle: {
-      fontSize: FONT_SIZES.xxl,
-      fontWeight: '700',
-      color: COLORS.text,
-    },
+    // iOS Grouped List Sections
     section: {
-      backgroundColor: COLORS.surface,
-      marginTop: SPACING.md,
-      padding: SPACING.md,
+      marginTop: SPACING.lg,
     },
     sectionHeader: {
+      paddingHorizontal: SPACING.md,
+      paddingTop: SPACING.sm,
+      paddingBottom: SPACING.xs,
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: SPACING.sm,
     },
-    sectionTitle: {
-      fontSize: FONT_SIZES.lg,
-      fontWeight: '700',
-      color: COLORS.text,
-      marginBottom: SPACING.sm,
+    sectionHeaderText: {
+      fontSize: FONT_SIZES.footnote,
+      color: COLORS.textTertiary,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
     },
-    sectionDescription: {
-      fontSize: FONT_SIZES.sm,
-      color: COLORS.textSecondary,
-      marginBottom: SPACING.md,
+    sectionFooter: {
+      paddingHorizontal: SPACING.md,
+      paddingTop: SPACING.xs,
+      paddingBottom: SPACING.sm,
     },
-    settingItem: {
-      paddingVertical: SPACING.md,
-      borderBottomWidth: 1,
-      borderBottomColor: COLORS.border,
+    sectionFooterText: {
+      fontSize: FONT_SIZES.footnote,
+      color: COLORS.textTertiary,
+      lineHeight: 16,
     },
-    settingInfo: {
+    clearAllText: {
+      fontSize: FONT_SIZES.footnote,
+      color: COLORS.link,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    // iOS List Group
+    listGroup: {
+      backgroundColor: COLORS.secondaryGroupedBackground,
+      marginHorizontal: SPACING.md,
+      borderRadius: BORDER_RADIUS.lg,
+      overflow: 'hidden',
+    },
+    // iOS List Row
+    listRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.sm + 2,
+      minHeight: 44,
+      borderBottomWidth: 0.5,
+      borderBottomColor: COLORS.separator,
+    },
+    listRowLast: {
+      borderBottomWidth: 0,
+    },
+    listRowContent: {
       flex: 1,
     },
-    settingLabel: {
-      fontSize: FONT_SIZES.md,
-      fontWeight: '600',
+    listRowLabel: {
+      fontSize: FONT_SIZES.body,
       color: COLORS.text,
-      marginBottom: SPACING.xs,
+      marginBottom: 2,
     },
-    settingDescription: {
-      fontSize: FONT_SIZES.sm,
-      color: COLORS.textSecondary,
+    listRowDescription: {
+      fontSize: FONT_SIZES.footnote,
+      color: COLORS.textTertiary,
+      lineHeight: 16,
     },
-    numberInput: {
-      backgroundColor: COLORS.background,
+    listRowValue: {
+      marginLeft: SPACING.sm,
+    },
+    // iOS Text Input (inline)
+    inlineInput: {
+      backgroundColor: COLORS.cardBackground,
       borderRadius: BORDER_RADIUS.md,
-      padding: SPACING.md,
-      fontSize: FONT_SIZES.md,
+      paddingHorizontal: SPACING.sm,
+      paddingVertical: SPACING.xs,
+      fontSize: FONT_SIZES.body,
       color: COLORS.text,
+      textAlign: 'right',
+      minWidth: 60,
       borderWidth: 1,
-      borderColor: COLORS.border,
-      marginTop: SPACING.sm,
-      width: 100,
+      borderColor: COLORS.separator,
     },
-    textInput: {
-      backgroundColor: COLORS.background,
-      borderRadius: BORDER_RADIUS.md,
-      padding: SPACING.md,
-      fontSize: FONT_SIZES.md,
-      color: COLORS.text,
-      borderWidth: 1,
-      borderColor: COLORS.border,
-      marginTop: SPACING.sm,
+    // Multiline Input Row
+    multilineRow: {
+      flexDirection: 'column',
+      alignItems: 'stretch',
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.sm,
+      borderBottomWidth: 0.5,
+      borderBottomColor: COLORS.separator,
     },
     multilineInput: {
-      minHeight: 100,
+      backgroundColor: COLORS.cardBackground,
+      borderRadius: BORDER_RADIUS.md,
+      padding: SPACING.sm,
+      fontSize: FONT_SIZES.subheadline,
+      color: COLORS.text,
+      marginTop: SPACING.xs,
+      minHeight: 88,
       textAlignVertical: 'top',
+      borderWidth: 1,
+      borderColor: COLORS.separator,
     },
-    addCountryContainer: {
+    // Country Allowlist
+    addCountryRow: {
       flexDirection: 'row',
-      marginBottom: SPACING.md,
+      alignItems: 'center',
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.sm,
+      borderBottomWidth: 0.5,
+      borderBottomColor: COLORS.separator,
     },
     countryInput: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.cardBackground,
       borderRadius: BORDER_RADIUS.md,
-      padding: SPACING.md,
-      fontSize: FONT_SIZES.md,
+      paddingHorizontal: SPACING.sm,
+      paddingVertical: SPACING.xs,
+      fontSize: FONT_SIZES.body,
       color: COLORS.text,
-      borderWidth: 1,
-      borderColor: COLORS.border,
       marginRight: SPACING.sm,
+      borderWidth: 1,
+      borderColor: COLORS.separator,
     },
-    addCountryButton: {
+    addButton: {
       backgroundColor: COLORS.primary,
-      borderRadius: BORDER_RADIUS.md,
-      width: 48,
+      width: 32,
+      height: 32,
+      borderRadius: 16,
       justifyContent: 'center',
       alignItems: 'center',
     },
-    countryList: {
+    countryTagsRow: {
+      flexDirection: 'column',
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.sm,
+    },
+    countryTags: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      marginTop: SPACING.sm,
+      marginTop: -SPACING.xs,
     },
     countryTag: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: COLORS.primaryLight + '20',
+      backgroundColor: COLORS.buttonFill,
       borderRadius: BORDER_RADIUS.md,
-      paddingHorizontal: SPACING.md,
-      paddingVertical: SPACING.sm,
-      marginRight: SPACING.sm,
-      marginBottom: SPACING.sm,
+      paddingHorizontal: SPACING.sm,
+      paddingVertical: 6,
+      marginRight: SPACING.xs,
+      marginTop: SPACING.xs,
     },
     countryTagText: {
-      fontSize: FONT_SIZES.md,
-      fontWeight: '600',
-      color: COLORS.primary,
-      marginRight: SPACING.sm,
-    },
-    removeCountryButton: {
-      padding: SPACING.xs,
+      fontSize: FONT_SIZES.subheadline,
+      color: COLORS.text,
+      fontWeight: '500',
+      marginRight: 4,
     },
     emptyText: {
-      fontSize: FONT_SIZES.sm,
-      color: COLORS.textLight,
+      fontSize: FONT_SIZES.footnote,
+      color: COLORS.textTertiary,
       fontStyle: 'italic',
-      marginTop: SPACING.sm,
     },
-    clearText: {
-      fontSize: FONT_SIZES.sm,
-      color: COLORS.error,
-      fontWeight: '600',
+    // Save Button (iOS Style)
+    saveButtonContainer: {
+      marginTop: SPACING.lg,
+      marginHorizontal: SPACING.md,
+      marginBottom: SPACING.xl,
     },
     saveButton: {
-      backgroundColor: COLORS.success,
+      backgroundColor: COLORS.primary,
+      borderRadius: BORDER_RADIUS.lg,
+      paddingVertical: SPACING.md,
+      alignItems: 'center',
       flexDirection: 'row',
       justifyContent: 'center',
-      alignItems: 'center',
-      padding: SPACING.md,
-      margin: SPACING.md,
-      borderRadius: BORDER_RADIUS.md,
     },
     saveButtonText: {
-      color: COLORS.surface,
-      fontSize: FONT_SIZES.lg,
+      color: '#FFFFFF',
+      fontSize: FONT_SIZES.headline,
       fontWeight: '600',
       marginLeft: SPACING.sm,
     },
@@ -317,166 +354,180 @@ const SettingsScreen = () => {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Settings</Text>
-      </View>
-
-      {/* Monitoring Settings */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Monitoring</Text>
-
-        <View style={styles.settingItem}>
-          <View style={styles.settingInfo}>
-            <Text style={styles.settingLabel}>Refresh Delay (seconds)</Text>
-            <Text style={styles.settingDescription}>
-              How often to check for new items
-            </Text>
-          </View>
-          <TextInput
-            style={styles.numberInput}
-            value={settings.refreshDelay.toString()}
-            onChangeText={text =>
-              setSettings({...settings, refreshDelay: parseInt(text) || 60})
-            }
-            keyboardType="number-pad"
-          />
-        </View>
-
-        <View style={styles.settingItem}>
-          <View style={styles.settingInfo}>
-            <Text style={styles.settingLabel}>Items Per Query</Text>
-            <Text style={styles.settingDescription}>
-              Number of items to fetch per search
-            </Text>
-          </View>
-          <TextInput
-            style={styles.numberInput}
-            value={settings.itemsPerQuery.toString()}
-            onChangeText={text =>
-              setSettings({...settings, itemsPerQuery: parseInt(text) || 20})
-            }
-            keyboardType="number-pad"
-          />
-        </View>
-      </View>
-
-      {/* Notifications */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Notifications</Text>
-
-        <View style={styles.settingItem}>
-          <View style={styles.settingInfo}>
-            <Text style={styles.settingLabel}>Enable Notifications</Text>
-            <Text style={styles.settingDescription}>
-              Receive push notifications for new items
-            </Text>
-          </View>
-          <Switch
-            value={settings.notificationsEnabled}
-            onValueChange={value =>
-              setSettings({...settings, notificationsEnabled: value})
-            }
-            trackColor={{false: COLORS.border, true: COLORS.primaryLight}}
-            thumbColor={
-              settings.notificationsEnabled ? COLORS.primary : COLORS.textLight
-            }
-          />
-        </View>
-
-        <View style={styles.settingItem}>
-          <Text style={styles.settingLabel}>Message Template</Text>
-          <Text style={styles.settingDescription}>
-            Use {'{'} title {'}'}, {'{'} price {'}'}, {'{'} brand {'}'}, {'{'} size {'}'}
-          </Text>
-          <TextInput
-            style={[styles.textInput, styles.multilineInput]}
-            value={settings.messageTemplate}
-            onChangeText={text =>
-              setSettings({...settings, messageTemplate: text})
-            }
-            multiline
-            numberOfLines={4}
-            placeholder="🆕 Title: {title}&#10;💶 Price: {price}&#10;🛍️ Brand: {brand}"
-            placeholderTextColor={COLORS.textLight}
-          />
-        </View>
-      </View>
-
-      {/* Filters */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Filters</Text>
-
-        <View style={styles.settingItem}>
-          <Text style={styles.settingLabel}>Banned Words</Text>
-          <Text style={styles.settingDescription}>
-            Separate multiple words with ||| (will filter items containing these
-            words)
-          </Text>
-          <TextInput
-            style={styles.textInput}
-            value={settings.banwords}
-            onChangeText={text => setSettings({...settings, banwords: text})}
-            placeholder="word1|||word2|||word3"
-            placeholderTextColor={COLORS.textLight}
-          />
-        </View>
-      </View>
-
-      {/* Country Allowlist */}
+      {/* Monitoring Section */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Country Allowlist</Text>
+          <Text style={styles.sectionHeaderText}>MONITORING</Text>
+        </View>
+        <View style={styles.listGroup}>
+          <View style={styles.listRow}>
+            <View style={styles.listRowContent}>
+              <Text style={styles.listRowLabel}>Check Interval</Text>
+              <Text style={styles.listRowDescription}>
+                How often to check for new items
+              </Text>
+            </View>
+            <TextInput
+              style={[styles.inlineInput, styles.listRowValue]}
+              value={settings.refreshDelay.toString()}
+              onChangeText={text =>
+                setSettings({...settings, refreshDelay: parseInt(text) || 60})
+              }
+              keyboardType="number-pad"
+              returnKeyType="done"
+            />
+            <Text style={styles.listRowDescription}> sec</Text>
+          </View>
+
+          <View style={[styles.listRow, styles.listRowLast]}>
+            <View style={styles.listRowContent}>
+              <Text style={styles.listRowLabel}>Items Per Query</Text>
+              <Text style={styles.listRowDescription}>
+                Number of items to fetch per search
+              </Text>
+            </View>
+            <TextInput
+              style={[styles.inlineInput, styles.listRowValue]}
+              value={settings.itemsPerQuery.toString()}
+              onChangeText={text =>
+                setSettings({...settings, itemsPerQuery: parseInt(text) || 20})
+              }
+              keyboardType="number-pad"
+              returnKeyType="done"
+            />
+          </View>
+        </View>
+      </View>
+
+      {/* Notifications Section */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionHeaderText}>NOTIFICATIONS</Text>
+        </View>
+        <View style={styles.listGroup}>
+          <View style={styles.listRow}>
+            <View style={styles.listRowContent}>
+              <Text style={styles.listRowLabel}>Enable Notifications</Text>
+              <Text style={styles.listRowDescription}>
+                Receive push notifications for new items
+              </Text>
+            </View>
+            <Switch
+              value={settings.notificationsEnabled}
+              onValueChange={value =>
+                setSettings({...settings, notificationsEnabled: value})
+              }
+            />
+          </View>
+
+          <View style={[styles.multilineRow, styles.listRowLast]}>
+            <Text style={styles.listRowLabel}>Message Template</Text>
+            <Text style={styles.listRowDescription}>
+              Use {'{title}'}, {'{price}'}, {'{brand}'}, {'{size}'}
+            </Text>
+            <TextInput
+              style={styles.multilineInput}
+              value={settings.messageTemplate}
+              onChangeText={text =>
+                setSettings({...settings, messageTemplate: text})
+              }
+              multiline
+              numberOfLines={3}
+              placeholder="🆕 Title: {title}&#10;💶 Price: {price}&#10;🛍️ Brand: {brand}"
+              placeholderTextColor={COLORS.placeholder}
+            />
+          </View>
+        </View>
+      </View>
+
+      {/* Filters Section */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionHeaderText}>FILTERS</Text>
+        </View>
+        <View style={styles.listGroup}>
+          <View style={[styles.multilineRow, styles.listRowLast]}>
+            <Text style={styles.listRowLabel}>Banned Words</Text>
+            <Text style={styles.listRowDescription}>
+              Separate multiple words with ||| (filters out matching items)
+            </Text>
+            <TextInput
+              style={styles.multilineInput}
+              value={settings.banwords}
+              onChangeText={text => setSettings({...settings, banwords: text})}
+              placeholder="word1|||word2|||word3"
+              placeholderTextColor={COLORS.placeholder}
+              multiline
+            />
+          </View>
+        </View>
+      </View>
+
+      {/* Country Allowlist Section */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionHeaderText}>COUNTRY ALLOWLIST</Text>
           {allowlist.length > 0 && (
             <TouchableOpacity onPress={handleClearAllowlist}>
-              <Text style={styles.clearText}>Clear All</Text>
+              <Text style={styles.clearAllText}>Clear All</Text>
             </TouchableOpacity>
           )}
         </View>
-        <Text style={styles.sectionDescription}>
-          Only show items from sellers in these countries (leave empty for all)
-        </Text>
-
-        <View style={styles.addCountryContainer}>
-          <TextInput
-            style={styles.countryInput}
-            value={newCountry}
-            onChangeText={setNewCountry}
-            placeholder="e.g., US, FR, DE"
-            placeholderTextColor={COLORS.textLight}
-            autoCapitalize="characters"
-            maxLength={2}
-          />
-          <TouchableOpacity
-            style={styles.addCountryButton}
-            onPress={handleAddCountry}>
-            <Icon name="add" size={24} color={COLORS.surface} />
-          </TouchableOpacity>
-        </View>
-
-        {allowlist.length > 0 ? (
-          <View style={styles.countryList}>
-            {allowlist.map(country => (
-              <View key={country} style={styles.countryTag}>
-                <Text style={styles.countryTagText}>{country}</Text>
-                <TouchableOpacity
-                  onPress={() => handleRemoveCountry(country)}
-                  style={styles.removeCountryButton}>
-                  <Icon name="close" size={16} color={COLORS.error} />
-                </TouchableOpacity>
-              </View>
-            ))}
+        <View style={styles.listGroup}>
+          <View style={styles.addCountryRow}>
+            <TextInput
+              style={styles.countryInput}
+              value={newCountry}
+              onChangeText={setNewCountry}
+              placeholder="e.g., US, FR, DE"
+              placeholderTextColor={COLORS.placeholder}
+              autoCapitalize="characters"
+              maxLength={2}
+              returnKeyType="done"
+              onSubmitEditing={handleAddCountry}
+            />
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={handleAddCountry}>
+              <Icon name="add" size={20} color="#FFFFFF" />
+            </TouchableOpacity>
           </View>
-        ) : (
-          <Text style={styles.emptyText}>No countries in allowlist</Text>
-        )}
+
+          {allowlist.length > 0 ? (
+            <View style={[styles.countryTagsRow, styles.listRowLast]}>
+              <View style={styles.countryTags}>
+                {allowlist.map(country => (
+                  <View key={country} style={styles.countryTag}>
+                    <Text style={styles.countryTagText}>{country}</Text>
+                    <TouchableOpacity
+                      onPress={() => handleRemoveCountry(country)}
+                      hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}>
+                      <Icon name="close" size={14} color={COLORS.textSecondary} />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ) : (
+            <View style={[styles.listRow, styles.listRowLast]}>
+              <Text style={styles.emptyText}>No countries in allowlist</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.sectionFooter}>
+          <Text style={styles.sectionFooterText}>
+            Only show items from sellers in these countries (leave empty to allow all countries)
+          </Text>
+        </View>
       </View>
 
       {/* Save Button */}
-      <TouchableOpacity style={styles.saveButton} onPress={handleSaveSettings}>
-        <Icon name="save" size={24} color={COLORS.surface} />
-        <Text style={styles.saveButtonText}>Save Settings</Text>
-      </TouchableOpacity>
+      <View style={styles.saveButtonContainer}>
+        <TouchableOpacity style={styles.saveButton} onPress={handleSaveSettings}>
+          <Icon name="save" size={20} color="#FFFFFF" />
+          <Text style={styles.saveButtonText}>Save Settings</Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.bottomSpacer} />
     </ScrollView>

@@ -114,6 +114,7 @@ export class VintedAPI {
 
   /**
    * Parse Vinted URL and extract parameters (handles array params)
+   * Matches Python's permissive behavior - accepts any valid URL
    */
   parseUrl(url) {
     try {
@@ -129,23 +130,39 @@ export class VintedAPI {
       if (searchParams) {
         const pairs = searchParams.split('&');
         for (const pair of pairs) {
-          const [key, value] = pair.split('=');
-          const decodedKey = decodeURIComponent(key);
-          const decodedValue = decodeURIComponent(value);
+          if (!pair) continue; // Skip empty params
 
-          // Handle array parameters (key[]=value or key[0]=value)
-          if (decodedKey.includes('[')) {
-            const baseKey = decodedKey.replace(/\[.*\]/, '');
+          const [key, value = ''] = pair.split('=');
 
-            if (!params[baseKey]) {
-              params[baseKey] = [];
+          try {
+            const decodedKey = decodeURIComponent(key || '');
+            const decodedValue = decodeURIComponent(value || '');
+
+            if (!decodedKey) continue; // Skip empty keys
+
+            // Handle array parameters (key[]=value or key[0]=value)
+            if (decodedKey.includes('[')) {
+              const baseKey = decodedKey.replace(/\[.*\]/, '');
+
+              if (!baseKey) continue; // Skip if base key is empty
+
+              if (!params[baseKey]) {
+                params[baseKey] = [];
+              }
+
+              if (Array.isArray(params[baseKey])) {
+                params[baseKey].push(decodedValue);
+              }
+            } else {
+              params[decodedKey] = decodedValue;
             }
-
-            if (Array.isArray(params[baseKey])) {
-              params[baseKey].push(decodedValue);
+          } catch (decodeError) {
+            // If decoding fails, use raw values
+            const rawKey = key || '';
+            const rawValue = value || '';
+            if (rawKey) {
+              params[rawKey] = rawValue;
             }
-          } else {
-            params[decodedKey] = decodedValue;
           }
         }
       }
@@ -168,8 +185,20 @@ export class VintedAPI {
 
       return {domain, params};
     } catch (error) {
+      // Only fail on catastrophic URL parsing errors
+      // Like Python's urlparse(), we're very permissive
       console.error('Failed to parse URL:', error.message);
-      return null;
+
+      // Try to extract at least the domain
+      try {
+        const urlObj = new URL(url);
+        return {
+          domain: urlObj.hostname,
+          params: {order: 'newest_first'}
+        };
+      } catch {
+        return null;
+      }
     }
   }
 

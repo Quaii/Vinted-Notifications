@@ -1,149 +1,234 @@
-import {useColorScheme} from 'react-native';
+import {useColorScheme, Platform, PlatformColor} from 'react-native';
 
-// Light theme colors
-export const LIGHT_COLORS = {
-  // Primary colors
-  primary: '#09B1BA',
-  primaryDark: '#078A91',
-  primaryLight: '#4DD4DC',
+/**
+ * iOS Native Colors
+ * Uses iOS system colors that automatically adapt to dark mode,
+ * high contrast mode, and accessibility settings
+ */
 
-  // Secondary colors
-  secondary: '#FF6B9D',
-  secondaryDark: '#E5527D',
-  secondaryLight: '#FF9FBF',
-
-  // Neutral colors
-  background: '#F5F5F5',
-  surface: '#FFFFFF',
-  card: '#FFFFFF',
-
-  // Text colors
-  text: '#1A1A1A',
-  textSecondary: '#666666',
-  textLight: '#999999',
-
-  // Status colors
-  success: '#4CAF50',
-  error: '#F44336',
-  warning: '#FF9800',
-  info: '#2196F3',
-
-  // UI colors
-  border: '#E0E0E0',
-  divider: '#E0E0E0',
-  overlay: 'rgba(0, 0, 0, 0.5)',
-  shadow: '#000000',
-  inputBackground: '#F5F5F5',
-};
-
-// Dark theme colors
-export const DARK_COLORS = {
-  // Primary colors (slightly brighter for dark mode)
-  primary: '#1FCCDB',
-  primaryDark: '#09B1BA',
-  primaryLight: '#5FE0E8',
-
-  // Secondary colors
-  secondary: '#FF8AB5',
-  secondaryDark: '#FF6B9D',
-  secondaryLight: '#FFA9C9',
-
-  // Neutral colors
-  background: '#0F0F0F',
-  surface: '#1A1A1A',
-  card: '#242424',
-
-  // Text colors
-  text: '#FFFFFF',
-  textSecondary: '#B0B0B0',
-  textLight: '#808080',
-
-  // Status colors
-  success: '#66BB6A',
-  error: '#EF5350',
-  warning: '#FFA726',
-  info: '#42A5F5',
-
-  // UI colors
-  border: '#333333',
-  divider: '#333333',
-  overlay: 'rgba(0, 0, 0, 0.7)',
-  shadow: '#000000',
-  inputBackground: '#2A2A2A',
-};
-
-// Hook to get current theme colors
-export const useThemeColors = () => {
+// Helper to get platform color or fallback
+const platformColor = (iosColor, fallbackLight, fallbackDark) => {
+  if (Platform.OS === 'ios') {
+    return PlatformColor(iosColor);
+  }
   const colorScheme = useColorScheme();
-  return colorScheme === 'dark' ? DARK_COLORS : LIGHT_COLORS;
+  return colorScheme === 'dark' ? fallbackDark : fallbackLight;
 };
 
-// Default to light colors for non-component usage
-export const COLORS = LIGHT_COLORS;
+// iOS System Colors
+export const IOS_COLORS = {
+  // Labels
+  label: PlatformColor('label'),                          // Primary text
+  secondaryLabel: PlatformColor('secondaryLabel'),        // Secondary text
+  tertiaryLabel: PlatformColor('tertiaryLabel'),          // Tertiary text
+  quaternaryLabel: PlatformColor('quaternaryLabel'),      // Quaternary text
 
-export const SPACING = {
-  xs: 4,
-  sm: 8,
-  md: 16,
-  lg: 24,
-  xl: 32,
-  xxl: 48,
+  // Backgrounds
+  systemBackground: PlatformColor('systemBackground'),                    // Main background
+  secondarySystemBackground: PlatformColor('secondarySystemBackground'),  // Secondary background
+  tertiarySystemBackground: PlatformColor('tertiarySystemBackground'),    // Tertiary background
+
+  // Grouped backgrounds (for lists)
+  systemGroupedBackground: PlatformColor('systemGroupedBackground'),
+  secondarySystemGroupedBackground: PlatformColor('secondarySystemGroupedBackground'),
+  tertiarySystemGroupedBackground: PlatformColor('tertiarySystemGroupedBackground'),
+
+  // Fills (for buttons, controls)
+  systemFill: PlatformColor('systemFill'),
+  secondarySystemFill: PlatformColor('secondarySystemFill'),
+  tertiarySystemFill: PlatformColor('tertiarySystemFill'),
+  quaternarySystemFill: PlatformColor('quaternarySystemFill'),
+
+  // Grays
+  systemGray: PlatformColor('systemGray'),
+  systemGray2: PlatformColor('systemGray2'),
+  systemGray3: PlatformColor('systemGray3'),
+  systemGray4: PlatformColor('systemGray4'),
+  systemGray5: PlatformColor('systemGray5'),
+  systemGray6: PlatformColor('systemGray6'),
+
+  // Colors
+  systemBlue: PlatformColor('systemBlue'),
+  systemGreen: PlatformColor('systemGreen'),
+  systemIndigo: PlatformColor('systemIndigo'),
+  systemOrange: PlatformColor('systemOrange'),
+  systemPink: PlatformColor('systemPink'),
+  systemPurple: PlatformColor('systemPurple'),
+  systemRed: PlatformColor('systemRed'),
+  systemTeal: PlatformColor('systemTeal'),
+  systemYellow: PlatformColor('systemYellow'),
+
+  // Semantic colors
+  link: PlatformColor('link'),
+  placeholderText: PlatformColor('placeholderText'),
+  separator: PlatformColor('separator'),
+  opaqueSeparator: PlatformColor('opaqueSeparator'),
 };
 
+// Semantic mapping for app
+export const COLORS = {
+  // Primary
+  primary: IOS_COLORS.systemTeal,
+  primaryText: IOS_COLORS.label,
+
+  // Backgrounds
+  background: IOS_COLORS.systemBackground,
+  secondaryBackground: IOS_COLORS.secondarySystemBackground,
+  groupedBackground: IOS_COLORS.systemGroupedBackground,
+  secondaryGroupedBackground: IOS_COLORS.secondarySystemGroupedBackground,
+  cardBackground: IOS_COLORS.secondarySystemGroupedBackground,
+
+  // Text
+  text: IOS_COLORS.label,
+  textSecondary: IOS_COLORS.secondaryLabel,
+  textTertiary: IOS_COLORS.tertiaryLabel,
+  textQuaternary: IOS_COLORS.quaternaryLabel,
+  placeholder: IOS_COLORS.placeholderText,
+
+  // Status
+  success: IOS_COLORS.systemGreen,
+  error: IOS_COLORS.systemRed,
+  warning: IOS_COLORS.systemOrange,
+  info: IOS_COLORS.systemBlue,
+
+  // UI Elements
+  separator: IOS_COLORS.separator,
+  border: IOS_COLORS.separator,
+  link: IOS_COLORS.link,
+
+  // Buttons & Controls
+  buttonFill: IOS_COLORS.systemFill,
+  secondaryButtonFill: IOS_COLORS.secondarySystemFill,
+};
+
+// Hook to get current color scheme (for conditional logic)
+export const useThemeColors = () => {
+  return COLORS; // Returns iOS system colors that auto-adapt
+};
+
+export const useColorScheme = () => {
+  return useColorScheme();
+};
+
+// iOS Typography Scale (Dynamic Type)
 export const FONT_SIZES = {
-  xs: 10,
-  sm: 12,
-  md: 14,
-  lg: 16,
-  xl: 18,
-  xxl: 24,
-  xxxl: 32,
+  largeTitle: 34,    // iOS Large Title
+  title1: 28,        // iOS Title 1
+  title2: 22,        // iOS Title 2
+  title3: 20,        // iOS Title 3
+  headline: 17,      // iOS Headline (semibold)
+  body: 17,          // iOS Body (regular)
+  callout: 16,       // iOS Callout
+  subheadline: 15,   // iOS Subheadline
+  footnote: 13,      // iOS Footnote
+  caption1: 12,      // iOS Caption 1
+  caption2: 11,      // iOS Caption 2
 };
 
+// iOS Font Weights
 export const FONT_WEIGHTS = {
+  ultraLight: '100',
+  thin: '200',
+  light: '300',
   regular: '400',
   medium: '500',
   semibold: '600',
   bold: '700',
+  heavy: '800',
+  black: '900',
 };
 
+// iOS Standard Font Families
+export const FONTS = {
+  // Use SF Pro (iOS system font) - React Native uses by default
+  regular: {
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+    fontWeight: '400',
+  },
+  medium: {
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+    fontWeight: '500',
+  },
+  semibold: {
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+    fontWeight: '600',
+  },
+  bold: {
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
+    fontWeight: '700',
+  },
+};
+
+// iOS Standard Spacing (8pt grid)
+export const SPACING = {
+  xxs: 2,
+  xs: 4,
+  sm: 8,
+  md: 16,    // Standard margin
+  lg: 20,
+  xl: 24,
+  xxl: 32,
+  xxxl: 48,
+};
+
+// iOS Standard Border Radius
 export const BORDER_RADIUS = {
-  sm: 4,
+  xs: 4,
+  sm: 6,
   md: 8,
-  lg: 12,
-  xl: 16,
+  lg: 10,
+  xl: 12,
+  xxl: 16,
   round: 999,
 };
 
+// iOS Standard Shadows
 export const SHADOWS = {
   small: {
-    shadowColor: COLORS.shadow,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.18,
+    shadowRadius: 1.0,
+    elevation: 1,
   },
   medium: {
-    shadowColor: COLORS.shadow,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.20,
+    shadowRadius: 3.0,
+    elevation: 2,
   },
   large: {
-    shadowColor: COLORS.shadow,
-    shadowOffset: {
-      width: 0,
-      height: 6,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 4},
+    shadowOpacity: 0.22,
+    shadowRadius: 5.0,
+    elevation: 4,
   },
+};
+
+// iOS Standard Component Heights
+export const HEIGHTS = {
+  navBar: 44,
+  tabBar: 49,
+  listRow: 44,
+  listRowLarge: 60,
+  button: 44,
+  input: 44,
+};
+
+// iOS Standard Layout
+export const LAYOUT = {
+  screenPadding: SPACING.md,        // 16pt margin from edges
+  listInset: SPACING.md,            // 16pt list inset
+  sectionSpacing: SPACING.lg,       // 20pt between sections
+  cardPadding: SPACING.md,          // 16pt inside cards
+  listSeparatorInset: SPACING.md,   // 16pt separator inset
+};
+
+// Animation durations (iOS standard)
+export const ANIMATION = {
+  quick: 200,
+  standard: 300,
+  slow: 500,
 };

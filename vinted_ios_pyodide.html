@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Vinted Monitor (Python)</title>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .status {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: none;
+            border-radius: 15px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        button:active { transform: scale(0.98); }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        #output {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 15px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .loader {
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐍 Vinted Monitor (Python)</h1>
+
+        <div class="status" id="status">
+            <div class="loader">Loading Python runtime...</div>
+        </div>
+
+        <textarea id="pythonCode" spellcheck="false">
+# Vinted Monitor - Edit configuration below
+import js
+from pyodide.http import pyfetch
+import json
+import asyncio
+from urllib.parse import urlparse, parse_qsl
+
+# ============ CONFIGURATION ============
+QUERIES = [
+    "https://www.vinted.fr/catalog?search_text=nike&price_to=50",
+]
+TELEGRAM_TOKEN = ""  # Optional
+TELEGRAM_CHAT_ID = ""  # Optional
+CHECK_INTERVAL = 60  # seconds
+# =======================================
+
+seen_items = set()
+
+def log(msg):
+    """Print to web console"""
+    js.document.getElementById("output").innerHTML += msg + "\\n"
+    print(msg)
+
+async def search_vinted(url, per_page=10):
+    """Search Vinted API"""
+    parsed = urlparse(url)
+    locale = parsed.netloc
+
+    # Parse URL params
+    queries = parse_qsl(parsed.query)
+    params = {
+        'per_page': per_page,
+        'order': 'newest_first'
+    }
+
+    # Map query parameters
+    for key, value in queries:
+        if key == 'search_text':
+            params['search_text'] = value
+        elif key == 'brand_ids[]':
+            params.setdefault('brand_ids', []).append(value)
+        elif key == 'price_to':
+            params['price_to'] = value
+        elif key == 'price_from':
+            params['price_from'] = value
+
+    # Convert lists to comma-separated
+    for k, v in params.items():
+        if isinstance(v, list):
+            params[k] = ','.join(v)
+
+    # Build API URL
+    api_url = f"https://{locale}/api/v2/catalog/items"
+
+    try:
+        # Make request using Pyodide's pyfetch
+        response = await pyfetch(api_url, method="GET", headers={
+            "User-Agent": "Mozilla/5.0",
+            "Accept": "application/json"
+        })
+
+        data = await response.json()
+        return data.get('items', [])
+    except Exception as e:
+        log(f"❌ Error: {e}")
+        return []
+
+async def send_telegram(message, url):
+    """Send Telegram notification"""
+    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
+        return
+
+    api_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    payload = {
+        'chat_id': TELEGRAM_CHAT_ID,
+        'text': f"{message}\\n\\n{url}",
+        'parse_mode': 'HTML'
+    }
+
+    try:
+        response = await pyfetch(api_url, method="POST",
+            body=json.dumps(payload),
+            headers={"Content-Type": "application/json"}
+        )
+    except Exception as e:
+        log(f"Telegram error: {e}")
+
+def process_item(item):
+    """Process a single item"""
+    item_id = str(item['id'])
+
+    if item_id in seen_items:
+        return False
+
+    seen_items.add(item_id)
+
+    title = item.get('title', 'Unknown')
+    price = item.get('price', '?')
+    currency = item.get('currency', '')
+    brand = item.get('brand_title', 'No brand')
+    url = item.get('url', '')
+
+    message = f"🆕 {title}\\n💶 {price} {currency}\\n🛍️ {brand}"
+
+    log(f"✓ NEW: {title} - {price} {currency}")
+
+    # Send notification
+    asyncio.ensure_future(send_telegram(message, url))
+
+    # Show browser notification
+    js.eval(f'''
+        if (Notification.permission === "granted") {{
+            new Notification("New Vinted Item", {{
+                body: "{title} - {price} {currency}",
+                tag: "{item_id}"
+            }});
+        }}
+    ''')
+
+    return True
+
+async def check_queries():
+    """Check all queries for new items"""
+    new_count = 0
+
+    for url in QUERIES:
+        log(f"\\n🔍 Checking {urlparse(url).netloc}...")
+        items = await search_vinted(url, per_page=10)
+
+        for item in reversed(items):
+            if process_item(item):
+                new_count += 1
+
+    if new_count == 0:
+        log("No new items found")
+
+    return new_count
+
+async def monitor():
+    """Main monitoring loop"""
+    log("=" * 40)
+    log("🚀 Vinted Monitor Started")
+    log(f"Monitoring {len(QUERIES)} queries")
+    log(f"Interval: {CHECK_INTERVAL}s")
+    log("=" * 40)
+
+    # Request notification permission
+    js.eval('''
+        if (Notification.permission === "default") {
+            Notification.requestPermission();
+        }
+    ''')
+
+    iteration = 0
+    while True:
+        iteration += 1
+        log(f"\\n📊 Check #{iteration}")
+
+        await check_queries()
+
+        log(f"😴 Sleeping {CHECK_INTERVAL}s...\\n")
+        await asyncio.sleep(CHECK_INTERVAL)
+
+# Start monitoring
+asyncio.ensure_future(monitor())
+        </textarea>
+
+        <button id="runBtn" onclick="runPython()" disabled>Run Python Code</button>
+        <button onclick="clearOutput()">Clear Output</button>
+
+        <div id="output"></div>
+    </div>
+
+    <script>
+        let pyodide;
+
+        async function initPyodide() {
+            document.getElementById('status').innerHTML = 'Loading Python runtime...';
+
+            try {
+                pyodide = await loadPyodide();
+
+                // Load required packages
+                document.getElementById('status').innerHTML = 'Loading packages...';
+                await pyodide.loadPackage(['micropip']);
+
+                document.getElementById('status').innerHTML = '✓ Ready! Edit the code and click Run';
+                document.getElementById('runBtn').disabled = false;
+            } catch (error) {
+                document.getElementById('status').innerHTML = '❌ Failed to load Python: ' + error;
+            }
+        }
+
+        async function runPython() {
+            const code = document.getElementById('pythonCode').value;
+            const output = document.getElementById('output');
+
+            try {
+                document.getElementById('runBtn').disabled = true;
+                document.getElementById('status').innerHTML = '🐍 Python running...';
+
+                output.innerHTML = '';
+
+                // Run Python code
+                await pyodide.runPythonAsync(code);
+
+                document.getElementById('status').innerHTML = '✓ Python monitoring active';
+            } catch (error) {
+                output.innerHTML += '\n❌ ERROR: ' + error;
+                document.getElementById('runBtn').disabled = false;
+                document.getElementById('status').innerHTML = '❌ Error - check output';
+            }
+        }
+
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '';
+        }
+
+        // Initialize on load
+        initPyodide();
+    </script>
+</body>
+</html>

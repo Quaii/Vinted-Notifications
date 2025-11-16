@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Vinted">
+    <title>Vinted Notifications</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .config {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: monospace;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .items {
+            display: grid;
+            gap: 15px;
+        }
+
+        .item {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 15px;
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.2s;
+        }
+
+        .item:active {
+            transform: scale(0.98);
+        }
+
+        .item-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            object-fit: cover;
+            background: #f3f4f6;
+        }
+
+        .item-details {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .item-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .item-brand {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .item-price {
+            color: #667eea;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .item-time {
+            color: #999;
+            font-size: 11px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat {
+            text-align: center;
+            background: #f9fafb;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .install-prompt {
+            background: rgba(16, 185, 129, 0.1);
+            border: 2px solid #10b981;
+            color: #065f46;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📦 Vinted Monitor</h1>
+            <div class="status">
+                <div class="indicator"></div>
+                <span id="status">Waiting to start...</span>
+            </div>
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="totalItems">0</div>
+                    <div class="stat-label">Items Found</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="newItems">0</div>
+                    <div class="stat-label">New</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="queries">0</div>
+                    <div class="stat-label">Queries</div>
+                </div>
+            </div>
+        </header>
+
+        <div id="installPrompt" class="install-prompt hidden">
+            💡 <strong>Install as App:</strong> Tap Share → Add to Home Screen for the full app experience!
+        </div>
+
+        <div class="config">
+            <div class="form-group">
+                <label>Vinted Search URLs (one per line)</label>
+                <textarea id="queries-input" placeholder="https://www.vinted.fr/catalog?search_text=nike&amp;price_to=50&#10;https://www.vinted.de/catalog?brand_ids[]=53"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Telegram Bot Token (optional)</label>
+                <input type="text" id="telegram-token" placeholder="123456789:ABCdefGHIjklMNOpqrsTUVwxyz">
+            </div>
+
+            <div class="form-group">
+                <label>Telegram Chat ID (optional)</label>
+                <input type="text" id="telegram-chat" placeholder="123456789">
+            </div>
+
+            <div class="form-group">
+                <label>Check Interval (seconds)</label>
+                <input type="number" id="interval" value="60" min="30" max="3600">
+            </div>
+
+            <button id="startBtn" onclick="toggleMonitoring()">Start Monitoring</button>
+        </div>
+
+        <div id="items" class="items"></div>
+    </div>
+
+    <script>
+        // ================================================================
+        // State Management
+        // ================================================================
+        let isRunning = false;
+        let intervalId = null;
+        let seenItems = new Set();
+        let stats = { total: 0, new: 0, queries: 0 };
+
+        // Load saved config
+        const config = {
+            queries: localStorage.getItem('queries') || '',
+            telegramToken: localStorage.getItem('telegramToken') || '',
+            telegramChat: localStorage.getItem('telegramChat') || '',
+            interval: parseInt(localStorage.getItem('interval')) || 60
+        };
+
+        // Restore config to UI
+        document.getElementById('queries-input').value = config.queries;
+        document.getElementById('telegram-token').value = config.telegramToken;
+        document.getElementById('telegram-chat').value = config.telegramChat;
+        document.getElementById('interval').value = config.interval;
+
+        // Load seen items from localStorage
+        const savedSeen = localStorage.getItem('seenItems');
+        if (savedSeen) seenItems = new Set(JSON.parse(savedSeen));
+
+        // ================================================================
+        // Vinted API Client
+        // ================================================================
+        class VintedAPI {
+            static async search(url, perPage = 10) {
+                const parsed = new URL(url);
+                const locale = parsed.hostname;
+                const params = this.parseUrl(url, perPage);
+
+                const apiUrl = `https://${locale}/api/v2/catalog/items?` +
+                    new URLSearchParams(params).toString();
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)',
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                    const data = await response.json();
+                    return data.items || [];
+                } catch (error) {
+                    console.error('Vinted API error:', error);
+                    return [];
+                }
+            }
+
+            static parseUrl(url, perPage = 10) {
+                const parsed = new URL(url);
+                const params = new URLSearchParams(parsed.search);
+
+                const apiParams = {
+                    per_page: perPage,
+                    order: 'newest_first'
+                };
+
+                // Map query params to API params
+                const mappings = {
+                    'search_text': 'search_text',
+                    'brand_ids[]': 'brand_ids',
+                    'price_to': 'price_to',
+                    'price_from': 'price_from',
+                    'currency': 'currency',
+                    'size_ids[]': 'size_ids',
+                    'color_ids[]': 'color_ids'
+                };
+
+                for (const [key, value] of params.entries()) {
+                    const apiKey = mappings[key] || key;
+                    if (apiParams[apiKey]) {
+                        apiParams[apiKey] += ',' + value;
+                    } else {
+                        apiParams[apiKey] = value;
+                    }
+                }
+
+                return apiParams;
+            }
+        }
+
+        // ================================================================
+        // Notifications
+        // ================================================================
+        async function sendTelegramNotification(item) {
+            if (!config.telegramToken || !config.telegramChat) return;
+
+            const message = `🆕 ${item.title}\n💶 ${item.price} ${item.currency}\n🛍️ ${item.brand_title || 'No brand'}`;
+            const url = `https://api.telegram.org/bot${config.telegramToken}/sendMessage`;
+
+            try {
+                await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: config.telegramChat,
+                        text: message + `\n\n${item.url}`,
+                        parse_mode: 'HTML'
+                    })
+                });
+            } catch (error) {
+                console.error('Telegram error:', error);
+            }
+        }
+
+        function showBrowserNotification(item) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('New Vinted Item!', {
+                    body: `${item.title} - ${item.price} ${item.currency}`,
+                    icon: item.photo?.url || '',
+                    tag: item.id
+                });
+            }
+        }
+
+        // ================================================================
+        // Item Processing
+        // ================================================================
+        function processItem(item) {
+            if (seenItems.has(String(item.id))) return false;
+
+            seenItems.add(String(item.id));
+            stats.new++;
+            stats.total++;
+
+            // Send notifications
+            sendTelegramNotification(item);
+            showBrowserNotification(item);
+
+            // Add to UI
+            addItemToUI(item);
+
+            // Save to localStorage
+            localStorage.setItem('seenItems', JSON.stringify([...seenItems]));
+
+            return true;
+        }
+
+        function addItemToUI(item) {
+            const itemsDiv = document.getElementById('items');
+            const itemEl = document.createElement('a');
+            itemEl.className = 'item';
+            itemEl.href = item.url;
+            itemEl.target = '_blank';
+
+            const imgUrl = item.photo?.url || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect fill="%23f3f4f6" width="80" height="80"/%3E%3C/svg%3E';
+
+            itemEl.innerHTML = `
+                <img class="item-image" src="${imgUrl}" alt="${item.title}">
+                <div class="item-details">
+                    <div class="item-title">${item.title}</div>
+                    <div class="item-brand">${item.brand_title || 'No brand'}</div>
+                    <div class="item-price">${item.price} ${item.currency}</div>
+                    <div class="item-time">Just now</div>
+                </div>
+            `;
+
+            itemsDiv.insertBefore(itemEl, itemsDiv.firstChild);
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('totalItems').textContent = stats.total;
+            document.getElementById('newItems').textContent = stats.new;
+            document.getElementById('queries').textContent = stats.queries;
+        }
+
+        // ================================================================
+        // Monitoring Loop
+        // ================================================================
+        async function checkQueries() {
+            const queryList = config.queries.split('\n').filter(q => q.trim());
+            stats.queries = queryList.length;
+
+            for (const url of queryList) {
+                if (!url.trim()) continue;
+
+                document.getElementById('status').textContent = `Checking: ${new URL(url).hostname}...`;
+
+                const items = await VintedAPI.search(url.trim(), 10);
+
+                for (const item of items.reverse()) {
+                    processItem(item);
+                }
+            }
+
+            document.getElementById('status').textContent = `Next check in ${config.interval}s...`;
+            updateStats();
+        }
+
+        // ================================================================
+        // Controls
+        // ================================================================
+        async function toggleMonitoring() {
+            const btn = document.getElementById('startBtn');
+
+            if (isRunning) {
+                // Stop
+                clearInterval(intervalId);
+                isRunning = false;
+                btn.textContent = 'Start Monitoring';
+                document.getElementById('status').textContent = 'Stopped';
+            } else {
+                // Save config
+                config.queries = document.getElementById('queries-input').value;
+                config.telegramToken = document.getElementById('telegram-token').value;
+                config.telegramChat = document.getElementById('telegram-chat').value;
+                config.interval = parseInt(document.getElementById('interval').value);
+
+                localStorage.setItem('queries', config.queries);
+                localStorage.setItem('telegramToken', config.telegramToken);
+                localStorage.setItem('telegramChat', config.telegramChat);
+                localStorage.setItem('interval', config.interval);
+
+                // Request notification permission
+                if ('Notification' in window && Notification.permission === 'default') {
+                    await Notification.requestPermission();
+                }
+
+                // Start
+                isRunning = true;
+                btn.textContent = 'Stop Monitoring';
+                stats.new = 0;
+
+                await checkQueries();
+                intervalId = setInterval(checkQueries, config.interval * 1000);
+            }
+        }
+
+        // ================================================================
+        // PWA Detection
+        // ================================================================
+        window.addEventListener('load', () => {
+            // Show install prompt if not standalone
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                                window.navigator.standalone;
+
+            if (!isStandalone && /iPhone|iPad|iPod/.test(navigator.userAgent)) {
+                document.getElementById('installPrompt').classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

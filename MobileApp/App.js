@@ -35,6 +35,10 @@ const App = () => {
       await MonitoringService.initBackgroundFetch();
       console.log('Background fetch initialized');
 
+      // Initialize monitoring state (auto-starts if previously running)
+      await MonitoringService.initializeState();
+      console.log('Monitoring state initialized');
+
       console.log('App initialization complete');
       setIsReady(true);
     } catch (err) {

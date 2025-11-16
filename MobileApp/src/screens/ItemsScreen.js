@@ -15,6 +15,7 @@ import {useThemeColors, SPACING, FONT_SIZES} from '../constants/theme';
 /**
  * Items Screen
  * Browse all found items
+ * iOS NATIVE DESIGN - Read-only list of tracked items
  */
 const ItemsScreen = ({navigation, route}) => {
   const COLORS = useThemeColors();
@@ -54,12 +55,14 @@ const ItemsScreen = ({navigation, route}) => {
 
   const renderEmpty = () => (
     <View style={styles.emptyState}>
-      <Icon name="inventory-2" size={64} color={COLORS.textLight} />
+      <View style={styles.emptyIcon}>
+        <Icon name="inventory-2" size={48} color={COLORS.textTertiary} />
+      </View>
       <Text style={styles.emptyStateText}>No items found</Text>
       <Text style={styles.emptyStateSubtext}>
         {selectedQuery
           ? 'No items have been found for this query yet'
-          : 'Start monitoring to find new items'}
+          : 'Add a search query to start tracking new items'}
       </Text>
     </View>
   );
@@ -69,14 +72,16 @@ const ItemsScreen = ({navigation, route}) => {
 
     return (
       <View style={styles.filterBanner}>
-        <View style={styles.filterInfo}>
-          <Icon name="filter-list" size={20} color={COLORS.primary} />
+        <View style={styles.filterContent}>
+          <Icon name="filter-list" size={18} color={COLORS.primary} />
           <Text style={styles.filterText}>
-            Filtered by: {selectedQuery.query_name}
+            {selectedQuery.query_name || 'Filtered Query'}
           </Text>
         </View>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="close" size={20} color={COLORS.textSecondary} />
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+          <Icon name="close" size={18} color={COLORS.textSecondary} />
         </TouchableOpacity>
       </View>
     );
@@ -85,46 +90,41 @@ const ItemsScreen = ({navigation, route}) => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.groupedBackground,
     },
-    header: {
-      padding: SPACING.md,
-      paddingTop: SPACING.lg,
-      backgroundColor: COLORS.surface,
-      borderBottomWidth: 1,
-      borderBottomColor: COLORS.border,
-    },
-    headerTitle: {
-      fontSize: FONT_SIZES.xxl,
-      fontWeight: '700',
-      color: COLORS.text,
-      marginBottom: SPACING.xs,
-    },
-    headerSubtitle: {
-      fontSize: FONT_SIZES.md,
-      color: COLORS.textSecondary,
-    },
+    // Filter Banner (iOS Style)
     filterBanner: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      backgroundColor: COLORS.primaryLight + '20',
-      padding: SPACING.md,
-      marginBottom: SPACING.sm,
+      backgroundColor: COLORS.secondaryGroupedBackground,
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.sm,
+      marginHorizontal: SPACING.md,
+      marginTop: SPACING.md,
+      marginBottom: SPACING.xs,
+      borderRadius: SPACING.sm,
+      borderWidth: 1,
+      borderColor: COLORS.separator,
     },
-    filterInfo: {
+    filterContent: {
       flexDirection: 'row',
       alignItems: 'center',
+      flex: 1,
     },
     filterText: {
-      fontSize: FONT_SIZES.md,
-      color: COLORS.primary,
-      fontWeight: '600',
+      fontSize: FONT_SIZES.subheadline,
+      color: COLORS.text,
+      fontWeight: '500',
       marginLeft: SPACING.sm,
+      flex: 1,
     },
+    // List
     listContainer: {
-      paddingVertical: SPACING.sm,
+      paddingTop: SPACING.xs,
+      paddingBottom: SPACING.md,
     },
+    // Empty State
     emptyContainer: {
       flex: 1,
     },
@@ -132,33 +132,29 @@ const ItemsScreen = ({navigation, route}) => {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      padding: SPACING.xxl,
+      paddingHorizontal: SPACING.md,
+      paddingBottom: SPACING.xxl,
+    },
+    emptyIcon: {
+      marginBottom: SPACING.md,
     },
     emptyStateText: {
-      fontSize: FONT_SIZES.xl,
+      fontSize: FONT_SIZES.title3,
       fontWeight: '600',
       color: COLORS.textSecondary,
-      marginTop: SPACING.lg,
+      marginBottom: SPACING.xs,
     },
     emptyStateSubtext: {
-      fontSize: FONT_SIZES.md,
-      color: COLORS.textLight,
-      marginTop: SPACING.sm,
+      fontSize: FONT_SIZES.subheadline,
+      color: COLORS.textTertiary,
       textAlign: 'center',
+      lineHeight: 20,
     },
   });
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Found Items</Text>
-        <Text style={styles.headerSubtitle}>
-          {items.length} item{items.length !== 1 ? 's' : ''}
-        </Text>
-      </View>
-
-      {/* Items List */}
+      {/* Items List (iOS Grouped List) */}
       <FlatList
         data={items}
         renderItem={renderItem}
