@@ -1,6 +1,5 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, Linking} from 'react-native';
-import FastImage from '@d11/react-native-fast-image';
+import {View, Text, TouchableOpacity, StyleSheet, Linking, Image} from 'react-native';
 import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
 
 /**
@@ -76,14 +75,10 @@ const ItemCard = ({item, onPress, isLast = false}) => {
 
   return (
     <TouchableOpacity style={styles.row} onPress={handlePress} activeOpacity={0.6}>
-      <FastImage
+      <Image
         style={styles.thumbnail}
-        source={{
-          uri: item.getPhotoUrl() || 'https://via.placeholder.com/150',
-          priority: FastImage.priority.normal,
-          cache: FastImage.cacheControl.immutable, // Aggressive caching for Vinted images
-        }}
-        resizeMode={FastImage.resizeMode.cover}
+        source={{uri: item.getPhotoUrl() || 'https://via.placeholder.com/150'}}
+        resizeMode="cover"
       />
       <View style={styles.content}>
         <Text style={styles.title} numberOfLines={2}>
