@@ -8,281 +8,317 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Icon from '@react-native-vector-icons/material-icons';
-import {StatCard, ItemCard} from '../components';
+import {PageHeader, StatWidget, ItemCard, QueryCard} from '../components';
 import DatabaseService from '../services/DatabaseService';
-import MonitoringService from '../services/MonitoringService';
+import LogService from '../services/LogService';
 import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
 
 /**
- * Dashboard Screen
- * Main screen showing statistics and recent items
- * iOS NATIVE DESIGN - Monitoring runs automatically (like Python version)
+ * DashboardScreen
+ * Modern dashboard with widgets, last item, queries, and logs
  */
 const DashboardScreen = ({navigation}) => {
   const COLORS = useThemeColors();
 
-  const [statistics, setStatistics] = useState({
+  const [stats, setStats] = useState({
     totalItems: 0,
-    totalQueries: 0,
-    itemsToday: 0,
+    itemsPerDay: 0,
   });
-  const [recentItems, setRecentItems] = useState([]);
+  const [lastItem, setLastItem] = useState(null);
+  const [queries, setQueries] = useState([]);
+  const [logs, setLogs] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [monitoringStatus, setMonitoringStatus] = useState({
-    isRunning: false,
-    refreshDelay: 60,
-    itemsPerQuery: 20,
-    activeQueries: 0,
-  });
 
-  const loadData = useCallback(async () => {
+  const loadDashboard = useCallback(async () => {
     try {
-      const stats = await DatabaseService.getStatistics();
-      setStatistics(stats);
+      // Load total items
+      const items = await DatabaseService.getItems(null, 1000);
+      const totalItems = items.length;
 
-      const items = await DatabaseService.getItems(null, 10);
-      setRecentItems(items);
+      // Calculate items per day (last 7 days)
+      const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      const recentItems = items.filter(item => item.created_at_ts >= weekAgo);
+      const itemsPerDay = recentItems.length > 0 ? (recentItems.length / 7).toFixed(1) : 0;
 
-      const status = await MonitoringService.getStatus();
-      setMonitoringStatus(status);
+      setStats({totalItems, itemsPerDay});
+
+      // Load last found item
+      if (items.length > 0) {
+        setLastItem(items[0]);
+      }
+
+      // Load queries (max 2)
+      const allQueries = await DatabaseService.getQueries(true);
+      setQueries(allQueries.slice(0, 2));
+
+      // Load recent logs (max 5)
+      setLogs(LogService.getRecentLogs(60, 5));
     } catch (error) {
-      console.error('Failed to load dashboard data:', error);
+      console.error('Failed to load dashboard:', error);
+      LogService.error('Failed to load dashboard', error.message);
     }
   }, []);
 
   useEffect(() => {
-    loadData();
+    loadDashboard();
 
-    // Reload data when screen comes into focus
-    const unsubscribe = navigation.addListener('focus', loadData);
+    // Subscribe to log updates
+    const unsubscribe = LogService.subscribe(() => {
+      setLogs(LogService.getRecentLogs(60, 5));
+    });
+
     return unsubscribe;
-  }, [navigation, loadData]);
+  }, [loadDashboard]);
 
-  const onRefresh = useCallback(async () => {
+  const onRefresh = async () => {
     setRefreshing(true);
-    await loadData();
+    await loadDashboard();
     setRefreshing(false);
-  }, [loadData]);
+  };
+
+  const getLogIcon = level => {
+    switch (level) {
+      case 'success':
+        return 'check-circle';
+      case 'error':
+        return 'error';
+      case 'warning':
+        return 'warning';
+      default:
+        return 'info';
+    }
+  };
+
+  const getLogColor = level => {
+    switch (level) {
+      case 'success':
+        return '#34C759';
+      case 'error':
+        return '#FF3B30';
+      case 'warning':
+        return '#FF9500';
+      default:
+        return '#007AFF';
+    }
+  };
+
+  const formatLogTime = timestamp => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return date.toLocaleDateString();
+  };
 
   const styles = StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: COLORS.groupedBackground,
     },
-    // iOS Grouped List Section
+    content: {
+      padding: SPACING.lg,
+    },
+    // Widgets
+    widgetRow: {
+      flexDirection: 'row',
+      gap: SPACING.md,
+      marginBottom: SPACING.xl,
+    },
+    // Section
     section: {
-      marginTop: SPACING.lg,
+      marginBottom: SPACING.xl,
     },
     sectionHeader: {
-      paddingHorizontal: SPACING.md,
-      paddingTop: SPACING.sm,
-      paddingBottom: SPACING.xs,
-    },
-    sectionHeaderText: {
-      fontSize: FONT_SIZES.footnote,
-      color: COLORS.textTertiary,
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
-    },
-    // Status Info (Read-only)
-    infoGroup: {
-      backgroundColor: COLORS.secondaryGroupedBackground,
-      marginHorizontal: SPACING.md,
-      borderRadius: BORDER_RADIUS.lg,
-      overflow: 'hidden',
-    },
-    infoRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingHorizontal: SPACING.md,
-      paddingVertical: SPACING.sm + 2,
-      borderBottomWidth: 0.5,
-      borderBottomColor: COLORS.separator,
-    },
-    infoRowLast: {
-      borderBottomWidth: 0,
-    },
-    infoLabel: {
-      fontSize: FONT_SIZES.body,
-      color: COLORS.text,
-    },
-    infoValue: {
-      fontSize: FONT_SIZES.body,
-      color: COLORS.textSecondary,
-    },
-    // Status Indicator
-    statusIndicator: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    statusDot: {
-      width: 10,
-      height: 10,
-      borderRadius: 5,
-      marginRight: SPACING.xs,
-    },
-    // Statistics Cards
-    statsGrid: {
-      paddingHorizontal: SPACING.md,
-    },
-    statItem: {
-      marginBottom: SPACING.sm,
-    },
-    // Recent Items
-    itemsContainer: {
-      backgroundColor: COLORS.secondaryGroupedBackground,
-      marginHorizontal: SPACING.md,
-      borderRadius: BORDER_RADIUS.lg,
-      overflow: 'hidden',
-    },
-    seeAllRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingHorizontal: SPACING.md,
-      paddingVertical: SPACING.sm,
-      borderBottomWidth: 0.5,
-      borderBottomColor: COLORS.separator,
-    },
-    seeAllText: {
-      fontSize: FONT_SIZES.body,
-      color: COLORS.link,
-    },
-    // Empty State
-    emptyState: {
-      alignItems: 'center',
-      paddingVertical: SPACING.xxl * 2,
-      paddingHorizontal: SPACING.md,
-    },
-    emptyIcon: {
       marginBottom: SPACING.md,
     },
-    emptyStateText: {
-      fontSize: FONT_SIZES.body,
+    sectionTitle: {
+      fontSize: FONT_SIZES.title3,
       fontWeight: '600',
-      color: COLORS.textSecondary,
-      marginBottom: SPACING.xs,
+      color: COLORS.text,
     },
-    emptyStateSubtext: {
+    sectionButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.sm,
+      paddingVertical: SPACING.xs,
+    },
+    sectionButtonText: {
+      fontSize: FONT_SIZES.subheadline,
+      fontWeight: '600',
+      color: COLORS.link,
+      marginRight: 2,
+    },
+    // Last Item Card
+    lastItemCard: {
+      backgroundColor: COLORS.secondaryGroupedBackground,
+      borderRadius: BORDER_RADIUS.xl,
+      padding: SPACING.md,
+      borderWidth: 1,
+      borderColor: COLORS.separator,
+    },
+    // Queries
+    queryList: {
+      gap: SPACING.sm,
+    },
+    // Logs
+    logsList: {
+      gap: SPACING.xs,
+    },
+    logEntry: {
+      backgroundColor: COLORS.secondaryGroupedBackground,
+      borderRadius: BORDER_RADIUS.lg,
+      padding: SPACING.md,
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      borderWidth: 1,
+      borderColor: COLORS.separator,
+      borderLeftWidth: 3,
+    },
+    logIcon: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: SPACING.sm,
+    },
+    logContent: {
+      flex: 1,
+    },
+    logMessage: {
+      fontSize: FONT_SIZES.subheadline,
+      color: COLORS.text,
+      marginBottom: 2,
+    },
+    logTime: {
+      fontSize: FONT_SIZES.caption1,
+      color: COLORS.textTertiary,
+    },
+    emptyText: {
       fontSize: FONT_SIZES.subheadline,
       color: COLORS.textTertiary,
       textAlign: 'center',
+      fontStyle: 'italic',
+      paddingVertical: SPACING.lg,
     },
   });
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }>
-      {/* Monitoring Status (Read-Only) */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionHeaderText}>MONITORING STATUS</Text>
+    <View style={styles.container}>
+      <PageHeader title="Dashboard" />
+      <ScrollView
+        style={styles.content}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        showsVerticalScrollIndicator={false}>
+        {/* Stats Widgets */}
+        <View style={styles.widgetRow}>
+          <StatWidget
+            title="Total Items"
+            value={stats.totalItems.toString()}
+            icon="inventory"
+            iconColor="#007AFF"
+          />
+          <StatWidget
+            title="Items / Day"
+            value={stats.itemsPerDay.toString()}
+            icon="trending-up"
+            iconColor="#34C759"
+          />
         </View>
-        <View style={styles.infoGroup}>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Status</Text>
-            <View style={styles.statusIndicator}>
-              <View
-                style={[
-                  styles.statusDot,
-                  {
-                    backgroundColor: monitoringStatus.isRunning
-                      ? COLORS.success
-                      : COLORS.textTertiary,
-                  },
-                ]}
-              />
-              <Text style={styles.infoValue}>
-                {monitoringStatus.isRunning ? 'Active' : 'Inactive'}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Active Queries</Text>
-            <Text style={styles.infoValue}>{monitoringStatus.activeQueries}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Check Interval</Text>
-            <Text style={styles.infoValue}>{monitoringStatus.refreshDelay}s</Text>
-          </View>
-          <View style={[styles.infoRow, styles.infoRowLast]}>
-            <Text style={styles.infoLabel}>Items Per Query</Text>
-            <Text style={styles.infoValue}>{monitoringStatus.itemsPerQuery}</Text>
-          </View>
-        </View>
-      </View>
 
-      {/* Statistics */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionHeaderText}>STATISTICS</Text>
-        </View>
-        <View style={styles.statsGrid}>
-          <View style={styles.statItem}>
-            <StatCard
-              icon="inventory"
-              label="Total Items"
-              value={statistics.totalItems}
-              color={COLORS.primary}
-            />
-          </View>
-          <View style={styles.statItem}>
-            <StatCard
-              icon="search"
-              label="Active Queries"
-              value={statistics.totalQueries}
-              color={COLORS.info}
-            />
-          </View>
-          <View style={styles.statItem}>
-            <StatCard
-              icon="today"
-              label="Items Today"
-              value={statistics.itemsToday}
-              color={COLORS.success}
-            />
-          </View>
-        </View>
-      </View>
-
-      {/* Recent Items */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionHeaderText}>RECENT ITEMS</Text>
-        </View>
-        {recentItems.length > 0 ? (
-          <View style={styles.itemsContainer}>
+        {/* Last Found Item */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Last Found Item</Text>
             <TouchableOpacity
-              style={styles.seeAllRow}
+              style={styles.sectionButton}
               onPress={() => navigation.navigate('Items')}>
-              <Text style={styles.infoLabel}>All Items</Text>
-              <Text style={styles.seeAllText}>See All</Text>
+              <Text style={styles.sectionButtonText}>View All</Text>
+              <Icon name="chevron-right" size={18} color={COLORS.link} />
             </TouchableOpacity>
-            {recentItems.map((item, index) => (
-              <ItemCard
-                key={item.id}
-                item={item}
-                isLast={index === recentItems.length - 1}
-              />
-            ))}
           </View>
-        ) : (
-          <View style={styles.emptyState}>
-            <View style={styles.emptyIcon}>
-              <Icon name="inbox" size={48} color={COLORS.textTertiary} />
+          {lastItem ? (
+            <View style={styles.lastItemCard}>
+              <ItemCard item={lastItem} />
             </View>
-            <Text style={styles.emptyStateText}>No items yet</Text>
-            <Text style={styles.emptyStateSubtext}>
-              Add a search query to start tracking new Vinted items
-            </Text>
+          ) : (
+            <Text style={styles.emptyText}>No items found yet</Text>
+          )}
+        </View>
+
+        {/* Queries */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Queries</Text>
+            <TouchableOpacity
+              style={styles.sectionButton}
+              onPress={() => navigation.navigate('Queries')}>
+              <Text style={styles.sectionButtonText}>Manage</Text>
+              <Icon name="chevron-right" size={18} color={COLORS.link} />
+            </TouchableOpacity>
           </View>
-        )}
-      </View>
-    </ScrollView>
+          {queries.length > 0 ? (
+            <View style={styles.queryList}>
+              {queries.map(query => (
+                <QueryCard
+                  key={query.id}
+                  query={query}
+                  onPress={() => navigation.navigate('Items', {queryId: query.id})}
+                />
+              ))}
+            </View>
+          ) : (
+            <Text style={styles.emptyText}>No active queries</Text>
+          )}
+        </View>
+
+        {/* Logs */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Recent Logs</Text>
+            <TouchableOpacity
+              style={styles.sectionButton}
+              onPress={() => navigation.navigate('Logs')}>
+              <Text style={styles.sectionButtonText}>View All</Text>
+              <Icon name="chevron-right" size={18} color={COLORS.link} />
+            </TouchableOpacity>
+          </View>
+          {logs.length > 0 ? (
+            <View style={styles.logsList}>
+              {logs.map(log => {
+                const color = getLogColor(log.level);
+                const icon = getLogIcon(log.level);
+                return (
+                  <View key={log.id} style={[styles.logEntry, {borderLeftColor: color}]}>
+                    <View style={[styles.logIcon, {backgroundColor: `${color}15`}]}>
+                      <Icon name={icon} size={16} color={color} />
+                    </View>
+                    <View style={styles.logContent}>
+                      <Text style={styles.logMessage} numberOfLines={2}>
+                        {log.message}
+                      </Text>
+                      <Text style={styles.logTime}>{formatLogTime(log.timestamp)}</Text>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          ) : (
+            <Text style={styles.emptyText}>No recent logs</Text>
+          )}
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
