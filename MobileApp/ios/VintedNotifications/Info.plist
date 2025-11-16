@@ -34,7 +34,7 @@
 		</dict>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>This app does not use location services.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
