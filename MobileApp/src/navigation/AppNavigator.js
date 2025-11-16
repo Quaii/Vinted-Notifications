@@ -10,7 +10,7 @@ import {
   ItemsScreen,
   SettingsScreen,
 } from '../screens';
-import {useThemeColors, FONT_SIZES, DARK_COLORS, LIGHT_COLORS} from '../constants/theme';
+import {useThemeColors, FONT_SIZES, COLORS} from '../constants/theme';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -114,28 +114,17 @@ const TabNavigator = () => {
 const AppNavigator = () => {
   const scheme = useColorScheme();
 
-  // Create custom navigation theme based on color scheme
-  const navigationTheme = scheme === 'dark' ? {
-    ...DarkTheme,
+  // Create custom navigation theme using iOS system colors (auto-adapts to dark mode)
+  const navigationTheme = {
+    ...(scheme === 'dark' ? DarkTheme : DefaultTheme),
     colors: {
-      ...DarkTheme.colors,
-      primary: DARK_COLORS.primary,
-      background: DARK_COLORS.background,
-      card: DARK_COLORS.surface,
-      text: DARK_COLORS.text,
-      border: DARK_COLORS.border,
-      notification: DARK_COLORS.primary,
-    },
-  } : {
-    ...DefaultTheme,
-    colors: {
-      ...DefaultTheme.colors,
-      primary: LIGHT_COLORS.primary,
-      background: LIGHT_COLORS.background,
-      card: LIGHT_COLORS.surface,
-      text: LIGHT_COLORS.text,
-      border: LIGHT_COLORS.border,
-      notification: LIGHT_COLORS.primary,
+      ...(scheme === 'dark' ? DarkTheme.colors : DefaultTheme.colors),
+      primary: COLORS.primary,
+      background: COLORS.background,
+      card: COLORS.cardBackground,
+      text: COLORS.text,
+      border: COLORS.border,
+      notification: COLORS.primary,
     },
   };
 
