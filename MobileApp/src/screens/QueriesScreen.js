@@ -12,7 +12,7 @@ import {
   Platform,
 } from 'react-native';
 import Icon from '@react-native-vector-icons/material-icons';
-import {QueryCard} from '../components';
+import {QueryCard, PageHeader} from '../components';
 import DatabaseService from '../services/DatabaseService';
 import MonitoringService from '../services/MonitoringService';
 import VintedAPI from '../api/VintedAPI';
@@ -299,7 +299,8 @@ const QueriesScreen = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      {/* Queries List (iOS Grouped List) */}
+      <PageHeader title="Queries" />
+      {/* Queries List */}
       <FlatList
         data={queries}
         renderItem={renderQuery}

@@ -2,7 +2,6 @@ import React from 'react';
 import {useColorScheme} from 'react-native';
 import {NavigationContainer, DefaultTheme, DarkTheme} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {createStackNavigator} from '@react-navigation/stack';
 import Icon from '@react-native-vector-icons/material-icons';
 import {
   DashboardScreen,
@@ -15,27 +14,10 @@ import {
 import {useThemeColors, FONT_SIZES} from '../constants/theme';
 
 const Tab = createBottomTabNavigator();
-const Stack = createStackNavigator();
-
-/**
- * Items Stack Navigator
- * Using 'card' presentation to avoid iOS 17+ native sheet issues
- */
-const ItemsStack = () => {
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-        presentation: 'card', // Explicitly use card instead of modal/formSheet
-        animationEnabled: true,
-      }}>
-      <Stack.Screen name="ItemsList" component={ItemsScreen} />
-    </Stack.Navigator>
-  );
-};
 
 /**
  * Bottom Tab Navigator (with dark mode support)
+ * NO Stack Navigator to avoid Fabric issues
  */
 const TabNavigator = () => {
   const COLORS = useThemeColors();
@@ -102,7 +84,7 @@ const TabNavigator = () => {
       />
       <Tab.Screen
         name="Items"
-        component={ItemsStack}
+        component={ItemsScreen}
         options={{
           tabBarLabel: 'Items',
           presentation: 'card',
