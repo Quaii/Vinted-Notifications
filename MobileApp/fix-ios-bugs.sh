@@ -96,7 +96,7 @@ print_step "Step 7/7: Verifying fixes..."
 echo ""
 
 # Check if safe-area-context is updated
-SAFE_AREA_VERSION=$(grep "react-native-safe-area-context" package.json | grep -o "4\.[0-9]*\.[0-9]*")
+SAFE_AREA_VERSION=$(grep "react-native-safe-area-context" package.json | grep -o "[0-9]*\.[0-9]*\.[0-9]*" | head -1)
 if [ "$SAFE_AREA_VERSION" != "4.14.0" ]; then
     print_success "react-native-safe-area-context updated to $SAFE_AREA_VERSION (was 4.14.0)"
 else
