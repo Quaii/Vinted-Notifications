@@ -1,109 +1,91 @@
-import {useColorScheme, Platform, PlatformColor} from 'react-native';
+import {useContext} from 'react';
+import {ThemeContext} from '../contexts/ThemeContext';
 
 /**
- * iOS Native Colors
- * Uses iOS system colors that automatically adapt to dark mode,
- * high contrast mode, and accessibility settings
+ * Modern Theme Colors
+ * Dark mode first approach with light mode toggle
  */
 
-// Helper to get platform color or fallback
-const platformColor = (iosColor, fallbackLight, fallbackDark) => {
-  if (Platform.OS === 'ios') {
-    return PlatformColor(iosColor);
-  }
-  const colorScheme = useColorScheme();
-  return colorScheme === 'dark' ? fallbackDark : fallbackLight;
-};
-
-// iOS System Colors
-export const IOS_COLORS = {
-  // Labels
-  label: PlatformColor('label'),                          // Primary text
-  secondaryLabel: PlatformColor('secondaryLabel'),        // Secondary text
-  tertiaryLabel: PlatformColor('tertiaryLabel'),          // Tertiary text
-  quaternaryLabel: PlatformColor('quaternaryLabel'),      // Quaternary text
-
-  // Backgrounds
-  systemBackground: PlatformColor('systemBackground'),                    // Main background
-  secondarySystemBackground: PlatformColor('secondarySystemBackground'),  // Secondary background
-  tertiarySystemBackground: PlatformColor('tertiarySystemBackground'),    // Tertiary background
-
-  // Grouped backgrounds (for lists)
-  systemGroupedBackground: PlatformColor('systemGroupedBackground'),
-  secondarySystemGroupedBackground: PlatformColor('secondarySystemGroupedBackground'),
-  tertiarySystemGroupedBackground: PlatformColor('tertiarySystemGroupedBackground'),
-
-  // Fills (for buttons, controls)
-  systemFill: PlatformColor('systemFill'),
-  secondarySystemFill: PlatformColor('secondarySystemFill'),
-  tertiarySystemFill: PlatformColor('tertiarySystemFill'),
-  quaternarySystemFill: PlatformColor('quaternarySystemFill'),
-
-  // Grays
-  systemGray: PlatformColor('systemGray'),
-  systemGray2: PlatformColor('systemGray2'),
-  systemGray3: PlatformColor('systemGray3'),
-  systemGray4: PlatformColor('systemGray4'),
-  systemGray5: PlatformColor('systemGray5'),
-  systemGray6: PlatformColor('systemGray6'),
-
-  // Colors
-  systemBlue: PlatformColor('systemBlue'),
-  systemGreen: PlatformColor('systemGreen'),
-  systemIndigo: PlatformColor('systemIndigo'),
-  systemOrange: PlatformColor('systemOrange'),
-  systemPink: PlatformColor('systemPink'),
-  systemPurple: PlatformColor('systemPurple'),
-  systemRed: PlatformColor('systemRed'),
-  systemTeal: PlatformColor('systemTeal'),
-  systemYellow: PlatformColor('systemYellow'),
-
-  // Semantic colors
-  link: PlatformColor('link'),
-  placeholderText: PlatformColor('placeholderText'),
-  separator: PlatformColor('separator'),
-  opaqueSeparator: PlatformColor('opaqueSeparator'),
-};
-
-// Semantic mapping for app
-export const COLORS = {
+// Dark theme colors (default)
+const DARK_COLORS = {
   // Primary
-  primary: IOS_COLORS.systemTeal,
-  primaryText: IOS_COLORS.label,
+  primary: '#10B981',
+  primaryDark: '#059669',
+  primaryLight: '#34D399',
 
   // Backgrounds
-  background: IOS_COLORS.systemBackground,
-  secondaryBackground: IOS_COLORS.secondarySystemBackground,
-  groupedBackground: IOS_COLORS.systemGroupedBackground,
-  secondaryGroupedBackground: IOS_COLORS.secondarySystemGroupedBackground,
-  cardBackground: IOS_COLORS.secondarySystemGroupedBackground,
+  background: '#0F172A',
+  secondaryBackground: '#1E293B',
+  groupedBackground: '#0F172A',
+  secondaryGroupedBackground: '#1E293B',
+  cardBackground: '#1E293B',
+  tertiaryBackground: '#334155',
 
   // Text
-  text: IOS_COLORS.label,
-  textSecondary: IOS_COLORS.secondaryLabel,
-  textTertiary: IOS_COLORS.tertiaryLabel,
-  textQuaternary: IOS_COLORS.quaternaryLabel,
-  placeholder: IOS_COLORS.placeholderText,
+  text: '#F1F5F9',
+  textSecondary: '#CBD5E1',
+  textTertiary: '#94A3B8',
+  placeholder: '#64748B',
 
   // Status
-  success: IOS_COLORS.systemGreen,
-  error: IOS_COLORS.systemRed,
-  warning: IOS_COLORS.systemOrange,
-  info: IOS_COLORS.systemBlue,
+  success: '#10B981',
+  error: '#EF4444',
+  warning: '#F59E0B',
+  info: '#3B82F6',
 
   // UI Elements
-  separator: IOS_COLORS.separator,
-  border: IOS_COLORS.separator,
-  link: IOS_COLORS.link,
+  separator: '#334155',
+  border: '#334155',
+  link: '#3B82F6',
 
   // Buttons & Controls
-  buttonFill: IOS_COLORS.systemFill,
-  secondaryButtonFill: IOS_COLORS.secondarySystemFill,
+  buttonFill: '#334155',
+  secondaryButtonFill: '#475569',
 };
 
-// Hook to get current color scheme (for conditional logic)
+// Light theme colors
+const LIGHT_COLORS = {
+  // Primary
+  primary: '#10B981',
+  primaryDark: '#059669',
+  primaryLight: '#34D399',
+
+  // Backgrounds
+  background: '#F8FAFC',
+  secondaryBackground: '#FFFFFF',
+  groupedBackground: '#F8FAFC',
+  secondaryGroupedBackground: '#FFFFFF',
+  cardBackground: '#FFFFFF',
+  tertiaryBackground: '#F1F5F9',
+
+  // Text
+  text: '#0F172A',
+  textSecondary: '#475569',
+  textTertiary: '#64748B',
+  placeholder: '#94A3B8',
+
+  // Status
+  success: '#10B981',
+  error: '#EF4444',
+  warning: '#F59E0B',
+  info: '#3B82F6',
+
+  // UI Elements
+  separator: '#E2E8F0',
+  border: '#E2E8F0',
+  link: '#3B82F6',
+
+  // Buttons & Controls
+  buttonFill: '#F1F5F9',
+  secondaryButtonFill: '#E2E8F0',
+};
+
+// Hook to get current theme colors
 export const useThemeColors = () => {
-  return COLORS; // Returns iOS system colors that auto-adapt
+  const themeContext = useContext(ThemeContext);
+  // If ThemeContext is not available (e.g., during initialization), default to dark mode
+  const isDarkMode = themeContext?.isDarkMode ?? true;
+  return isDarkMode ? DARK_COLORS : LIGHT_COLORS;
 };
 
 // iOS Typography Scale (Dynamic Type)

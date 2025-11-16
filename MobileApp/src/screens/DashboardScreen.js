@@ -52,10 +52,10 @@ const DashboardScreen = ({navigation}) => {
       setQueries(allQueries.slice(0, 2));
 
       // Load recent logs (max 5)
-      setLogs(LogService.getRecentLogs(60, 5));
+      setLogs(LogService.getLogs(5));
     } catch (error) {
       console.error('Failed to load dashboard:', error);
-      LogService.error('Failed to load dashboard', error.message);
+      LogService.log(`Failed to load dashboard: ${error.message}`);
     }
   }, []);
 
@@ -64,7 +64,7 @@ const DashboardScreen = ({navigation}) => {
 
     // Subscribe to log updates
     const unsubscribe = LogService.subscribe(() => {
-      setLogs(LogService.getRecentLogs(60, 5));
+      setLogs(LogService.getLogs(5));
     });
 
     return unsubscribe;

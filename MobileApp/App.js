@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import {StatusBar, View, Text, StyleSheet, ActivityIndicator, useColorScheme} from 'react-native';
+import {StatusBar, View, Text, StyleSheet, ActivityIndicator} from 'react-native';
+import {ThemeProvider, useTheme} from './src/contexts/ThemeContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import DatabaseService from './src/services/DatabaseService';
 import NotificationService from './src/services/NotificationService';
@@ -7,11 +8,11 @@ import MonitoringService from './src/services/MonitoringService';
 import {useThemeColors} from './src/constants/theme';
 
 /**
- * Main App Component (with dark mode support)
+ * Main App Content (wrapped by ThemeProvider)
  */
-const App = () => {
+const AppContent = () => {
   const COLORS = useThemeColors();
-  const scheme = useColorScheme();
+  const {isDarkMode} = useTheme();
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState(null);
 
@@ -48,7 +49,6 @@ const App = () => {
     }
   };
 
-  // Styles using iOS system colors
   const styles = {
     loadingContainer: {
       flex: 1,
@@ -79,11 +79,22 @@ const App = () => {
   return (
     <>
       <StatusBar
-        barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'}
-        backgroundColor={COLORS.primary}
+        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+        backgroundColor={COLORS.background}
       />
       <AppNavigator />
     </>
+  );
+};
+
+/**
+ * Main App Component with ThemeProvider
+ */
+const App = () => {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 };
 

@@ -1,38 +1,26 @@
 /**
  * LogService
- * Centralized logging service for tracking application events
+ * Simple logging service matching desktop app pattern
+ * Tracks basic app events like "Monitoring started", "Found 5 new items", etc.
  */
 class LogService {
   constructor() {
     this.logs = [];
-    this.MAX_LOGS = 1000; // Keep last 1000 logs
+    this.MAX_LOGS = 500; // Keep last 500 logs
     this.listeners = [];
   }
 
   /**
-   * Log levels
+   * Add a log entry (simple message only)
    */
-  LEVELS = {
-    INFO: 'info',
-    SUCCESS: 'success',
-    WARNING: 'warning',
-    ERROR: 'error',
-    DEBUG: 'debug',
-  };
-
-  /**
-   * Add a log entry
-   */
-  log(level, message, data = null) {
+  log(message) {
     const entry = {
       id: Date.now() + Math.random(),
       timestamp: new Date().toISOString(),
-      level,
       message,
-      data,
     };
 
-    // Add to beginning of array (newest first)
+    // Add to beginning (newest first)
     this.logs.unshift(entry);
 
     // Trim to max size
@@ -44,47 +32,10 @@ class LogService {
     this.notifyListeners();
 
     // Also log to console
-    const timestamp = new Date().toLocaleTimeString();
-    const logMessage = `[${timestamp}] [${level.toUpperCase()}] ${message}`;
-
-    switch (level) {
-      case this.LEVELS.ERROR:
-        console.error(logMessage, data || '');
-        break;
-      case this.LEVELS.WARNING:
-        console.warn(logMessage, data || '');
-        break;
-      case this.LEVELS.DEBUG:
-        console.debug(logMessage, data || '');
-        break;
-      default:
-        console.log(logMessage, data || '');
-    }
+    const time = new Date().toLocaleTimeString();
+    console.log(`[${time}] ${message}`);
 
     return entry;
-  }
-
-  /**
-   * Convenience methods
-   */
-  info(message, data) {
-    return this.log(this.LEVELS.INFO, message, data);
-  }
-
-  success(message, data) {
-    return this.log(this.LEVELS.SUCCESS, message, data);
-  }
-
-  warning(message, data) {
-    return this.log(this.LEVELS.WARNING, message, data);
-  }
-
-  error(message, data) {
-    return this.log(this.LEVELS.ERROR, message, data);
-  }
-
-  debug(message, data) {
-    return this.log(this.LEVELS.DEBUG, message, data);
   }
 
   /**
@@ -95,31 +46,6 @@ class LogService {
       return this.logs.slice(0, limit);
     }
     return [...this.logs];
-  }
-
-  /**
-   * Get logs by level
-   */
-  getLogsByLevel(level, limit = null) {
-    const filtered = this.logs.filter(log => log.level === level);
-    if (limit) {
-      return filtered.slice(0, limit);
-    }
-    return filtered;
-  }
-
-  /**
-   * Get logs from last N minutes
-   */
-  getRecentLogs(minutes = 5, limit = null) {
-    const cutoff = Date.now() - minutes * 60 * 1000;
-    const filtered = this.logs.filter(log => {
-      return new Date(log.timestamp).getTime() >= cutoff;
-    });
-    if (limit) {
-      return filtered.slice(0, limit);
-    }
-    return filtered;
   }
 
   /**
@@ -151,28 +77,6 @@ class LogService {
         console.error('Error notifying log listener:', error);
       }
     });
-  }
-
-  /**
-   * Get log stats
-   */
-  getStats() {
-    const stats = {
-      total: this.logs.length,
-      info: 0,
-      success: 0,
-      warning: 0,
-      error: 0,
-      debug: 0,
-    };
-
-    this.logs.forEach(log => {
-      if (stats.hasOwnProperty(log.level)) {
-        stats[log.level]++;
-      }
-    });
-
-    return stats;
   }
 }
 
