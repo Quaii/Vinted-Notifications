@@ -120,7 +120,11 @@ const QueriesScreen = ({navigation}) => {
   };
 
   const handleQueryPress = query => {
-    navigation.navigate('Items', {queryId: query.id});
+    // React Navigation 7: Navigate to nested screen with new syntax
+    navigation.navigate('Items', {
+      screen: 'ItemsList',
+      params: {queryId: query.id},
+    });
   };
 
   const renderQuery = ({item}) => (
