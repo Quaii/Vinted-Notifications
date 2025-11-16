@@ -48,7 +48,8 @@ const App = () => {
     }
   };
 
-  const styles = StyleSheet.create({
+  // Styles using iOS system colors
+  const styles = {
     loadingContainer: {
       flex: 1,
       justifyContent: 'center',
@@ -60,7 +61,7 @@ const App = () => {
       fontSize: 16,
       color: COLORS.textSecondary,
     },
-  });
+  };
 
   if (!isReady) {
     return (
