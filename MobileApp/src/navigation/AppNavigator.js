@@ -32,7 +32,7 @@ const TabNavigator = () => {
 
           switch (route.name) {
             case 'Dashboard':
-              iconName = 'dashboard';
+              iconName = 'home';
               break;
             case 'Queries':
               iconName = 'search';
@@ -59,11 +59,17 @@ const TabNavigator = () => {
           borderTopColor: COLORS.border,
           borderTopWidth: 1,
           paddingTop: 8,
+          paddingBottom: 4,
+          height: 60,
           // Let React Navigation handle safe area for home indicator
         },
         tabBarLabelStyle: {
           fontSize: FONT_SIZES.caption2,
           fontWeight: '600',
+          marginTop: 4,
+        },
+        tabBarIconStyle: {
+          marginTop: 4,
         },
       })}>
       <Tab.Screen

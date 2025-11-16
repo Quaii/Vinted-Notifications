@@ -15,34 +15,34 @@ const QueryCard = ({query, onPress, onDelete, isLast = false}) => {
     row: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: SPACING.md,
-      paddingVertical: SPACING.sm + 2,
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.md + 4,
       backgroundColor: 'transparent',
       borderBottomWidth: isLast ? 0 : 0.5,
       borderBottomColor: COLORS.separator,
-      minHeight: 60,
+      minHeight: 76,
     },
     iconContainer: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
       backgroundColor: COLORS.buttonFill,
       justifyContent: 'center',
       alignItems: 'center',
-      marginRight: SPACING.md,
+      marginRight: SPACING.md + 2,
     },
     content: {
       flex: 1,
       justifyContent: 'center',
     },
     title: {
-      fontSize: FONT_SIZES.body,
-      fontWeight: '500',
+      fontSize: FONT_SIZES.body + 1,
+      fontWeight: '600',
       color: COLORS.text,
-      marginBottom: 3,
+      marginBottom: 4,
     },
     subtitle: {
-      fontSize: FONT_SIZES.footnote,
+      fontSize: FONT_SIZES.subheadline,
       color: COLORS.textSecondary,
     },
     chevron: {
@@ -67,7 +67,7 @@ const QueryCard = ({query, onPress, onDelete, isLast = false}) => {
       onPress={() => onPress && onPress(query)}
       activeOpacity={0.6}>
       <View style={styles.iconContainer}>
-        <MaterialIcons name="search" size={18} color={COLORS.primary} />
+        <MaterialIcons name="search" size={22} color={COLORS.primary} />
       </View>
       <View style={styles.content}>
         <Text style={styles.title} numberOfLines={1}>

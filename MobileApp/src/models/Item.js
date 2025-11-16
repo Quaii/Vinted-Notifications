@@ -5,8 +5,25 @@ export class VintedItem {
     this.title = data.title || '';
     this.brand_title = data.brand_title || data.brandTitle || '';
     this.size_title = data.size_title || data.sizeTitle || '';
-    this.price = data.price || '';
-    this.currency = data.currency || '€';
+
+    // Handle price - ensure it's always a string
+    if (typeof data.price === 'object' && data.price !== null) {
+      this.price = String(data.price.amount || data.price.value || '0.00');
+    } else if (data.price !== undefined && data.price !== null) {
+      this.price = String(data.price);
+    } else {
+      this.price = '0.00';
+    }
+
+    // Handle currency - ensure it's always a string
+    if (typeof data.price === 'object' && data.price !== null && data.price.currency_code) {
+      this.currency = String(data.price.currency_code || data.price.currency || '€');
+    } else if (data.currency) {
+      this.currency = String(data.currency);
+    } else {
+      this.currency = '€';
+    }
+
     this.photo = data.photo || '';
     this.url = data.url || '';
     this.buy_url = data.buy_url || data.buyUrl || this.generateBuyUrl(data.url, data.id);
