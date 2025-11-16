@@ -8,7 +8,7 @@ import {useThemeColors, SPACING, FONT_SIZES} from '../constants/theme';
  * Displays a search query in iOS list row format
  * iOS NATIVE DESIGN - Horizontal list row with icon and chevron
  */
-const QueryCard = ({query, onPress, isLast = false}) => {
+const QueryCard = ({query, onPress, onDelete, isLast = false}) => {
   const COLORS = useThemeColors();
 
   const styles = StyleSheet.create({
@@ -48,6 +48,10 @@ const QueryCard = ({query, onPress, isLast = false}) => {
     chevron: {
       marginLeft: SPACING.sm,
     },
+    deleteButton: {
+      padding: SPACING.xs,
+      marginLeft: SPACING.xs,
+    },
   });
 
   // Build subtitle: domain + last item time
@@ -73,6 +77,17 @@ const QueryCard = ({query, onPress, isLast = false}) => {
           {subtitle}
         </Text>
       </View>
+      {onDelete && (
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={(e) => {
+            e.stopPropagation();
+            onDelete(query);
+          }}
+          activeOpacity={0.6}>
+          <Icon name="delete" size={20} color={COLORS.error} />
+        </TouchableOpacity>
+      )}
       <View style={styles.chevron}>
         <Icon name="chevron-right" size={20} color={COLORS.textTertiary} />
       </View>

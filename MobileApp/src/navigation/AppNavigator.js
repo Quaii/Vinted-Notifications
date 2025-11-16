@@ -106,6 +106,14 @@ const TabNavigator = () => {
           presentation: 'card',
         }}
       />
+      <Tab.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{
+          tabBarButton: () => null, // Hide from tab bar
+          presentation: 'modal',
+        }}
+      />
     </Tab.Navigator>
   );
 };
