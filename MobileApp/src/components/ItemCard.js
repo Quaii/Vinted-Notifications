@@ -1,13 +1,14 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Linking} from 'react-native';
 import FastImage from '@d11/react-native-fast-image';
-import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS, SHADOWS} from '../constants/theme';
+import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
 
 /**
  * ItemCard Component
- * Displays a Vinted item in a card format (with dark mode support)
+ * Displays a Vinted item in iOS list row format
+ * iOS NATIVE DESIGN - Horizontal list row with thumbnail
  */
-const ItemCard = ({item, onPress}) => {
+const ItemCard = ({item, onPress, isLast = false}) => {
   const COLORS = useThemeColors();
 
   const handlePress = () => {
@@ -19,66 +20,64 @@ const ItemCard = ({item, onPress}) => {
   };
 
   const styles = StyleSheet.create({
-    card: {
-      backgroundColor: COLORS.surface,
-      borderRadius: BORDER_RADIUS.lg,
-      marginHorizontal: SPACING.md,
-      marginVertical: SPACING.sm,
-      overflow: 'hidden',
-      ...SHADOWS.medium,
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.sm,
+      backgroundColor: 'transparent',
+      borderBottomWidth: isLast ? 0 : 0.5,
+      borderBottomColor: COLORS.separator,
+      minHeight: 88,
     },
-    image: {
-      width: '100%',
-      height: 200,
-      backgroundColor: COLORS.background,
+    thumbnail: {
+      width: 72,
+      height: 72,
+      borderRadius: BORDER_RADIUS.md,
+      backgroundColor: COLORS.buttonFill,
+      marginRight: SPACING.md,
     },
     content: {
-      padding: SPACING.md,
+      flex: 1,
+      justifyContent: 'center',
     },
     title: {
-      fontSize: FONT_SIZES.lg,
-      fontWeight: '600',
-      color: COLORS.text,
-      marginBottom: SPACING.sm,
-    },
-    details: {
-      marginBottom: SPACING.sm,
-    },
-    detailRow: {
-      flexDirection: 'row',
-      marginBottom: SPACING.xs,
-    },
-    detailLabel: {
-      fontSize: FONT_SIZES.sm,
-      color: COLORS.textSecondary,
-      marginRight: SPACING.xs,
-    },
-    detailValue: {
-      fontSize: FONT_SIZES.sm,
-      color: COLORS.text,
+      fontSize: FONT_SIZES.body,
       fontWeight: '500',
+      color: COLORS.text,
+      marginBottom: 4,
     },
-    footer: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginTop: SPACING.xs,
-    },
-    price: {
-      fontSize: FONT_SIZES.xl,
-      fontWeight: '700',
-      color: COLORS.primary,
+    subtitle: {
+      fontSize: FONT_SIZES.footnote,
+      color: COLORS.textSecondary,
+      marginBottom: 2,
     },
     time: {
-      fontSize: FONT_SIZES.sm,
-      color: COLORS.textLight,
+      fontSize: FONT_SIZES.caption1,
+      color: COLORS.textTertiary,
+    },
+    priceContainer: {
+      alignItems: 'flex-end',
+      justifyContent: 'center',
+      marginLeft: SPACING.sm,
+    },
+    price: {
+      fontSize: FONT_SIZES.headline,
+      fontWeight: '600',
+      color: COLORS.primary,
     },
   });
 
+  // Build subtitle text (brand + size)
+  const subtitleParts = [];
+  if (item.brand_title) subtitleParts.push(item.brand_title);
+  if (item.size_title) subtitleParts.push(`Size ${item.size_title}`);
+  const subtitle = subtitleParts.join(' • ');
+
   return (
-    <TouchableOpacity style={styles.card} onPress={handlePress} activeOpacity={0.7}>
+    <TouchableOpacity style={styles.row} onPress={handlePress} activeOpacity={0.6}>
       <FastImage
-        style={styles.image}
+        style={styles.thumbnail}
         source={{
           uri: item.getPhotoUrl() || 'https://via.placeholder.com/150',
           priority: FastImage.priority.normal,
@@ -89,24 +88,15 @@ const ItemCard = ({item, onPress}) => {
         <Text style={styles.title} numberOfLines={2}>
           {item.title}
         </Text>
-        <View style={styles.details}>
-          {item.brand_title ? (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Brand:</Text>
-              <Text style={styles.detailValue}>{item.brand_title}</Text>
-            </View>
-          ) : null}
-          {item.size_title ? (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Size:</Text>
-              <Text style={styles.detailValue}>{item.size_title}</Text>
-            </View>
-          ) : null}
-        </View>
-        <View style={styles.footer}>
-          <Text style={styles.price}>{item.getFormattedPrice()}</Text>
-          <Text style={styles.time}>{item.getTimeSincePosted()}</Text>
-        </View>
+        {subtitle ? (
+          <Text style={styles.subtitle} numberOfLines={1}>
+            {subtitle}
+          </Text>
+        ) : null}
+        <Text style={styles.time}>{item.getTimeSincePosted()}</Text>
+      </View>
+      <View style={styles.priceContainer}>
+        <Text style={styles.price}>{item.getFormattedPrice()}</Text>
       </View>
     </TouchableOpacity>
   );
