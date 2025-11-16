@@ -46,6 +46,40 @@ Multiple UILocalNotification deprecation warnings in RNCPushNotificationIOS
 
 ---
 
+### Bug #3: RCTView setSheetLargestUndimmedDetent Crash ✅
+
+**Error:**
+```
+*** Terminating app due to uncaught exception 'NSInvalidArgumentException',
+reason: '-[RCTView setSheetLargestUndimmedDetent:]: unrecognized selector sent to instance'
+```
+
+**Root Cause:**
+- React Native 0.78 introduced new iOS sheet presentation APIs
+- When Modal uses `transparent={true}` + `animationType="slide"`, RN attempts to apply sheet-specific props
+- The `sheetLargestUndimmedDetent` property is part of iOS 15+ UISheetPresentationController API
+- RCTView doesn't implement this selector, causing a crash on modal display
+
+**Fix:**
+- ✅ Added `presentationStyle="overFullScreen"` to Modal component
+- This explicitly sets the presentation style and prevents automatic sheet detection
+- Maintains the same visual effect (bottom sheet with transparent background)
+
+**Files Changed:**
+- `src/screens/QueriesScreen.js` line 323
+
+**Technical Details:**
+- This is a known issue in React Native 0.78/0.79 with the New Architecture (Fabric)
+- The crash occurs when React Native tries to configure iOS sheet presentation
+- `overFullScreen` presentation style bypasses sheet-specific property setters
+- Alternative fixes: use `fullScreen` or third-party modal libraries
+
+**References:**
+- [React Native Issue - setSheetLargestUndimmedDetent crash](https://stackoverflow.com/questions/79632518/)
+- [React Native Commit - Modal navigation crash fix](https://github.com/facebook/react-native/commit/33ca0204f5491f27f00686e4eb966eb9fee3f7f9)
+
+---
+
 ## 🎯 iOS 17 Target Update
 
 ### Changes Made:
@@ -77,9 +111,10 @@ end
 
 ## 📊 Warning Analysis
 
-### ✅ What We Fixed (2 bugs):
+### ✅ What We Fixed (3 bugs):
 1. ✅ react-native-safe-area-context compilation error
 2. ✅ RNCPushNotificationIOS deprecation warnings
+3. ✅ RCTView setSheetLargestUndimmedDetent crash
 
 ### ⚠️ What We CANNOT Fix (in node_modules):
 
@@ -262,9 +297,10 @@ npm run ios
 ### What Changed:
 1. ✅ Fixed critical `react-native-safe-area-context` compilation bug
 2. ✅ Removed deprecated `RNCPushNotificationIOS` library
-3. ✅ Updated to modern `@notifee/react-native` notification system
-4. ✅ Enforced iOS 17.0 minimum deployment target
-5. ✅ Created automated cleanup script
+3. ✅ Fixed RCTView `setSheetLargestUndimmedDetent` Modal crash
+4. ✅ Updated to modern `@notifee/react-native` notification system
+5. ✅ Enforced iOS 17.0 minimum deployment target
+6. ✅ Created automated cleanup script
 
 ### What Remains:
 - ⚠️ ~80-100 warnings in node_modules (EXPECTED, CANNOT FIX)
