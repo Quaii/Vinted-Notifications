@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import Icon from '@react-native-vector-icons/material-icons';
 import {useNavigation} from '@react-navigation/native';
 import {useThemeColors, SPACING, FONT_SIZES} from '../constants/theme';
@@ -7,6 +8,7 @@ import {useThemeColors, SPACING, FONT_SIZES} from '../constants/theme';
 /**
  * PageHeader Component
  * Modern page header with title and settings button
+ * Properly handles safe areas for notch/Dynamic Island
  */
 const PageHeader = ({title, showSettings = true}) => {
   const COLORS = useThemeColors();
@@ -17,12 +19,15 @@ const PageHeader = ({title, showSettings = true}) => {
   };
 
   const styles = StyleSheet.create({
+    safeArea: {
+      backgroundColor: COLORS.background,
+    },
     container: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       paddingHorizontal: SPACING.lg,
-      paddingTop: SPACING.xl,
+      paddingTop: SPACING.sm,
       paddingBottom: SPACING.md,
       backgroundColor: COLORS.background,
     },
@@ -48,17 +53,19 @@ const PageHeader = ({title, showSettings = true}) => {
   });
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{title}</Text>
-      {showSettings && (
-        <TouchableOpacity
-          style={styles.settingsButton}
-          onPress={handleSettingsPress}
-          activeOpacity={0.7}>
-          <Icon name="settings" size={22} color={COLORS.primary} />
-        </TouchableOpacity>
-      )}
-    </View>
+    <SafeAreaView edges={['top']} style={styles.safeArea}>
+      <View style={styles.container}>
+        <Text style={styles.title}>{title}</Text>
+        {showSettings && (
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={handleSettingsPress}
+            activeOpacity={0.7}>
+            <Icon name="settings" size={22} color={COLORS.primary} />
+          </TouchableOpacity>
+        )}
+      </View>
+    </SafeAreaView>
   );
 };
 

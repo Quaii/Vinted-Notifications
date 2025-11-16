@@ -12,7 +12,7 @@ import {
   LogsScreen,
   SettingsScreen,
 } from '../screens';
-import {useThemeColors, FONT_SIZES, COLORS} from '../constants/theme';
+import {useThemeColors, FONT_SIZES} from '../constants/theme';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -76,9 +76,8 @@ const TabNavigator = () => {
           backgroundColor: COLORS.secondaryGroupedBackground,
           borderTopColor: COLORS.border,
           borderTopWidth: 1,
-          paddingBottom: 5,
-          paddingTop: 5,
-          height: 60,
+          paddingTop: 8,
+          // Let React Navigation handle safe area for home indicator
         },
         tabBarLabelStyle: {
           fontSize: FONT_SIZES.caption2,
@@ -133,9 +132,10 @@ const TabNavigator = () => {
  * Main App Navigator (with dark mode support)
  */
 const AppNavigator = () => {
+  const COLORS = useThemeColors();
   const scheme = useColorScheme();
 
-  // Create custom navigation theme using iOS system colors (auto-adapts to dark mode)
+  // Create custom navigation theme using our theme colors
   const navigationTheme = {
     ...(scheme === 'dark' ? DarkTheme : DefaultTheme),
     colors: {
