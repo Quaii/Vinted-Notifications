@@ -5,7 +5,7 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
-platform :ios, '17.0'
+platform :ios, '17.0' # Target iOS 17+ to avoid deprecated APIs
 prepare_react_native_project!
 
 linkage = ENV['USE_FRAMEWORKS']
@@ -35,11 +35,11 @@ target 'VintedNotifications' do
       # :ccache_enabled => true
     )
 
-    # Fix deployment targets to iOS 12.0 minimum to resolve warnings
+    # Enforce iOS 17.0 minimum deployment target for all pods
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
-        if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 12.0
-          config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
+        if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 17.0
+          config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '17.0'
         end
       end
     end
