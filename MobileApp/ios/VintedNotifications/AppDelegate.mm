@@ -12,8 +12,8 @@
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
 
-  // Register for background fetch - minimum interval of 15 minutes
-  [application setMinimumBackgroundFetchInterval:900]; // 15 minutes = 900 seconds
+  // Background fetch is now handled by react-native-background-fetch
+  // using BGTaskScheduler (iOS 13+) instead of deprecated setMinimumBackgroundFetchInterval
 
   // Request notification permissions
   UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
