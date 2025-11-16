@@ -10,12 +10,16 @@ import {useThemeColors, SPACING, FONT_SIZES} from '../constants/theme';
  * Modern page header with title and settings button
  * Properly handles safe areas for notch/Dynamic Island
  */
-const PageHeader = ({title, showSettings = true}) => {
+const PageHeader = ({title, showSettings = true, showBack = false}) => {
   const COLORS = useThemeColors();
   const navigation = useNavigation();
 
   const handleSettingsPress = () => {
     navigation.navigate('Settings');
+  };
+
+  const handleBackPress = () => {
+    navigation.goBack();
   };
 
   const styles = StyleSheet.create({
@@ -40,11 +44,22 @@ const PageHeader = ({title, showSettings = true}) => {
     settingsButton: {
       padding: SPACING.xs,
     },
+    backButton: {
+      padding: SPACING.xs,
+    },
   });
 
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       <View style={styles.container}>
+        {showBack && (
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={handleBackPress}
+            activeOpacity={0.6}>
+            <Icon name="close" size={34} color={COLORS.text} />
+          </TouchableOpacity>
+        )}
         <Text style={styles.title}>{title}</Text>
         {showSettings && (
           <TouchableOpacity
