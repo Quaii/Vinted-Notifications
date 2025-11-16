@@ -76,32 +76,6 @@ const DashboardScreen = ({navigation}) => {
     setRefreshing(false);
   };
 
-  const getLogIcon = level => {
-    switch (level) {
-      case 'success':
-        return 'check-circle';
-      case 'error':
-        return 'error';
-      case 'warning':
-        return 'warning';
-      default:
-        return 'info';
-    }
-  };
-
-  const getLogColor = level => {
-    switch (level) {
-      case 'success':
-        return '#34C759';
-      case 'error':
-        return '#FF3B30';
-      case 'warning':
-        return '#FF9500';
-      default:
-        return '#007AFF';
-    }
-  };
-
   const formatLogTime = timestamp => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -295,23 +269,19 @@ const DashboardScreen = ({navigation}) => {
           </View>
           {logs.length > 0 ? (
             <View style={styles.logsList}>
-              {logs.map(log => {
-                const color = getLogColor(log.level);
-                const icon = getLogIcon(log.level);
-                return (
-                  <View key={log.id} style={[styles.logEntry, {borderLeftColor: color}]}>
-                    <View style={[styles.logIcon, {backgroundColor: `${color}15`}]}>
-                      <Icon name={icon} size={16} color={color} />
-                    </View>
-                    <View style={styles.logContent}>
-                      <Text style={styles.logMessage} numberOfLines={2}>
-                        {log.message}
-                      </Text>
-                      <Text style={styles.logTime}>{formatLogTime(log.timestamp)}</Text>
-                    </View>
+              {logs.map(log => (
+                <View key={log.id} style={[styles.logEntry, {borderLeftColor: COLORS.primary}]}>
+                  <View style={[styles.logIcon, {backgroundColor: `${COLORS.primary}15`}]}>
+                    <Icon name="info" size={16} color={COLORS.primary} />
                   </View>
-                );
-              })}
+                  <View style={styles.logContent}>
+                    <Text style={styles.logMessage} numberOfLines={2}>
+                      {log.message}
+                    </Text>
+                    <Text style={styles.logTime}>{formatLogTime(log.timestamp)}</Text>
+                  </View>
+                </View>
+              ))}
             </View>
           ) : (
             <Text style={styles.emptyText}>No recent logs</Text>

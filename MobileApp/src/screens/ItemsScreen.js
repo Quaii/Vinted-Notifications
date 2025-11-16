@@ -27,27 +27,6 @@ const ItemsScreen = ({navigation, route}) => {
   const [sortBy, setSortBy] = useState('date-desc'); // date-desc, date-asc, price-asc, price-desc, alpha-asc, alpha-desc
   const queryId = route.params?.queryId || null;
 
-  const loadItems = useCallback(async () => {
-    try {
-      setLoading(true);
-      const allItems = await DatabaseService.getItems(queryId, 1000);
-      setItems(allItems);
-      applyFilters(allItems, searchQuery, sortBy);
-    } catch (error) {
-      console.error('Failed to load items:', error);
-      Alert.alert('Error', 'Failed to load items');
-    } finally {
-      setLoading(false);
-    }
-  }, [queryId, searchQuery, sortBy]);
-
-  useEffect(() => {
-    loadItems();
-
-    const unsubscribe = navigation.addListener('focus', loadItems);
-    return unsubscribe;
-  }, [navigation, loadItems]);
-
   const applyFilters = useCallback((itemList, search, sort) => {
     let filtered = [...itemList];
 
@@ -63,7 +42,7 @@ const ItemsScreen = ({navigation, route}) => {
       });
     }
 
-    // Apply sorting
+    // Apply sort
     filtered.sort((a, b) => {
       switch (sort) {
         case 'date-asc':
@@ -85,6 +64,27 @@ const ItemsScreen = ({navigation, route}) => {
 
     setFilteredItems(filtered);
   }, []);
+
+  const loadItems = useCallback(async () => {
+    try {
+      setLoading(true);
+      const allItems = await DatabaseService.getItems(queryId, 1000);
+      setItems(allItems);
+      applyFilters(allItems, searchQuery, sortBy);
+    } catch (error) {
+      console.error('Failed to load items:', error);
+      Alert.alert('Error', 'Failed to load items');
+    } finally {
+      setLoading(false);
+    }
+  }, [queryId, searchQuery, sortBy, applyFilters]);
+
+  useEffect(() => {
+    loadItems();
+
+    const unsubscribe = navigation.addListener('focus', loadItems);
+    return unsubscribe;
+  }, [navigation, loadItems]);
 
   useEffect(() => {
     applyFilters(items, searchQuery, sortBy);

@@ -7,7 +7,7 @@ import DatabaseService from '../services/DatabaseService';
  * Dark mode is default, light mode is toggleable in settings
  */
 
-const ThemeContext = createContext();
+export const ThemeContext = createContext();
 
 export const ThemeProvider = ({children}) => {
   const [isDarkMode, setIsDarkMode] = useState(true); // Dark mode as default
