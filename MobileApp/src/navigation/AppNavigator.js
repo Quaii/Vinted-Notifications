@@ -42,6 +42,7 @@ const TabNavigator = () => {
     <Tab.Navigator
       screenOptions={({route}) => ({
         headerShown: false,
+        presentation: 'card', // Force card presentation for all tabs
         tabBarIcon: ({focused, color, size}) => {
           let iconName;
 
@@ -84,6 +85,7 @@ const TabNavigator = () => {
         component={DashboardScreen}
         options={{
           tabBarLabel: 'Dashboard',
+          presentation: 'card',
         }}
       />
       <Tab.Screen
@@ -91,6 +93,7 @@ const TabNavigator = () => {
         component={QueriesScreen}
         options={{
           tabBarLabel: 'Queries',
+          presentation: 'card',
         }}
       />
       <Tab.Screen
@@ -98,6 +101,7 @@ const TabNavigator = () => {
         component={ItemsStack}
         options={{
           tabBarLabel: 'Items',
+          presentation: 'card',
         }}
       />
       <Tab.Screen
@@ -105,6 +109,7 @@ const TabNavigator = () => {
         component={SettingsScreen}
         options={{
           tabBarLabel: 'Settings',
+          presentation: 'card',
         }}
       />
     </Tab.Navigator>
