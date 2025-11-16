@@ -16,8 +16,9 @@ RNCSafeAreaViewShadowNode.cpp:22:12: No member named 'unit' in 'facebook::yoga::
 - The new API structure doesn't have a `.unit` member
 
 **Fix:**
-- ✅ Updated `react-native-safe-area-context` from `4.14.0` → `4.15.2`
-- Version 4.15.0+ includes compatibility fixes for RN 0.78's Yoga changes
+- ✅ Updated `react-native-safe-area-context` from `4.14.0` → `5.6.2`
+- Version 5.x includes full compatibility for RN 0.78's Yoga API changes
+- Note: Versions jump from 4.14.1 to 5.0.0 (no 4.15.x exists)
 
 **Files Changed:**
 - `package.json` line 20
