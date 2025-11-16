@@ -15,13 +15,15 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import {QueryCard} from '../components';
 import DatabaseService from '../services/DatabaseService';
 import VintedAPI from '../api/VintedAPI';
-import {COLORS, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
+import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
 
 /**
  * Queries Screen
  * Manage search queries
  */
 const QueriesScreen = ({navigation}) => {
+  const COLORS = useThemeColors();
+
   const [queries, setQueries] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -137,6 +139,141 @@ const QueriesScreen = ({navigation}) => {
     </View>
   );
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: SPACING.md,
+      paddingTop: SPACING.lg,
+      backgroundColor: COLORS.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: COLORS.border,
+    },
+    headerTitle: {
+      fontSize: FONT_SIZES.xxl,
+      fontWeight: '700',
+      color: COLORS.text,
+    },
+    deleteAllText: {
+      fontSize: FONT_SIZES.md,
+      color: COLORS.error,
+      fontWeight: '600',
+    },
+    listContainer: {
+      paddingVertical: SPACING.sm,
+    },
+    emptyContainer: {
+      flex: 1,
+    },
+    emptyState: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: SPACING.xxl,
+    },
+    emptyStateText: {
+      fontSize: FONT_SIZES.xl,
+      fontWeight: '600',
+      color: COLORS.textSecondary,
+      marginTop: SPACING.lg,
+    },
+    emptyStateSubtext: {
+      fontSize: FONT_SIZES.md,
+      color: COLORS.textLight,
+      marginTop: SPACING.sm,
+      textAlign: 'center',
+    },
+    emptyStateButton: {
+      backgroundColor: COLORS.primary,
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.md,
+      borderRadius: BORDER_RADIUS.md,
+      marginTop: SPACING.lg,
+    },
+    emptyStateButtonText: {
+      color: COLORS.surface,
+      fontSize: FONT_SIZES.md,
+      fontWeight: '600',
+    },
+    fab: {
+      position: 'absolute',
+      right: SPACING.lg,
+      bottom: SPACING.lg,
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: COLORS.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      elevation: 8,
+      shadowColor: COLORS.shadow,
+      shadowOffset: {width: 0, height: 4},
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+    },
+    modalContainer: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      backgroundColor: COLORS.overlay,
+    },
+    modalContent: {
+      backgroundColor: COLORS.surface,
+      borderTopLeftRadius: BORDER_RADIUS.xl,
+      borderTopRightRadius: BORDER_RADIUS.xl,
+      padding: SPACING.lg,
+      maxHeight: '80%',
+    },
+    modalHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: SPACING.lg,
+    },
+    modalTitle: {
+      fontSize: FONT_SIZES.xxl,
+      fontWeight: '700',
+      color: COLORS.text,
+    },
+    inputLabel: {
+      fontSize: FONT_SIZES.md,
+      fontWeight: '600',
+      color: COLORS.text,
+      marginBottom: SPACING.sm,
+      marginTop: SPACING.md,
+    },
+    input: {
+      backgroundColor: COLORS.background,
+      borderRadius: BORDER_RADIUS.md,
+      padding: SPACING.md,
+      fontSize: FONT_SIZES.md,
+      color: COLORS.text,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+    },
+    helperText: {
+      fontSize: FONT_SIZES.sm,
+      color: COLORS.textSecondary,
+      marginTop: SPACING.md,
+      marginBottom: SPACING.lg,
+    },
+    addButton: {
+      backgroundColor: COLORS.primary,
+      borderRadius: BORDER_RADIUS.md,
+      padding: SPACING.md,
+      alignItems: 'center',
+    },
+    addButtonText: {
+      color: COLORS.surface,
+      fontSize: FONT_SIZES.lg,
+      fontWeight: '600',
+    },
+  });
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -223,140 +360,5 @@ const QueriesScreen = ({navigation}) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: SPACING.md,
-    paddingTop: SPACING.lg,
-    backgroundColor: COLORS.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  headerTitle: {
-    fontSize: FONT_SIZES.xxl,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  deleteAllText: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.error,
-    fontWeight: '600',
-  },
-  listContainer: {
-    paddingVertical: SPACING.sm,
-  },
-  emptyContainer: {
-    flex: 1,
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: SPACING.xxl,
-  },
-  emptyStateText: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginTop: SPACING.lg,
-  },
-  emptyStateSubtext: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textLight,
-    marginTop: SPACING.sm,
-    textAlign: 'center',
-  },
-  emptyStateButton: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    borderRadius: BORDER_RADIUS.md,
-    marginTop: SPACING.lg,
-  },
-  emptyStateButtonText: {
-    color: COLORS.surface,
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-  },
-  fab: {
-    position: 'absolute',
-    right: SPACING.lg,
-    bottom: SPACING.lg,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 8,
-    shadowColor: COLORS.shadow,
-    shadowOffset: {width: 0, height: 4},
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: COLORS.overlay,
-  },
-  modalContent: {
-    backgroundColor: COLORS.surface,
-    borderTopLeftRadius: BORDER_RADIUS.xl,
-    borderTopRightRadius: BORDER_RADIUS.xl,
-    padding: SPACING.lg,
-    maxHeight: '80%',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.lg,
-  },
-  modalTitle: {
-    fontSize: FONT_SIZES.xxl,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  inputLabel: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: SPACING.sm,
-    marginTop: SPACING.md,
-  },
-  input: {
-    backgroundColor: COLORS.background,
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.md,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.text,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  helperText: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
-    marginTop: SPACING.md,
-    marginBottom: SPACING.lg,
-  },
-  addButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.md,
-    alignItems: 'center',
-  },
-  addButtonText: {
-    color: COLORS.surface,
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '600',
-  },
-});
 
 export default QueriesScreen;

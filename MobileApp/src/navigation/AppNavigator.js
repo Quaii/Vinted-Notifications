@@ -1,5 +1,6 @@
 import React from 'react';
-import {NavigationContainer} from '@react-navigation/native';
+import {useColorScheme} from 'react-native';
+import {NavigationContainer, DefaultTheme, DarkTheme} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createStackNavigator} from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -9,7 +10,7 @@ import {
   ItemsScreen,
   SettingsScreen,
 } from '../screens';
-import {COLORS, FONT_SIZES} from '../constants/theme';
+import {useThemeColors, FONT_SIZES, DARK_COLORS, LIGHT_COLORS} from '../constants/theme';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -29,9 +30,11 @@ const ItemsStack = () => {
 };
 
 /**
- * Bottom Tab Navigator
+ * Bottom Tab Navigator (with dark mode support)
  */
 const TabNavigator = () => {
+  const COLORS = useThemeColors();
+
   return (
     <Tab.Navigator
       screenOptions={({route}) => ({
@@ -106,11 +109,38 @@ const TabNavigator = () => {
 };
 
 /**
- * Main App Navigator
+ * Main App Navigator (with dark mode support)
  */
 const AppNavigator = () => {
+  const scheme = useColorScheme();
+
+  // Create custom navigation theme based on color scheme
+  const navigationTheme = scheme === 'dark' ? {
+    ...DarkTheme,
+    colors: {
+      ...DarkTheme.colors,
+      primary: DARK_COLORS.primary,
+      background: DARK_COLORS.background,
+      card: DARK_COLORS.surface,
+      text: DARK_COLORS.text,
+      border: DARK_COLORS.border,
+      notification: DARK_COLORS.primary,
+    },
+  } : {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      primary: LIGHT_COLORS.primary,
+      background: LIGHT_COLORS.background,
+      card: LIGHT_COLORS.surface,
+      text: LIGHT_COLORS.text,
+      border: LIGHT_COLORS.border,
+      notification: LIGHT_COLORS.primary,
+    },
+  };
+
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navigationTheme}>
       <TabNavigator />
     </NavigationContainer>
   );

@@ -12,13 +12,15 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import {StatCard, ItemCard} from '../components';
 import DatabaseService from '../services/DatabaseService';
 import MonitoringService from '../services/MonitoringService';
-import {COLORS, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
+import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
 
 /**
  * Dashboard Screen
- * Main screen showing statistics and recent items
+ * Main screen showing statistics and recent items (with dark mode support)
  */
 const DashboardScreen = ({navigation}) => {
+  const COLORS = useThemeColors();
+
   const [statistics, setStatistics] = useState({
     totalItems: 0,
     totalQueries: 0,
@@ -110,6 +112,131 @@ const DashboardScreen = ({navigation}) => {
       Alert.alert('Error', 'Failed to check queries');
     }
   };
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    header: {
+      padding: SPACING.lg,
+      paddingTop: SPACING.xl,
+      backgroundColor: COLORS.primary,
+    },
+    headerTitle: {
+      fontSize: FONT_SIZES.xxxl,
+      fontWeight: '700',
+      color: COLORS.surface,
+      marginBottom: SPACING.xs,
+    },
+    headerSubtitle: {
+      fontSize: FONT_SIZES.md,
+      color: COLORS.surface,
+      opacity: 0.9,
+    },
+    statusCard: {
+      backgroundColor: COLORS.surface,
+      margin: SPACING.md,
+      padding: SPACING.md,
+      borderRadius: BORDER_RADIUS.lg,
+    },
+    statusHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: SPACING.sm,
+    },
+    statusIndicator: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    statusDot: {
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+      marginRight: SPACING.sm,
+    },
+    statusText: {
+      fontSize: FONT_SIZES.lg,
+      fontWeight: '600',
+      color: COLORS.text,
+    },
+    toggleButton: {
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.sm,
+      borderRadius: BORDER_RADIUS.md,
+    },
+    toggleButtonText: {
+      color: COLORS.surface,
+      fontWeight: '600',
+      fontSize: FONT_SIZES.md,
+    },
+    statusDetails: {
+      marginBottom: SPACING.sm,
+    },
+    statusDetailText: {
+      fontSize: FONT_SIZES.sm,
+      color: COLORS.textSecondary,
+    },
+    checkNowButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: SPACING.sm,
+      borderRadius: BORDER_RADIUS.md,
+      borderWidth: 1,
+      borderColor: COLORS.primary,
+    },
+    checkNowText: {
+      color: COLORS.primary,
+      fontWeight: '600',
+      marginLeft: SPACING.xs,
+    },
+    section: {
+      marginTop: SPACING.md,
+    },
+    sectionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.md,
+      marginBottom: SPACING.sm,
+    },
+    sectionTitle: {
+      fontSize: FONT_SIZES.xl,
+      fontWeight: '700',
+      color: COLORS.text,
+      paddingHorizontal: SPACING.md,
+      marginBottom: SPACING.sm,
+    },
+    seeAllText: {
+      fontSize: FONT_SIZES.md,
+      color: COLORS.primary,
+      fontWeight: '600',
+    },
+    statsGrid: {
+      paddingHorizontal: SPACING.md,
+    },
+    statItem: {
+      marginBottom: SPACING.md,
+    },
+    emptyState: {
+      alignItems: 'center',
+      padding: SPACING.xxl,
+    },
+    emptyStateText: {
+      fontSize: FONT_SIZES.lg,
+      fontWeight: '600',
+      color: COLORS.textSecondary,
+      marginTop: SPACING.md,
+    },
+    emptyStateSubtext: {
+      fontSize: FONT_SIZES.md,
+      color: COLORS.textLight,
+      marginTop: SPACING.xs,
+      textAlign: 'center',
+    },
+  });
 
   return (
     <ScrollView
@@ -223,130 +350,5 @@ const DashboardScreen = ({navigation}) => {
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  header: {
-    padding: SPACING.lg,
-    paddingTop: SPACING.xl,
-    backgroundColor: COLORS.primary,
-  },
-  headerTitle: {
-    fontSize: FONT_SIZES.xxxl,
-    fontWeight: '700',
-    color: COLORS.surface,
-    marginBottom: SPACING.xs,
-  },
-  headerSubtitle: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.surface,
-    opacity: 0.9,
-  },
-  statusCard: {
-    backgroundColor: COLORS.surface,
-    margin: SPACING.md,
-    padding: SPACING.md,
-    borderRadius: BORDER_RADIUS.lg,
-  },
-  statusHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
-  },
-  statusIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statusDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: SPACING.sm,
-  },
-  statusText: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '600',
-    color: COLORS.text,
-  },
-  toggleButton: {
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderRadius: BORDER_RADIUS.md,
-  },
-  toggleButtonText: {
-    color: COLORS.surface,
-    fontWeight: '600',
-    fontSize: FONT_SIZES.md,
-  },
-  statusDetails: {
-    marginBottom: SPACING.sm,
-  },
-  statusDetailText: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
-  },
-  checkNowButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: SPACING.sm,
-    borderRadius: BORDER_RADIUS.md,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-  },
-  checkNowText: {
-    color: COLORS.primary,
-    fontWeight: '600',
-    marginLeft: SPACING.xs,
-  },
-  section: {
-    marginTop: SPACING.md,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.md,
-    marginBottom: SPACING.sm,
-  },
-  sectionTitle: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: '700',
-    color: COLORS.text,
-    paddingHorizontal: SPACING.md,
-    marginBottom: SPACING.sm,
-  },
-  seeAllText: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.primary,
-    fontWeight: '600',
-  },
-  statsGrid: {
-    paddingHorizontal: SPACING.md,
-  },
-  statItem: {
-    marginBottom: SPACING.md,
-  },
-  emptyState: {
-    alignItems: 'center',
-    padding: SPACING.xxl,
-  },
-  emptyStateText: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginTop: SPACING.md,
-  },
-  emptyStateSubtext: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textLight,
-    marginTop: SPACING.xs,
-    textAlign: 'center',
-  },
-});
 
 export default DashboardScreen;

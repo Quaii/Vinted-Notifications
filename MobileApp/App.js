@@ -1,15 +1,17 @@
 import React, {useEffect, useState} from 'react';
-import {StatusBar, View, Text, StyleSheet, ActivityIndicator} from 'react-native';
+import {StatusBar, View, Text, StyleSheet, ActivityIndicator, useColorScheme} from 'react-native';
 import AppNavigator from './src/navigation/AppNavigator';
 import DatabaseService from './src/services/DatabaseService';
 import NotificationService from './src/services/NotificationService';
 import MonitoringService from './src/services/MonitoringService';
-import {COLORS} from './src/constants/theme';
+import {useThemeColors} from './src/constants/theme';
 
 /**
- * Main App Component
+ * Main App Component (with dark mode support)
  */
 const App = () => {
+  const COLORS = useThemeColors();
+  const scheme = useColorScheme();
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState(null);
 
@@ -43,6 +45,20 @@ const App = () => {
     }
   };
 
+  const styles = StyleSheet.create({
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: COLORS.background,
+    },
+    loadingText: {
+      marginTop: 16,
+      fontSize: 16,
+      color: COLORS.textSecondary,
+    },
+  });
+
   if (!isReady) {
     return (
       <View style={styles.loadingContainer}>
@@ -58,24 +74,13 @@ const App = () => {
 
   return (
     <>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
+      <StatusBar
+        barStyle={scheme === 'dark' ? 'light-content' : 'dark-content'}
+        backgroundColor={COLORS.primary}
+      />
       <AppNavigator />
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: COLORS.background,
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: COLORS.textSecondary,
-  },
-});
 
 export default App;

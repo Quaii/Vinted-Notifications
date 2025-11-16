@@ -12,7 +12,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import DatabaseService from '../services/DatabaseService';
 import {APP_CONFIG} from '../constants/config';
-import {COLORS, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
+import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
 
 /**
  * Settings Screen
@@ -155,6 +155,165 @@ const SettingsScreen = () => {
       ],
     );
   };
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    header: {
+      padding: SPACING.md,
+      paddingTop: SPACING.lg,
+      backgroundColor: COLORS.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: COLORS.border,
+    },
+    headerTitle: {
+      fontSize: FONT_SIZES.xxl,
+      fontWeight: '700',
+      color: COLORS.text,
+    },
+    section: {
+      backgroundColor: COLORS.surface,
+      marginTop: SPACING.md,
+      padding: SPACING.md,
+    },
+    sectionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: SPACING.sm,
+    },
+    sectionTitle: {
+      fontSize: FONT_SIZES.lg,
+      fontWeight: '700',
+      color: COLORS.text,
+      marginBottom: SPACING.sm,
+    },
+    sectionDescription: {
+      fontSize: FONT_SIZES.sm,
+      color: COLORS.textSecondary,
+      marginBottom: SPACING.md,
+    },
+    settingItem: {
+      paddingVertical: SPACING.md,
+      borderBottomWidth: 1,
+      borderBottomColor: COLORS.border,
+    },
+    settingInfo: {
+      flex: 1,
+    },
+    settingLabel: {
+      fontSize: FONT_SIZES.md,
+      fontWeight: '600',
+      color: COLORS.text,
+      marginBottom: SPACING.xs,
+    },
+    settingDescription: {
+      fontSize: FONT_SIZES.sm,
+      color: COLORS.textSecondary,
+    },
+    numberInput: {
+      backgroundColor: COLORS.background,
+      borderRadius: BORDER_RADIUS.md,
+      padding: SPACING.md,
+      fontSize: FONT_SIZES.md,
+      color: COLORS.text,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      marginTop: SPACING.sm,
+      width: 100,
+    },
+    textInput: {
+      backgroundColor: COLORS.background,
+      borderRadius: BORDER_RADIUS.md,
+      padding: SPACING.md,
+      fontSize: FONT_SIZES.md,
+      color: COLORS.text,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      marginTop: SPACING.sm,
+    },
+    multilineInput: {
+      minHeight: 100,
+      textAlignVertical: 'top',
+    },
+    addCountryContainer: {
+      flexDirection: 'row',
+      marginBottom: SPACING.md,
+    },
+    countryInput: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+      borderRadius: BORDER_RADIUS.md,
+      padding: SPACING.md,
+      fontSize: FONT_SIZES.md,
+      color: COLORS.text,
+      borderWidth: 1,
+      borderColor: COLORS.border,
+      marginRight: SPACING.sm,
+    },
+    addCountryButton: {
+      backgroundColor: COLORS.primary,
+      borderRadius: BORDER_RADIUS.md,
+      width: 48,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    countryList: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      marginTop: SPACING.sm,
+    },
+    countryTag: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: COLORS.primaryLight + '20',
+      borderRadius: BORDER_RADIUS.md,
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.sm,
+      marginRight: SPACING.sm,
+      marginBottom: SPACING.sm,
+    },
+    countryTagText: {
+      fontSize: FONT_SIZES.md,
+      fontWeight: '600',
+      color: COLORS.primary,
+      marginRight: SPACING.sm,
+    },
+    removeCountryButton: {
+      padding: SPACING.xs,
+    },
+    emptyText: {
+      fontSize: FONT_SIZES.sm,
+      color: COLORS.textLight,
+      fontStyle: 'italic',
+      marginTop: SPACING.sm,
+    },
+    clearText: {
+      fontSize: FONT_SIZES.sm,
+      color: COLORS.error,
+      fontWeight: '600',
+    },
+    saveButton: {
+      backgroundColor: COLORS.success,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: SPACING.md,
+      margin: SPACING.md,
+      borderRadius: BORDER_RADIUS.md,
+    },
+    saveButtonText: {
+      color: COLORS.surface,
+      fontSize: FONT_SIZES.lg,
+      fontWeight: '600',
+      marginLeft: SPACING.sm,
+    },
+    bottomSpacer: {
+      height: SPACING.xxl,
+    },
+  });
 
   return (
     <ScrollView style={styles.container}>
@@ -323,164 +482,5 @@ const SettingsScreen = () => {
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  header: {
-    padding: SPACING.md,
-    paddingTop: SPACING.lg,
-    backgroundColor: COLORS.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  headerTitle: {
-    fontSize: FONT_SIZES.xxl,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  section: {
-    backgroundColor: COLORS.surface,
-    marginTop: SPACING.md,
-    padding: SPACING.md,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.sm,
-  },
-  sectionTitle: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: SPACING.sm,
-  },
-  sectionDescription: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.md,
-  },
-  settingItem: {
-    paddingVertical: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  settingInfo: {
-    flex: 1,
-  },
-  settingLabel: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: SPACING.xs,
-  },
-  settingDescription: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
-  },
-  numberInput: {
-    backgroundColor: COLORS.background,
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.md,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.text,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginTop: SPACING.sm,
-    width: 100,
-  },
-  textInput: {
-    backgroundColor: COLORS.background,
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.md,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.text,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginTop: SPACING.sm,
-  },
-  multilineInput: {
-    minHeight: 100,
-    textAlignVertical: 'top',
-  },
-  addCountryContainer: {
-    flexDirection: 'row',
-    marginBottom: SPACING.md,
-  },
-  countryInput: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-    borderRadius: BORDER_RADIUS.md,
-    padding: SPACING.md,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.text,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginRight: SPACING.sm,
-  },
-  addCountryButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: BORDER_RADIUS.md,
-    width: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  countryList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: SPACING.sm,
-  },
-  countryTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.primaryLight + '20',
-    borderRadius: BORDER_RADIUS.md,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    marginRight: SPACING.sm,
-    marginBottom: SPACING.sm,
-  },
-  countryTagText: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.primary,
-    marginRight: SPACING.sm,
-  },
-  removeCountryButton: {
-    padding: SPACING.xs,
-  },
-  emptyText: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textLight,
-    fontStyle: 'italic',
-    marginTop: SPACING.sm,
-  },
-  clearText: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.error,
-    fontWeight: '600',
-  },
-  saveButton: {
-    backgroundColor: COLORS.success,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: SPACING.md,
-    margin: SPACING.md,
-    borderRadius: BORDER_RADIUS.md,
-  },
-  saveButtonText: {
-    color: COLORS.surface,
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '600',
-    marginLeft: SPACING.sm,
-  },
-  bottomSpacer: {
-    height: SPACING.xxl,
-  },
-});
 
 export default SettingsScreen;

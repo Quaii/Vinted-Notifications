@@ -10,13 +10,15 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {ItemCard} from '../components';
 import DatabaseService from '../services/DatabaseService';
-import {COLORS, SPACING, FONT_SIZES} from '../constants/theme';
+import {useThemeColors, SPACING, FONT_SIZES} from '../constants/theme';
 
 /**
  * Items Screen
  * Browse all found items
  */
 const ItemsScreen = ({navigation, route}) => {
+  const COLORS = useThemeColors();
+
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedQuery, setSelectedQuery] = useState(null);
@@ -80,6 +82,72 @@ const ItemsScreen = ({navigation, route}) => {
     );
   };
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: COLORS.background,
+    },
+    header: {
+      padding: SPACING.md,
+      paddingTop: SPACING.lg,
+      backgroundColor: COLORS.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: COLORS.border,
+    },
+    headerTitle: {
+      fontSize: FONT_SIZES.xxl,
+      fontWeight: '700',
+      color: COLORS.text,
+      marginBottom: SPACING.xs,
+    },
+    headerSubtitle: {
+      fontSize: FONT_SIZES.md,
+      color: COLORS.textSecondary,
+    },
+    filterBanner: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: COLORS.primaryLight + '20',
+      padding: SPACING.md,
+      marginBottom: SPACING.sm,
+    },
+    filterInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    filterText: {
+      fontSize: FONT_SIZES.md,
+      color: COLORS.primary,
+      fontWeight: '600',
+      marginLeft: SPACING.sm,
+    },
+    listContainer: {
+      paddingVertical: SPACING.sm,
+    },
+    emptyContainer: {
+      flex: 1,
+    },
+    emptyState: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: SPACING.xxl,
+    },
+    emptyStateText: {
+      fontSize: FONT_SIZES.xl,
+      fontWeight: '600',
+      color: COLORS.textSecondary,
+      marginTop: SPACING.lg,
+    },
+    emptyStateSubtext: {
+      fontSize: FONT_SIZES.md,
+      color: COLORS.textLight,
+      marginTop: SPACING.sm,
+      textAlign: 'center',
+    },
+  });
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -106,71 +174,5 @@ const ItemsScreen = ({navigation, route}) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  header: {
-    padding: SPACING.md,
-    paddingTop: SPACING.lg,
-    backgroundColor: COLORS.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  headerTitle: {
-    fontSize: FONT_SIZES.xxl,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: SPACING.xs,
-  },
-  headerSubtitle: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textSecondary,
-  },
-  filterBanner: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: COLORS.primaryLight + '20',
-    padding: SPACING.md,
-    marginBottom: SPACING.sm,
-  },
-  filterInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  filterText: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.primary,
-    fontWeight: '600',
-    marginLeft: SPACING.sm,
-  },
-  listContainer: {
-    paddingVertical: SPACING.sm,
-  },
-  emptyContainer: {
-    flex: 1,
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: SPACING.xxl,
-  },
-  emptyStateText: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginTop: SPACING.lg,
-  },
-  emptyStateSubtext: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textLight,
-    marginTop: SPACING.sm,
-    textAlign: 'center',
-  },
-});
 
 export default ItemsScreen;
