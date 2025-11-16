@@ -10,24 +10,30 @@ import {
   Alert,
 } from 'react-native';
 import Icon from '@react-native-vector-icons/material-icons';
+import {PageHeader} from '../components';
+import {useTheme} from '../contexts/ThemeContext';
 import DatabaseService from '../services/DatabaseService';
 import {APP_CONFIG} from '../constants/config';
 import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
 
 /**
- * Settings Screen
- * Configure app settings
- * iOS NATIVE DESIGN - iOS Settings app style with grouped lists
+ * SettingsScreen
+ * Modern settings with App, Advanced, and System sections
  */
 const SettingsScreen = () => {
   const COLORS = useThemeColors();
+  const {isDarkMode, toggleTheme} = useTheme();
+
   const [settings, setSettings] = useState({
+    // System settings
     refreshDelay: APP_CONFIG.DEFAULT_REFRESH_DELAY,
     itemsPerQuery: APP_CONFIG.DEFAULT_ITEMS_PER_QUERY,
-    messageTemplate: '',
     banwords: '',
-    notificationsEnabled: true,
+    // Advanced settings
+    userAgent: '',
+    defaultHeaders: '',
   });
+
   const [allowlist, setAllowlist] = useState([]);
   const [newCountry, setNewCountry] = useState('');
   const [loading, setLoading] = useState(false);
@@ -44,23 +50,17 @@ const SettingsScreen = () => {
         'items_per_query',
         APP_CONFIG.DEFAULT_ITEMS_PER_QUERY,
       );
-      const messageTemplate = await DatabaseService.getParameter(
-        'message_template',
-        '',
-      );
       const banwords = await DatabaseService.getParameter('banwords', '');
-      const notificationsEnabled = await DatabaseService.getParameter(
-        'notifications_enabled',
-        '1',
-      );
+      const userAgent = await DatabaseService.getParameter('user_agent', '');
+      const defaultHeaders = await DatabaseService.getParameter('default_headers', '');
       const countries = await DatabaseService.getAllowlist();
 
       setSettings({
         refreshDelay: parseInt(refreshDelay),
         itemsPerQuery: parseInt(itemsPerQuery),
-        messageTemplate,
         banwords,
-        notificationsEnabled: notificationsEnabled === '1',
+        userAgent,
+        defaultHeaders,
       });
       setAllowlist(countries);
     } catch (error) {
@@ -84,15 +84,9 @@ const SettingsScreen = () => {
         'items_per_query',
         settings.itemsPerQuery.toString(),
       );
-      await DatabaseService.setParameter(
-        'message_template',
-        settings.messageTemplate,
-      );
       await DatabaseService.setParameter('banwords', settings.banwords);
-      await DatabaseService.setParameter(
-        'notifications_enabled',
-        settings.notificationsEnabled ? '1' : '0',
-      );
+      await DatabaseService.setParameter('user_agent', settings.userAgent);
+      await DatabaseService.setParameter('default_headers', settings.defaultHeaders);
 
       Alert.alert('Success', 'Settings saved successfully');
     } catch (error) {
@@ -163,77 +157,67 @@ const SettingsScreen = () => {
       flex: 1,
       backgroundColor: COLORS.groupedBackground,
     },
-    // iOS Grouped List Sections
+    content: {
+      padding: SPACING.lg,
+    },
     section: {
-      marginTop: SPACING.lg,
+      marginBottom: SPACING.xl,
     },
     sectionHeader: {
-      paddingHorizontal: SPACING.md,
-      paddingTop: SPACING.sm,
-      paddingBottom: SPACING.xs,
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
+      marginBottom: SPACING.md,
     },
-    sectionHeaderText: {
+    sectionTitle: {
+      fontSize: FONT_SIZES.title3,
+      fontWeight: '600',
+      color: COLORS.text,
+    },
+    sectionDescription: {
       fontSize: FONT_SIZES.footnote,
       color: COLORS.textTertiary,
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
-    },
-    sectionFooter: {
-      paddingHorizontal: SPACING.md,
-      paddingTop: SPACING.xs,
-      paddingBottom: SPACING.sm,
-    },
-    sectionFooterText: {
-      fontSize: FONT_SIZES.footnote,
-      color: COLORS.textTertiary,
-      lineHeight: 16,
+      marginBottom: SPACING.md,
+      lineHeight: 18,
     },
     clearAllText: {
-      fontSize: FONT_SIZES.footnote,
+      fontSize: FONT_SIZES.subheadline,
       color: COLORS.link,
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
+      fontWeight: '600',
     },
-    // iOS List Group
-    listGroup: {
+    card: {
       backgroundColor: COLORS.secondaryGroupedBackground,
-      marginHorizontal: SPACING.md,
-      borderRadius: BORDER_RADIUS.lg,
-      overflow: 'hidden',
+      borderRadius: BORDER_RADIUS.xl,
+      padding: SPACING.lg,
+      borderWidth: 1,
+      borderColor: COLORS.separator,
     },
-    // iOS List Row
-    listRow: {
+    settingRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: SPACING.md,
-      paddingVertical: SPACING.sm + 2,
-      minHeight: 44,
-      borderBottomWidth: 0.5,
+      justifyContent: 'space-between',
+      paddingVertical: SPACING.sm,
+      borderBottomWidth: 1,
       borderBottomColor: COLORS.separator,
     },
-    listRowLast: {
+    settingRowLast: {
       borderBottomWidth: 0,
     },
-    listRowContent: {
+    settingLeft: {
       flex: 1,
+      marginRight: SPACING.md,
     },
-    listRowLabel: {
+    settingLabel: {
       fontSize: FONT_SIZES.body,
+      fontWeight: '500',
       color: COLORS.text,
       marginBottom: 2,
     },
-    listRowDescription: {
+    settingDescription: {
       fontSize: FONT_SIZES.footnote,
       color: COLORS.textTertiary,
       lineHeight: 16,
     },
-    listRowValue: {
-      marginLeft: SPACING.sm,
-    },
-    // iOS Text Input (inline)
     inlineInput: {
       backgroundColor: COLORS.cardBackground,
       borderRadius: BORDER_RADIUS.md,
@@ -246,13 +230,16 @@ const SettingsScreen = () => {
       borderWidth: 1,
       borderColor: COLORS.separator,
     },
-    // Multiline Input Row
+    inputUnit: {
+      fontSize: FONT_SIZES.footnote,
+      color: COLORS.textTertiary,
+      marginLeft: SPACING.xs,
+    },
     multilineRow: {
       flexDirection: 'column',
       alignItems: 'stretch',
-      paddingHorizontal: SPACING.md,
       paddingVertical: SPACING.sm,
-      borderBottomWidth: 0.5,
+      borderBottomWidth: 1,
       borderBottomColor: COLORS.separator,
     },
     multilineInput: {
@@ -262,26 +249,22 @@ const SettingsScreen = () => {
       fontSize: FONT_SIZES.subheadline,
       color: COLORS.text,
       marginTop: SPACING.xs,
-      minHeight: 88,
+      minHeight: 80,
       textAlignVertical: 'top',
       borderWidth: 1,
       borderColor: COLORS.separator,
     },
-    // Country Allowlist
     addCountryRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: SPACING.md,
-      paddingVertical: SPACING.sm,
-      borderBottomWidth: 0.5,
-      borderBottomColor: COLORS.separator,
+      marginBottom: SPACING.sm,
     },
     countryInput: {
       flex: 1,
       backgroundColor: COLORS.cardBackground,
       borderRadius: BORDER_RADIUS.md,
       paddingHorizontal: SPACING.sm,
-      paddingVertical: SPACING.xs,
+      paddingVertical: SPACING.xs + 2,
       fontSize: FONT_SIZES.body,
       color: COLORS.text,
       marginRight: SPACING.sm,
@@ -290,21 +273,16 @@ const SettingsScreen = () => {
     },
     addButton: {
       backgroundColor: COLORS.primary,
-      width: 32,
-      height: 32,
-      borderRadius: 16,
+      width: 36,
+      height: 36,
+      borderRadius: 18,
       justifyContent: 'center',
       alignItems: 'center',
-    },
-    countryTagsRow: {
-      flexDirection: 'column',
-      paddingHorizontal: SPACING.md,
-      paddingVertical: SPACING.sm,
     },
     countryTags: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      marginTop: -SPACING.xs,
+      gap: SPACING.xs,
     },
     countryTag: {
       flexDirection: 'row',
@@ -313,8 +291,6 @@ const SettingsScreen = () => {
       borderRadius: BORDER_RADIUS.md,
       paddingHorizontal: SPACING.sm,
       paddingVertical: 6,
-      marginRight: SPACING.xs,
-      marginTop: SPACING.xs,
     },
     countryTagText: {
       fontSize: FONT_SIZES.subheadline,
@@ -326,12 +302,8 @@ const SettingsScreen = () => {
       fontSize: FONT_SIZES.footnote,
       color: COLORS.textTertiary,
       fontStyle: 'italic',
-    },
-    // Save Button (iOS Style)
-    saveButtonContainer: {
-      marginTop: SPACING.lg,
-      marginHorizontal: SPACING.md,
-      marginBottom: SPACING.xl,
+      textAlign: 'center',
+      paddingVertical: SPACING.md,
     },
     saveButton: {
       backgroundColor: COLORS.primary,
@@ -340,6 +312,7 @@ const SettingsScreen = () => {
       alignItems: 'center',
       flexDirection: 'row',
       justifyContent: 'center',
+      marginTop: SPACING.lg,
     },
     saveButtonText: {
       color: '#FFFFFF',
@@ -353,148 +326,173 @@ const SettingsScreen = () => {
   });
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Monitoring Section */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionHeaderText}>MONITORING</Text>
-        </View>
-        <View style={styles.listGroup}>
-          <View style={styles.listRow}>
-            <View style={styles.listRowContent}>
-              <Text style={styles.listRowLabel}>Check Interval</Text>
-              <Text style={styles.listRowDescription}>
-                How often to check for new items
-              </Text>
+    <View style={styles.container}>
+      <PageHeader title="Settings" showSettings={false} />
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+
+        {/* App Settings */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>App Settings</Text>
+          </View>
+          <Text style={styles.sectionDescription}>
+            Customize the appearance and behavior of the app
+          </Text>
+          <View style={styles.card}>
+            <View style={[styles.settingRow, styles.settingRowLast]}>
+              <View style={styles.settingLeft}>
+                <Text style={styles.settingLabel}>Dark Mode</Text>
+                <Text style={styles.settingDescription}>
+                  {isDarkMode ? 'Dark mode enabled' : 'Light mode enabled'}
+                </Text>
+              </View>
+              <Switch
+                value={isDarkMode}
+                onValueChange={toggleTheme}
+                trackColor={{false: COLORS.buttonFill, true: COLORS.primary}}
+              />
             </View>
-            <TextInput
-              style={[styles.inlineInput, styles.listRowValue]}
-              value={settings.refreshDelay.toString()}
-              onChangeText={text =>
-                setSettings({...settings, refreshDelay: parseInt(text) || 60})
-              }
-              keyboardType="number-pad"
-              returnKeyType="done"
-            />
-            <Text style={styles.listRowDescription}> sec</Text>
           </View>
+        </View>
 
-          <View style={[styles.listRow, styles.listRowLast]}>
-            <View style={styles.listRowContent}>
-              <Text style={styles.listRowLabel}>Items Per Query</Text>
-              <Text style={styles.listRowDescription}>
-                Number of items to fetch per search
+        {/* Advanced Settings */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Advanced Settings</Text>
+          </View>
+          <Text style={styles.sectionDescription}>
+            Configure advanced options for power users (leave empty for defaults)
+          </Text>
+          <View style={styles.card}>
+            <View style={styles.multilineRow}>
+              <Text style={styles.settingLabel}>User Agent</Text>
+              <Text style={styles.settingDescription}>
+                Custom user agent for API requests
               </Text>
+              <TextInput
+                style={styles.multilineInput}
+                value={settings.userAgent}
+                onChangeText={text => setSettings({...settings, userAgent: text})}
+                placeholder="Mozilla/5.0..."
+                placeholderTextColor={COLORS.placeholder}
+                multiline
+              />
             </View>
-            <TextInput
-              style={[styles.inlineInput, styles.listRowValue]}
-              value={settings.itemsPerQuery.toString()}
-              onChangeText={text =>
-                setSettings({...settings, itemsPerQuery: parseInt(text) || 20})
-              }
-              keyboardType="number-pad"
-              returnKeyType="done"
-            />
-          </View>
-        </View>
-      </View>
 
-      {/* Notifications Section */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionHeaderText}>NOTIFICATIONS</Text>
-        </View>
-        <View style={styles.listGroup}>
-          <View style={styles.listRow}>
-            <View style={styles.listRowContent}>
-              <Text style={styles.listRowLabel}>Enable Notifications</Text>
-              <Text style={styles.listRowDescription}>
-                Receive push notifications for new items
+            <View style={[styles.multilineRow, styles.settingRowLast]}>
+              <Text style={styles.settingLabel}>Default Headers</Text>
+              <Text style={styles.settingDescription}>
+                Custom HTTP headers (JSON format)
               </Text>
+              <TextInput
+                style={styles.multilineInput}
+                value={settings.defaultHeaders}
+                onChangeText={text => setSettings({...settings, defaultHeaders: text})}
+                placeholder='{"Accept": "application/json"}'
+                placeholderTextColor={COLORS.placeholder}
+                multiline
+              />
             </View>
-            <Switch
-              value={settings.notificationsEnabled}
-              onValueChange={value =>
-                setSettings({...settings, notificationsEnabled: value})
-              }
-            />
-          </View>
-
-          <View style={[styles.multilineRow, styles.listRowLast]}>
-            <Text style={styles.listRowLabel}>Message Template</Text>
-            <Text style={styles.listRowDescription}>
-              Use {'{title}'}, {'{price}'}, {'{brand}'}, {'{size}'}
-            </Text>
-            <TextInput
-              style={styles.multilineInput}
-              value={settings.messageTemplate}
-              onChangeText={text =>
-                setSettings({...settings, messageTemplate: text})
-              }
-              multiline
-              numberOfLines={3}
-              placeholder="🆕 Title: {title}&#10;💶 Price: {price}&#10;🛍️ Brand: {brand}"
-              placeholderTextColor={COLORS.placeholder}
-            />
           </View>
         </View>
-      </View>
 
-      {/* Filters Section */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionHeaderText}>FILTERS</Text>
-        </View>
-        <View style={styles.listGroup}>
-          <View style={[styles.multilineRow, styles.listRowLast]}>
-            <Text style={styles.listRowLabel}>Banned Words</Text>
-            <Text style={styles.listRowDescription}>
-              Separate multiple words with ||| (filters out matching items)
-            </Text>
-            <TextInput
-              style={styles.multilineInput}
-              value={settings.banwords}
-              onChangeText={text => setSettings({...settings, banwords: text})}
-              placeholder="word1|||word2|||word3"
-              placeholderTextColor={COLORS.placeholder}
-              multiline
-            />
+        {/* System Settings */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>System Settings</Text>
+          </View>
+          <Text style={styles.sectionDescription}>
+            Configure monitoring behavior and filtering
+          </Text>
+          <View style={styles.card}>
+            <View style={styles.settingRow}>
+              <View style={styles.settingLeft}>
+                <Text style={styles.settingLabel}>Items Per Query</Text>
+                <Text style={styles.settingDescription}>
+                  Number of items to fetch per search
+                </Text>
+              </View>
+              <TextInput
+                style={styles.inlineInput}
+                value={settings.itemsPerQuery.toString()}
+                onChangeText={text =>
+                  setSettings({...settings, itemsPerQuery: parseInt(text) || 20})
+                }
+                keyboardType="number-pad"
+                returnKeyType="done"
+              />
+            </View>
+
+            <View style={styles.settingRow}>
+              <View style={styles.settingLeft}>
+                <Text style={styles.settingLabel}>Query Refresh Delay</Text>
+                <Text style={styles.settingDescription}>
+                  How often to check for new items
+                </Text>
+              </View>
+              <TextInput
+                style={styles.inlineInput}
+                value={settings.refreshDelay.toString()}
+                onChangeText={text =>
+                  setSettings({...settings, refreshDelay: parseInt(text) || 60})
+                }
+                keyboardType="number-pad"
+                returnKeyType="done"
+              />
+              <Text style={styles.inputUnit}>sec</Text>
+            </View>
+
+            <View style={[styles.multilineRow, styles.settingRowLast]}>
+              <Text style={styles.settingLabel}>Banned Words</Text>
+              <Text style={styles.settingDescription}>
+                Filter out items containing these words (separate with |||)
+              </Text>
+              <TextInput
+                style={styles.multilineInput}
+                value={settings.banwords}
+                onChangeText={text => setSettings({...settings, banwords: text})}
+                placeholder="word1|||word2|||word3"
+                placeholderTextColor={COLORS.placeholder}
+                multiline
+              />
+            </View>
           </View>
         </View>
-      </View>
 
-      {/* Country Allowlist Section */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionHeaderText}>COUNTRY ALLOWLIST</Text>
-          {allowlist.length > 0 && (
-            <TouchableOpacity onPress={handleClearAllowlist}>
-              <Text style={styles.clearAllText}>Clear All</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-        <View style={styles.listGroup}>
-          <View style={styles.addCountryRow}>
-            <TextInput
-              style={styles.countryInput}
-              value={newCountry}
-              onChangeText={setNewCountry}
-              placeholder="e.g., US, FR, DE"
-              placeholderTextColor={COLORS.placeholder}
-              autoCapitalize="characters"
-              maxLength={2}
-              returnKeyType="done"
-              onSubmitEditing={handleAddCountry}
-            />
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={handleAddCountry}>
-              <Icon name="add" size={20} color="#FFFFFF" />
-            </TouchableOpacity>
+        {/* Country Allowlist */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Country Allowlist</Text>
+            {allowlist.length > 0 && (
+              <TouchableOpacity onPress={handleClearAllowlist}>
+                <Text style={styles.clearAllText}>Clear All</Text>
+              </TouchableOpacity>
+            )}
           </View>
+          <Text style={styles.sectionDescription}>
+            Only show items from sellers in these countries (leave empty to allow all)
+          </Text>
+          <View style={styles.card}>
+            <View style={styles.addCountryRow}>
+              <TextInput
+                style={styles.countryInput}
+                value={newCountry}
+                onChangeText={setNewCountry}
+                placeholder="e.g., US, FR, DE"
+                placeholderTextColor={COLORS.placeholder}
+                autoCapitalize="characters"
+                maxLength={2}
+                returnKeyType="done"
+                onSubmitEditing={handleAddCountry}
+              />
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={handleAddCountry}>
+                <Icon name="add" size={20} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
 
-          {allowlist.length > 0 ? (
-            <View style={[styles.countryTagsRow, styles.listRowLast]}>
+            {allowlist.length > 0 ? (
               <View style={styles.countryTags}>
                 {allowlist.map(country => (
                   <View key={country} style={styles.countryTag}>
@@ -507,30 +505,21 @@ const SettingsScreen = () => {
                   </View>
                 ))}
               </View>
-            </View>
-          ) : (
-            <View style={[styles.listRow, styles.listRowLast]}>
+            ) : (
               <Text style={styles.emptyText}>No countries in allowlist</Text>
-            </View>
-          )}
+            )}
+          </View>
         </View>
-        <View style={styles.sectionFooter}>
-          <Text style={styles.sectionFooterText}>
-            Only show items from sellers in these countries (leave empty to allow all countries)
-          </Text>
-        </View>
-      </View>
 
-      {/* Save Button */}
-      <View style={styles.saveButtonContainer}>
+        {/* Save Button */}
         <TouchableOpacity style={styles.saveButton} onPress={handleSaveSettings}>
           <Icon name="save" size={20} color="#FFFFFF" />
           <Text style={styles.saveButtonText}>Save Settings</Text>
         </TouchableOpacity>
-      </View>
 
-      <View style={styles.bottomSpacer} />
-    </ScrollView>
+        <View style={styles.bottomSpacer} />
+      </ScrollView>
+    </View>
   );
 };
 

@@ -13,62 +13,23 @@ import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/t
 
 /**
  * LogsScreen
- * Display application logs
+ * Simple logs display matching desktop app
  */
 const LogsScreen = () => {
   const COLORS = useThemeColors();
   const [logs, setLogs] = useState([]);
-  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
     // Initial load
-    loadLogs();
+    setLogs(LogService.getLogs());
 
     // Subscribe to updates
-    const unsubscribe = LogService.subscribe(() => {
-      loadLogs();
+    const unsubscribe = LogService.subscribe(updatedLogs => {
+      setLogs(updatedLogs);
     });
 
     return unsubscribe;
-  }, [filter]);
-
-  const loadLogs = () => {
-    if (filter === 'all') {
-      setLogs(LogService.getLogs(200));
-    } else {
-      setLogs(LogService.getLogsByLevel(filter, 200));
-    }
-  };
-
-  const getLogIcon = level => {
-    switch (level) {
-      case 'success':
-        return 'check-circle';
-      case 'error':
-        return 'error';
-      case 'warning':
-        return 'warning';
-      case 'debug':
-        return 'bug-report';
-      default:
-        return 'info';
-    }
-  };
-
-  const getLogColor = level => {
-    switch (level) {
-      case 'success':
-        return '#34C759';
-      case 'error':
-        return '#FF3B30';
-      case 'warning':
-        return '#FF9500';
-      case 'debug':
-        return '#5856D6';
-      default:
-        return '#007AFF';
-    }
-  };
+  }, []);
 
   const formatTime = timestamp => {
     const date = new Date(timestamp);
@@ -79,54 +40,32 @@ const LogsScreen = () => {
     });
   };
 
-  const renderLogEntry = ({item}) => {
-    const color = getLogColor(item.level);
-    const icon = getLogIcon(item.level);
+  const formatDate = timestamp => {
+    const date = new Date(timestamp);
+    const today = new Date();
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    }
+    return date.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
+  };
 
-    return (
-      <View style={[styles.logEntry, {borderLeftColor: color}]}>
-        <View style={styles.logHeader}>
-          <View style={[styles.logIcon, {backgroundColor: `${color}15`}]}>
-            <Icon name={icon} size={16} color={color} />
-          </View>
-          <Text style={styles.logTime}>{formatTime(item.timestamp)}</Text>
-          <View style={[styles.levelBadge, {backgroundColor: `${color}20`}]}>
-            <Text style={[styles.levelText, {color}]}>
-              {item.level.toUpperCase()}
-            </Text>
-          </View>
-        </View>
-        <Text style={styles.logMessage}>{item.message}</Text>
-        {item.data && (
-          <Text style={styles.logData} numberOfLines={2}>
-            {JSON.stringify(item.data)}
-          </Text>
-        )}
+  const renderLogEntry = ({item}) => (
+    <View style={styles.logEntry}>
+      <View style={styles.logHeader}>
+        <Text style={styles.logDate}>{formatDate(item.timestamp)}</Text>
+        <Text style={styles.logTime}>{formatTime(item.timestamp)}</Text>
       </View>
-    );
-  };
-
-  const renderFilterButton = (label, value) => {
-    const isActive = filter === value;
-    return (
-      <TouchableOpacity
-        style={[styles.filterButton, isActive && styles.filterButtonActive]}
-        onPress={() => setFilter(value)}>
-        <Text
-          style={[
-            styles.filterButtonText,
-            isActive && styles.filterButtonTextActive,
-          ]}>
-          {label}
-        </Text>
-      </TouchableOpacity>
-    );
-  };
+      <Text style={styles.logMessage}>{item.message}</Text>
+    </View>
+  );
 
   const renderEmpty = () => (
     <View style={styles.emptyState}>
-      <Icon name="description" size={48} color={COLORS.textTertiary} />
-      <Text style={styles.emptyText}>No logs available</Text>
+      <Icon name="description" size={64} color={COLORS.textTertiary} />
+      <Text style={styles.emptyText}>No logs yet</Text>
+      <Text style={styles.emptySubtext}>
+        Application events will appear here
+      </Text>
     </View>
   );
 
@@ -135,115 +74,76 @@ const LogsScreen = () => {
       flex: 1,
       backgroundColor: COLORS.groupedBackground,
     },
-    filters: {
-      flexDirection: 'row',
-      paddingHorizontal: SPACING.lg,
-      paddingVertical: SPACING.md,
-      gap: SPACING.sm,
-    },
-    filterButton: {
-      paddingHorizontal: SPACING.md,
-      paddingVertical: SPACING.xs,
-      borderRadius: BORDER_RADIUS.md,
-      backgroundColor: COLORS.buttonFill,
-    },
-    filterButtonActive: {
-      backgroundColor: COLORS.primary,
-    },
-    filterButtonText: {
-      fontSize: FONT_SIZES.footnote,
-      fontWeight: '600',
-      color: COLORS.textSecondary,
-    },
-    filterButtonTextActive: {
-      color: '#FFFFFF',
-    },
     listContainer: {
-      paddingHorizontal: SPACING.lg,
-      paddingBottom: SPACING.xl,
+      padding: SPACING.lg,
     },
     logEntry: {
       backgroundColor: COLORS.secondaryGroupedBackground,
       borderRadius: BORDER_RADIUS.lg,
       padding: SPACING.md,
       marginBottom: SPACING.sm,
-      borderLeftWidth: 3,
       borderWidth: 1,
       borderColor: COLORS.separator,
     },
     logHeader: {
       flexDirection: 'row',
-      alignItems: 'center',
+      justifyContent: 'space-between',
       marginBottom: SPACING.xs,
     },
-    logIcon: {
-      width: 24,
-      height: 24,
-      borderRadius: 12,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginRight: SPACING.xs,
+    logDate: {
+      fontSize: FONT_SIZES.caption1,
+      fontWeight: '600',
+      color: COLORS.textSecondary,
     },
     logTime: {
       fontSize: FONT_SIZES.caption1,
       color: COLORS.textTertiary,
-      fontWeight: '500',
-      flex: 1,
-    },
-    levelBadge: {
-      paddingHorizontal: SPACING.xs,
-      paddingVertical: 2,
-      borderRadius: BORDER_RADIUS.sm,
-    },
-    levelText: {
-      fontSize: FONT_SIZES.caption2,
-      fontWeight: '700',
+      fontFamily: 'monospace',
     },
     logMessage: {
       fontSize: FONT_SIZES.subheadline,
       color: COLORS.text,
       lineHeight: 20,
     },
-    logData: {
-      fontSize: FONT_SIZES.caption1,
-      color: COLORS.textSecondary,
-      fontFamily: 'Courier',
-      marginTop: SPACING.xs,
-      paddingTop: SPACING.xs,
-      borderTopWidth: 1,
-      borderTopColor: COLORS.separator,
-    },
     emptyState: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      paddingVertical: SPACING.xxl * 2,
+      paddingVertical: SPACING.xxl * 3,
+      paddingHorizontal: SPACING.lg,
     },
     emptyText: {
+      fontSize: FONT_SIZES.title2,
+      fontWeight: '600',
+      color: COLORS.textSecondary,
+      marginTop: SPACING.lg,
+      marginBottom: SPACING.xs,
+    },
+    emptySubtext: {
       fontSize: FONT_SIZES.body,
       color: COLORS.textTertiary,
-      marginTop: SPACING.md,
+      textAlign: 'center',
     },
   });
+
+  const handleClearLogs = () => {
+    LogService.clearLogs();
+  };
 
   return (
     <View style={styles.container}>
       <PageHeader title="Logs" />
-      <View style={styles.filters}>
-        {renderFilterButton('All', 'all')}
-        {renderFilterButton('Info', 'info')}
-        {renderFilterButton('Success', 'success')}
-        {renderFilterButton('Warning', 'warning')}
-        {renderFilterButton('Error', 'error')}
-      </View>
-      <FlatList
-        data={logs}
-        renderItem={renderLogEntry}
-        keyExtractor={item => item.id.toString()}
-        contentContainerStyle={styles.listContainer}
-        ListEmptyComponent={renderEmpty}
-        showsVerticalScrollIndicator={false}
-      />
+      {logs.length > 0 ? (
+        <FlatList
+          data={logs}
+          renderItem={renderLogEntry}
+          keyExtractor={item => item.id.toString()}
+          contentContainerStyle={styles.listContainer}
+          showsVerticalScrollIndicator={false}
+        />
+      ) : (
+        renderEmpty()
+      )}
     </View>
   );
 };
