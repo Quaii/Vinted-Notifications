@@ -5,6 +5,13 @@
 
 @implementation AppDelegate
 
+// CRITICAL: Explicitly disable Fabric (New Architecture)
+// This overrides RCTAppDelegate's default behavior
+- (BOOL)concurrentRootEnabled
+{
+  return NO;
+}
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
   self.moduleName = @"VintedNotifications";
