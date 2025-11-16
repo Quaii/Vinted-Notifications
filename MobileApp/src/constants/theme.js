@@ -1,7 +1,9 @@
-// Theme and styling constants
-export const COLORS = {
+import {useColorScheme} from 'react-native';
+
+// Light theme colors
+export const LIGHT_COLORS = {
   // Primary colors
-  primary: '#09B1BA', // Vinted teal/cyan
+  primary: '#09B1BA',
   primaryDark: '#078A91',
   primaryLight: '#4DD4DC',
 
@@ -31,7 +33,53 @@ export const COLORS = {
   divider: '#E0E0E0',
   overlay: 'rgba(0, 0, 0, 0.5)',
   shadow: '#000000',
+  inputBackground: '#F5F5F5',
 };
+
+// Dark theme colors
+export const DARK_COLORS = {
+  // Primary colors (slightly brighter for dark mode)
+  primary: '#1FCCDB',
+  primaryDark: '#09B1BA',
+  primaryLight: '#5FE0E8',
+
+  // Secondary colors
+  secondary: '#FF8AB5',
+  secondaryDark: '#FF6B9D',
+  secondaryLight: '#FFA9C9',
+
+  // Neutral colors
+  background: '#0F0F0F',
+  surface: '#1A1A1A',
+  card: '#242424',
+
+  // Text colors
+  text: '#FFFFFF',
+  textSecondary: '#B0B0B0',
+  textLight: '#808080',
+
+  // Status colors
+  success: '#66BB6A',
+  error: '#EF5350',
+  warning: '#FFA726',
+  info: '#42A5F5',
+
+  // UI colors
+  border: '#333333',
+  divider: '#333333',
+  overlay: 'rgba(0, 0, 0, 0.7)',
+  shadow: '#000000',
+  inputBackground: '#2A2A2A',
+};
+
+// Hook to get current theme colors
+export const useThemeColors = () => {
+  const colorScheme = useColorScheme();
+  return colorScheme === 'dark' ? DARK_COLORS : LIGHT_COLORS;
+};
+
+// Default to light colors for non-component usage
+export const COLORS = LIGHT_COLORS;
 
 export const SPACING = {
   xs: 4,

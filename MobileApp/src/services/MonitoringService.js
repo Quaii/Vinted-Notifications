@@ -182,11 +182,20 @@ class MonitoringService {
 
       let latestTimestamp = query.last_item || 0;
 
-      for (const rawItem of rawItems) {
+      // Process items in reverse order (oldest first), like Python version
+      const reversedItems = [...rawItems].reverse();
+
+      for (const rawItem of reversedItems) {
         try {
           // Parse item
           const item = this.parseItem(rawItem, query.id);
           if (!item) continue;
+
+          // Timestamp-based deduplication (more efficient than DB check)
+          if (item.created_at_ts <= latestTimestamp) {
+            console.log(`Item ${item.id} timestamp ${item.created_at_ts} <= last ${latestTimestamp}, skipping`);
+            continue;
+          }
 
           // Check if item is within time window
           if (now - item.created_at_ts > timeWindowMs) {
@@ -194,17 +203,23 @@ class MonitoringService {
             continue;
           }
 
-          // Check if item already exists
+          // Check if item already exists in database
           const exists = await DatabaseService.itemExists(item.id);
           if (exists) {
-            console.log(`Item ${item.id} already exists, skipping`);
+            console.log(`Item ${item.id} already exists in DB, skipping`);
             continue;
           }
 
-          // Apply allowlist filter
-          if (allowlist.length > 0 && rawItem.user) {
-            const userCountry = rawItem.user.country_code;
-            if (!allowlist.includes(userCountry)) {
+          // Apply allowlist filter (fetch user country if needed)
+          if (allowlist.length > 0) {
+            let userCountry = rawItem.user?.country_iso_code || rawItem.user?.country_code;
+
+            // If country not in response, fetch it via API
+            if (!userCountry && rawItem.user?.id) {
+              userCountry = await VintedAPI.getUserCountry(rawItem.user.id, query.getDomain());
+            }
+
+            if (userCountry && !allowlist.includes(userCountry)) {
               console.log(`Item ${item.id} filtered by allowlist (${userCountry})`);
               continue;
             }
@@ -262,7 +277,7 @@ class MonitoringService {
         timestamp = Date.now();
       }
 
-      // Build item
+      // Build item (buyUrl will be auto-generated in constructor)
       const item = new VintedItem({
         id: rawItem.id,
         title: rawItem.title,
@@ -272,7 +287,6 @@ class MonitoringService {
         currency: rawItem.currency || '€',
         photo: rawItem.photo,
         url: rawItem.url,
-        buyUrl: rawItem.url ? `${rawItem.url}/want_it/new` : '',
         createdAtTs: timestamp,
         rawTimestamp: rawItem.photo?.high_resolution?.timestamp || '',
         queryId: queryId,

@@ -9,10 +9,21 @@ export class VintedItem {
     this.currency = data.currency || '€';
     this.photo = data.photo || '';
     this.url = data.url || '';
-    this.buy_url = data.buy_url || data.buyUrl || '';
+    this.buy_url = data.buy_url || data.buyUrl || this.generateBuyUrl(data.url, data.id);
     this.created_at_ts = data.created_at_ts || data.createdAtTs || Date.now();
     this.raw_timestamp = data.raw_timestamp || data.rawTimestamp || '';
     this.query_id = data.query_id || data.queryId || null;
+  }
+
+  // Generate buy URL from item URL and ID
+  generateBuyUrl(url, id) {
+    try {
+      if (!url || !id) return '';
+      const baseUrl = url.split('items')[0];
+      return `${baseUrl}transaction/buy/new?source_screen=item&transaction[item_id]=${id}`;
+    } catch (error) {
+      return '';
+    }
   }
 
   // Format price for display
