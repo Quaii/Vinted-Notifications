@@ -1,7 +1,7 @@
 /**
  * LogService
- * Simple logging service matching desktop app pattern
- * Tracks basic app events like "Monitoring started", "Found 5 new items", etc.
+ * Logging service matching desktop app pattern with levels
+ * Supports INFO, WARNING, ERROR levels with color coding
  */
 class LogService {
   constructor() {
@@ -11,12 +11,22 @@ class LogService {
   }
 
   /**
-   * Add a log entry (simple message only)
+   * Log levels matching desktop app
    */
-  log(message) {
+  LEVELS = {
+    INFO: 'INFO',
+    WARNING: 'WARNING',
+    ERROR: 'ERROR',
+  };
+
+  /**
+   * Add a log entry with level
+   */
+  _addLog(level, message) {
     const entry = {
       id: Date.now() + Math.random(),
       timestamp: new Date().toISOString(),
+      level,
       message,
     };
 
@@ -33,9 +43,37 @@ class LogService {
 
     // Also log to console
     const time = new Date().toLocaleTimeString();
-    console.log(`[${time}] ${message}`);
+    console.log(`[${time}] ${level} - ${message}`);
 
     return entry;
+  }
+
+  /**
+   * Log info message (default level)
+   */
+  info(message) {
+    return this._addLog(this.LEVELS.INFO, message);
+  }
+
+  /**
+   * Log warning message
+   */
+  warning(message) {
+    return this._addLog(this.LEVELS.WARNING, message);
+  }
+
+  /**
+   * Log error message
+   */
+  error(message) {
+    return this._addLog(this.LEVELS.ERROR, message);
+  }
+
+  /**
+   * Generic log (defaults to INFO for backwards compatibility)
+   */
+  log(message) {
+    return this.info(message);
   }
 
   /**

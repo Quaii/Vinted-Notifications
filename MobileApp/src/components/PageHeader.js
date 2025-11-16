@@ -38,17 +38,7 @@ const PageHeader = ({title, showSettings = true}) => {
       letterSpacing: -0.5,
     },
     settingsButton: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      backgroundColor: COLORS.buttonFill,
-      justifyContent: 'center',
-      alignItems: 'center',
-      shadowColor: '#000',
-      shadowOffset: {width: 0, height: 2},
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 3,
+      padding: SPACING.xs,
     },
   });
 
@@ -60,8 +50,8 @@ const PageHeader = ({title, showSettings = true}) => {
           <TouchableOpacity
             style={styles.settingsButton}
             onPress={handleSettingsPress}
-            activeOpacity={0.7}>
-            <Icon name="settings" size={22} color={COLORS.primary} />
+            activeOpacity={0.6}>
+            <Icon name="settings" size={34} color={COLORS.primary} />
           </TouchableOpacity>
         )}
       </View>

@@ -13,7 +13,7 @@ import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/t
 
 /**
  * LogsScreen
- * Simple logs display matching desktop app
+ * Logs display with level-based color coding (matching desktop app)
  */
 const LogsScreen = () => {
   const COLORS = useThemeColors();
@@ -49,15 +49,52 @@ const LogsScreen = () => {
     return date.toLocaleDateString('en-US', {month: 'short', day: 'numeric'});
   };
 
-  const renderLogEntry = ({item}) => (
-    <View style={styles.logEntry}>
-      <View style={styles.logHeader}>
-        <Text style={styles.logDate}>{formatDate(item.timestamp)}</Text>
-        <Text style={styles.logTime}>{formatTime(item.timestamp)}</Text>
+  const getLevelColor = level => {
+    switch (level) {
+      case 'ERROR':
+        return COLORS.error;
+      case 'WARNING':
+        return COLORS.warning;
+      case 'INFO':
+      default:
+        return COLORS.info;
+    }
+  };
+
+  const getLevelIcon = level => {
+    switch (level) {
+      case 'ERROR':
+        return 'error';
+      case 'WARNING':
+        return 'warning';
+      case 'INFO':
+      default:
+        return 'info';
+    }
+  };
+
+  const renderLogEntry = ({item}) => {
+    const levelColor = getLevelColor(item.level);
+    const levelIcon = getLevelIcon(item.level);
+
+    return (
+      <View style={[styles.logEntry, {borderLeftColor: levelColor, borderLeftWidth: 4}]}>
+        <View style={styles.logHeader}>
+          <View style={styles.logHeaderLeft}>
+            <View style={[styles.levelBadge, {backgroundColor: `${levelColor}20`}]}>
+              <Icon name={levelIcon} size={14} color={levelColor} />
+              <Text style={[styles.levelText, {color: levelColor}]}>
+                {item.level || 'INFO'}
+              </Text>
+            </View>
+            <Text style={styles.logDate}>{formatDate(item.timestamp)}</Text>
+          </View>
+          <Text style={styles.logTime}>{formatTime(item.timestamp)}</Text>
+        </View>
+        <Text style={styles.logMessage}>{item.message}</Text>
       </View>
-      <Text style={styles.logMessage}>{item.message}</Text>
-    </View>
-  );
+    );
+  };
 
   const renderEmpty = () => (
     <View style={styles.emptyState}>
@@ -88,11 +125,31 @@ const LogsScreen = () => {
     logHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
+      alignItems: 'center',
       marginBottom: SPACING.xs,
+    },
+    logHeaderLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: SPACING.sm,
+      flex: 1,
+    },
+    levelBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.xs,
+      paddingVertical: 2,
+      borderRadius: BORDER_RADIUS.sm,
+      gap: 4,
+    },
+    levelText: {
+      fontSize: FONT_SIZES.caption2,
+      fontWeight: '700',
+      letterSpacing: 0.5,
     },
     logDate: {
       fontSize: FONT_SIZES.caption1,
-      fontWeight: '600',
+      fontWeight: '500',
       color: COLORS.textSecondary,
     },
     logTime: {
