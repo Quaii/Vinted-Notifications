@@ -320,6 +320,7 @@ const QueriesScreen = ({navigation}) => {
         visible={modalVisible}
         animationType="slide"
         transparent={true}
+        presentationStyle="overFullScreen"
         onRequestClose={() => setModalVisible(false)}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
