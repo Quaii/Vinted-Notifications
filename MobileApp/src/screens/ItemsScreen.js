@@ -96,7 +96,7 @@ const ItemsScreen = ({navigation, route}) => {
       <TouchableOpacity
         style={[styles.sortButton, isActive && styles.sortButtonActive]}
         onPress={() => setSortBy(value)}>
-        <Icon
+        <MaterialIcons
           name={icon}
           size={16}
           color={isActive ? '#FFFFFF' : COLORS.textSecondary}
@@ -254,7 +254,7 @@ const ItemsScreen = ({navigation, route}) => {
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <View style={styles.searchBar}>
-          <Icon
+          <MaterialIcons
             name="search"
             size={20}
             color={COLORS.textTertiary}
