@@ -19,6 +19,7 @@ import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/t
  * Configure app settings
  */
 const SettingsScreen = () => {
+  const COLORS = useThemeColors();
   const [settings, setSettings] = useState({
     refreshDelay: APP_CONFIG.DEFAULT_REFRESH_DELAY,
     itemsPerQuery: APP_CONFIG.DEFAULT_ITEMS_PER_QUERY,
