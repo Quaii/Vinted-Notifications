@@ -1,89 +1,85 @@
-import PushNotification from 'react-native-push-notification';
-import PushNotificationIOS from '@react-native-community/push-notification-ios';
+import notifee, {AuthorizationStatus} from '@notifee/react-native';
 import {Platform} from 'react-native';
 import {APP_CONFIG} from '../constants/config';
 import DatabaseService from './DatabaseService';
 
 /**
  * Notification Service
- * Handles push notifications for new items
+ * Handles push notifications for new items using Notifee (modern iOS API)
  */
 class NotificationService {
   constructor() {
     this.configured = false;
+    this.channelId = null;
   }
 
   /**
    * Initialize the notification service
    */
-  configure() {
+  async configure() {
     if (this.configured) return;
 
-    PushNotification.configure({
-      // Called when a remote or local notification is opened or received
-      onNotification: function (notification) {
-        console.log('NOTIFICATION:', notification);
+    try {
+      // Request permissions
+      await this.requestPermissions();
 
-        // Required on iOS only
-        if (Platform.OS === 'ios') {
-          notification.finish(PushNotificationIOS.FetchResult.NoData);
-        }
-      },
+      // Create notification channel (required for Android, harmless for iOS)
+      this.channelId = await notifee.createChannel({
+        id: APP_CONFIG.NOTIFICATION_CHANNEL_ID,
+        name: APP_CONFIG.NOTIFICATION_CHANNEL_NAME,
+        sound: 'default',
+        importance: 4, // High importance
+        vibration: true,
+      });
 
-      // IOS ONLY: Called when the user fails to register for remote notifications
-      onRegistrationError: function (err) {
-        console.error('Notification registration error:', err.message, err);
-      },
-
-      // Should the initial notification be popped automatically
-      popInitialNotification: true,
-
-      // Requested permissions for iOS
-      permissions: {
-        alert: true,
-        badge: true,
-        sound: true,
-      },
-
-      requestPermissions: Platform.OS === 'ios',
-    });
-
-    // Create notification channel for Android (not needed for iOS but keeping for completeness)
-    PushNotification.createChannel(
-      {
-        channelId: APP_CONFIG.NOTIFICATION_CHANNEL_ID,
-        channelName: APP_CONFIG.NOTIFICATION_CHANNEL_NAME,
-        channelDescription: 'Notifications for new Vinted items',
-        playSound: true,
-        soundName: 'default',
-        importance: 4,
-        vibrate: true,
-      },
-      created => console.log(`Notification channel created: ${created}`),
-    );
-
-    this.configured = true;
-    console.log('Notification service configured');
+      this.configured = true;
+      console.log('[Notifee] Service configured successfully');
+    } catch (error) {
+      console.error('[Notifee] Failed to configure:', error);
+    }
   }
 
   /**
-   * Request notification permissions (iOS)
+   * Request notification permissions
    */
   async requestPermissions() {
-    if (Platform.OS === 'ios') {
-      const permissions = await PushNotificationIOS.requestPermissions();
-      console.log('Notification permissions:', permissions);
-      return permissions;
+    try {
+      const settings = await notifee.requestPermission();
+
+      if (settings.authorizationStatus === AuthorizationStatus.AUTHORIZED) {
+        console.log('[Notifee] Permissions granted');
+        return true;
+      } else if (settings.authorizationStatus === AuthorizationStatus.DENIED) {
+        console.warn('[Notifee] Permissions denied');
+        return false;
+      } else {
+        console.log('[Notifee] Permissions not determined');
+        return false;
+      }
+    } catch (error) {
+      console.error('[Notifee] Failed to request permissions:', error);
+      return false;
     }
-    return true;
   }
 
   /**
    * Check if notifications are enabled
    */
   async areNotificationsEnabled() {
-    const enabled = await DatabaseService.getParameter('notifications_enabled', '1');
-    return enabled === '1';
+    try {
+      // Check app settings
+      const enabled = await DatabaseService.getParameter('notifications_enabled', '1');
+      if (enabled !== '1') {
+        return false;
+      }
+
+      // Check system permissions
+      const settings = await notifee.getNotificationSettings();
+      return settings.authorizationStatus === AuthorizationStatus.AUTHORIZED;
+    } catch (error) {
+      console.error('[Notifee] Failed to check notification status:', error);
+      return false;
+    }
   }
 
   /**
@@ -111,34 +107,43 @@ class NotificationService {
     // Check if notifications are enabled
     const enabled = await this.areNotificationsEnabled();
     if (!enabled) {
-      console.log('Notifications are disabled');
+      console.log('[Notifee] Notifications are disabled');
       return;
     }
 
     try {
       const message = await this.formatMessage(item);
 
-      PushNotification.localNotification({
-        channelId: APP_CONFIG.NOTIFICATION_CHANNEL_ID,
+      await notifee.displayNotification({
         title: '🆕 New Vinted Item',
-        message: message,
-        playSound: true,
-        soundName: 'default',
-        userInfo: {
-          itemId: item.id,
+        body: message,
+        subtitle: item.getFormattedPrice(),
+        ios: {
+          sound: 'default',
+          categoryId: 'VINTED_ITEM',
+          attachments: item.photo
+            ? [
+                {
+                  url: item.photo,
+                  thumbnailHidden: false,
+                },
+              ]
+            : [],
+          foregroundPresentationOptions: {
+            banner: true,
+            sound: true,
+            badge: true,
+          },
+        },
+        data: {
+          itemId: item.id.toString(),
           itemUrl: item.url,
         },
-        // iOS specific
-        ...(Platform.OS === 'ios' && {
-          alertAction: 'View',
-          category: 'VINTED_ITEM',
-          subtitle: item.getFormattedPrice(),
-        }),
       });
 
-      console.log('Notification sent for item:', item.id);
+      console.log('[Notifee] Notification sent for item:', item.id);
     } catch (error) {
-      console.error('Failed to send notification:', error);
+      console.error('[Notifee] Failed to send notification:', error);
     }
   }
 
@@ -148,90 +153,128 @@ class NotificationService {
   async sendBulkNotifications(items) {
     const enabled = await this.areNotificationsEnabled();
     if (!enabled) {
-      console.log('Notifications are disabled');
+      console.log('[Notifee] Notifications are disabled');
       return;
     }
 
     if (items.length === 0) return;
 
-    // If only one item, send individual notification
-    if (items.length === 1) {
-      await this.sendItemNotification(items[0]);
-      return;
+    try {
+      // If only one item, send individual notification
+      if (items.length === 1) {
+        await this.sendItemNotification(items[0]);
+        return;
+      }
+
+      // For multiple items, send a summary notification
+      await notifee.displayNotification({
+        title: '🆕 New Vinted Items',
+        body: `${items.length} new items found!`,
+        ios: {
+          sound: 'default',
+          categoryId: 'VINTED_ITEMS',
+          foregroundPresentationOptions: {
+            banner: true,
+            sound: true,
+            badge: true,
+          },
+        },
+        data: {
+          itemCount: items.length.toString(),
+        },
+      });
+
+      console.log(`[Notifee] Sent bulk notification for ${items.length} items`);
+    } catch (error) {
+      console.error('[Notifee] Failed to send bulk notification:', error);
     }
-
-    // For multiple items, send a summary notification
-    PushNotification.localNotification({
-      channelId: APP_CONFIG.NOTIFICATION_CHANNEL_ID,
-      title: '🆕 New Vinted Items',
-      message: `${items.length} new items found!`,
-      playSound: true,
-      soundName: 'default',
-      userInfo: {
-        itemCount: items.length,
-      },
-      // iOS specific
-      ...(Platform.OS === 'ios' && {
-        alertAction: 'View All',
-        category: 'VINTED_ITEMS',
-      }),
-    });
-
-    console.log(`Sent bulk notification for ${items.length} items`);
   }
 
   /**
    * Cancel all notifications
    */
-  cancelAllNotifications() {
-    PushNotification.cancelAllLocalNotifications();
-    console.log('All notifications cancelled');
+  async cancelAllNotifications() {
+    try {
+      await notifee.cancelAllNotifications();
+      console.log('[Notifee] All notifications cancelled');
+    } catch (error) {
+      console.error('[Notifee] Failed to cancel notifications:', error);
+    }
   }
 
   /**
-   * Get delivered notifications (iOS only)
+   * Get delivered notifications
    */
   async getDeliveredNotifications() {
-    if (Platform.OS === 'ios') {
-      return new Promise(resolve => {
-        PushNotificationIOS.getDeliveredNotifications(notifications => {
-          resolve(notifications);
-        });
-      });
+    try {
+      const notifications = await notifee.getDisplayedNotifications();
+      return notifications;
+    } catch (error) {
+      console.error('[Notifee] Failed to get delivered notifications:', error);
+      return [];
     }
-    return [];
   }
 
   /**
-   * Remove delivered notifications (iOS only)
+   * Remove delivered notifications
    */
-  removeDeliveredNotifications(identifiers) {
-    if (Platform.OS === 'ios') {
-      PushNotificationIOS.removeDeliveredNotifications(identifiers);
+  async removeDeliveredNotifications(notificationIds) {
+    try {
+      if (Array.isArray(notificationIds)) {
+        for (const id of notificationIds) {
+          await notifee.cancelNotification(id);
+        }
+      } else {
+        await notifee.cancelNotification(notificationIds);
+      }
+      console.log('[Notifee] Notifications removed');
+    } catch (error) {
+      console.error('[Notifee] Failed to remove notifications:', error);
     }
   }
 
   /**
-   * Set badge count (iOS only)
+   * Set badge count
    */
-  setBadgeCount(count) {
-    if (Platform.OS === 'ios') {
-      PushNotificationIOS.setApplicationIconBadgeNumber(count);
+  async setBadgeCount(count) {
+    try {
+      await notifee.setBadgeCount(count);
+      console.log(`[Notifee] Badge count set to ${count}`);
+    } catch (error) {
+      console.error('[Notifee] Failed to set badge count:', error);
     }
   }
 
   /**
-   * Get badge count (iOS only)
+   * Get badge count
    */
   async getBadgeCount() {
-    if (Platform.OS === 'ios') {
-      return new Promise(resolve => {
-        PushNotificationIOS.getApplicationIconBadgeNumber(count => {
-          resolve(count);
-        });
-      });
+    try {
+      const count = await notifee.getBadgeCount();
+      return count;
+    } catch (error) {
+      console.error('[Notifee] Failed to get badge count:', error);
+      return 0;
     }
-    return 0;
+  }
+
+  /**
+   * Increment badge count
+   */
+  async incrementBadgeCount() {
+    try {
+      const current = await this.getBadgeCount();
+      await this.setBadgeCount(current + 1);
+    } catch (error) {
+      console.error('[Notifee] Failed to increment badge count:', error);
+    }
+  }
+
+  /**
+   * Clear badge count
+   */
+  async clearBadgeCount() {
+    await this.setBadgeCount(0);
   }
 }
 

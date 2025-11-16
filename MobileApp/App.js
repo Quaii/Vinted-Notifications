@@ -28,8 +28,7 @@ const App = () => {
       console.log('Database initialized');
 
       // Configure notifications
-      NotificationService.configure();
-      await NotificationService.requestPermissions();
+      await NotificationService.configure();
       console.log('Notifications configured');
 
       // Initialize background fetch
