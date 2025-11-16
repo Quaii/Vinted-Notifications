@@ -13,7 +13,7 @@ const StatCard = ({icon, label, value, color}) => {
 
   const styles = StyleSheet.create({
     card: {
-      backgroundColor: COLORS.surface,
+      backgroundColor: COLORS.secondaryGroupedBackground,
       borderRadius: BORDER_RADIUS.lg,
       padding: SPACING.md,
       flexDirection: 'row',
@@ -33,13 +33,13 @@ const StatCard = ({icon, label, value, color}) => {
       flex: 1,
     },
     value: {
-      fontSize: FONT_SIZES.xxxl,
+      fontSize: FONT_SIZES.largeTitle,
       fontWeight: '700',
       color: COLORS.text,
       marginBottom: SPACING.xs,
     },
     label: {
-      fontSize: FONT_SIZES.md,
+      fontSize: FONT_SIZES.subheadline,
       color: COLORS.textSecondary,
     },
   });

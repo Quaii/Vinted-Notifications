@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {StatusBar, View, Text, StyleSheet, ActivityIndicator} from 'react-native';
+import {StatusBar, View, Text, ActivityIndicator} from 'react-native';
 import {ThemeProvider, useTheme} from './src/contexts/ThemeContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import DatabaseService from './src/services/DatabaseService';

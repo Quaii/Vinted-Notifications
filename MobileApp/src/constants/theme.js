@@ -1,4 +1,5 @@
 import {useContext} from 'react';
+import {Platform} from 'react-native';
 import {ThemeContext} from '../contexts/ThemeContext';
 
 /**

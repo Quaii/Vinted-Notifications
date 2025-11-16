@@ -73,7 +73,7 @@ const TabNavigator = () => {
         tabBarActiveTintColor: COLORS.primary,
         tabBarInactiveTintColor: COLORS.textSecondary,
         tabBarStyle: {
-          backgroundColor: COLORS.surface,
+          backgroundColor: COLORS.secondaryGroupedBackground,
           borderTopColor: COLORS.border,
           borderTopWidth: 1,
           paddingBottom: 5,
@@ -81,7 +81,7 @@ const TabNavigator = () => {
           height: 60,
         },
         tabBarLabelStyle: {
-          fontSize: FONT_SIZES.xs,
+          fontSize: FONT_SIZES.caption2,
           fontWeight: '600',
         },
       })}>
