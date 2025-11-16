@@ -32,6 +32,9 @@ const SettingsScreen = () => {
     // Advanced settings
     userAgent: '',
     defaultHeaders: '',
+    proxyList: '',
+    proxyListLink: '',
+    checkProxies: false,
   });
 
   const [allowlist, setAllowlist] = useState([]);
@@ -53,6 +56,9 @@ const SettingsScreen = () => {
       const banwords = await DatabaseService.getParameter('banwords', '');
       const userAgent = await DatabaseService.getParameter('user_agent', '');
       const defaultHeaders = await DatabaseService.getParameter('default_headers', '');
+      const proxyList = await DatabaseService.getParameter('proxy_list', '');
+      const proxyListLink = await DatabaseService.getParameter('proxy_list_link', '');
+      const checkProxies = await DatabaseService.getParameter('check_proxies', 'False') === 'True';
       const countries = await DatabaseService.getAllowlist();
 
       setSettings({
@@ -61,6 +67,9 @@ const SettingsScreen = () => {
         banwords,
         userAgent,
         defaultHeaders,
+        proxyList,
+        proxyListLink,
+        checkProxies,
       });
       setAllowlist(countries);
     } catch (error) {
@@ -87,6 +96,9 @@ const SettingsScreen = () => {
       await DatabaseService.setParameter('banwords', settings.banwords);
       await DatabaseService.setParameter('user_agent', settings.userAgent);
       await DatabaseService.setParameter('default_headers', settings.defaultHeaders);
+      await DatabaseService.setParameter('proxy_list', settings.proxyList);
+      await DatabaseService.setParameter('proxy_list_link', settings.proxyListLink);
+      await DatabaseService.setParameter('check_proxies', settings.checkProxies ? 'True' : 'False');
 
       Alert.alert('Success', 'Settings saved successfully');
     } catch (error) {
@@ -379,7 +391,7 @@ const SettingsScreen = () => {
               />
             </View>
 
-            <View style={[styles.multilineRow, styles.settingRowLast]}>
+            <View style={styles.multilineRow}>
               <Text style={styles.settingLabel}>Default Headers</Text>
               <Text style={styles.settingDescription}>
                 Custom HTTP headers (JSON format)
@@ -391,6 +403,50 @@ const SettingsScreen = () => {
                 placeholder='{"Accept": "application/json"}'
                 placeholderTextColor={COLORS.placeholder}
                 multiline
+              />
+            </View>
+
+            <View style={styles.multilineRow}>
+              <Text style={styles.settingLabel}>Proxy List</Text>
+              <Text style={styles.settingDescription}>
+                Semicolon-separated proxy list (e.g., http://proxy1:port;http://proxy2:port)
+              </Text>
+              <TextInput
+                style={styles.multilineInput}
+                value={settings.proxyList}
+                onChangeText={text => setSettings({...settings, proxyList: text})}
+                placeholder="http://proxy1:8080;http://proxy2:3128"
+                placeholderTextColor={COLORS.placeholder}
+                multiline
+              />
+            </View>
+
+            <View style={styles.multilineRow}>
+              <Text style={styles.settingLabel}>Proxy List URL</Text>
+              <Text style={styles.settingDescription}>
+                URL to fetch proxy list from (one proxy per line)
+              </Text>
+              <TextInput
+                style={styles.multilineInput}
+                value={settings.proxyListLink}
+                onChangeText={text => setSettings({...settings, proxyListLink: text})}
+                placeholder="https://example.com/proxies.txt"
+                placeholderTextColor={COLORS.placeholder}
+                multiline
+              />
+            </View>
+
+            <View style={[styles.settingRow, styles.settingRowLast]}>
+              <View style={styles.settingLeft}>
+                <Text style={styles.settingLabel}>Check Proxies</Text>
+                <Text style={styles.settingDescription}>
+                  Verify proxies before use (slower but more reliable)
+                </Text>
+              </View>
+              <Switch
+                value={settings.checkProxies}
+                onValueChange={value => setSettings({...settings, checkProxies: value})}
+                trackColor={{false: COLORS.buttonFill, true: COLORS.primary}}
               />
             </View>
           </View>

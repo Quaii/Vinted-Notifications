@@ -89,6 +89,30 @@ const DashboardScreen = ({navigation}) => {
     return date.toLocaleDateString();
   };
 
+  const getLevelColor = level => {
+    switch (level) {
+      case 'ERROR':
+        return COLORS.error;
+      case 'WARNING':
+        return COLORS.warning;
+      case 'INFO':
+      default:
+        return COLORS.info;
+    }
+  };
+
+  const getLevelIcon = level => {
+    switch (level) {
+      case 'ERROR':
+        return 'error';
+      case 'WARNING':
+        return 'warning';
+      case 'INFO':
+      default:
+        return 'info';
+    }
+  };
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -269,19 +293,23 @@ const DashboardScreen = ({navigation}) => {
           </View>
           {logs.length > 0 ? (
             <View style={styles.logsList}>
-              {logs.map(log => (
-                <View key={log.id} style={[styles.logEntry, {borderLeftColor: COLORS.primary}]}>
-                  <View style={[styles.logIcon, {backgroundColor: `${COLORS.primary}15`}]}>
-                    <Icon name="info" size={16} color={COLORS.primary} />
+              {logs.map(log => {
+                const levelColor = getLevelColor(log.level);
+                const levelIcon = getLevelIcon(log.level);
+                return (
+                  <View key={log.id} style={[styles.logEntry, {borderLeftColor: levelColor}]}>
+                    <View style={[styles.logIcon, {backgroundColor: `${levelColor}15`}]}>
+                      <Icon name={levelIcon} size={16} color={levelColor} />
+                    </View>
+                    <View style={styles.logContent}>
+                      <Text style={styles.logMessage} numberOfLines={2}>
+                        {log.message}
+                      </Text>
+                      <Text style={styles.logTime}>{formatLogTime(log.timestamp)}</Text>
+                    </View>
                   </View>
-                  <View style={styles.logContent}>
-                    <Text style={styles.logMessage} numberOfLines={2}>
-                      {log.message}
-                    </Text>
-                    <Text style={styles.logTime}>{formatLogTime(log.timestamp)}</Text>
-                  </View>
-                </View>
-              ))}
+                );
+              })}
             </View>
           ) : (
             <Text style={styles.emptyText}>No recent logs</Text>
