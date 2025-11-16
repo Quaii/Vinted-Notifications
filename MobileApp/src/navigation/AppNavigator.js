@@ -8,6 +8,8 @@ import {
   DashboardScreen,
   QueriesScreen,
   ItemsScreen,
+  AnalyticsScreen,
+  LogsScreen,
   SettingsScreen,
 } from '../screens';
 import {useThemeColors, FONT_SIZES, COLORS} from '../constants/theme';
@@ -56,8 +58,11 @@ const TabNavigator = () => {
             case 'Items':
               iconName = 'inventory';
               break;
-            case 'Settings':
-              iconName = 'settings';
+            case 'Analytics':
+              iconName = 'analytics';
+              break;
+            case 'Logs':
+              iconName = 'description';
               break;
             default:
               iconName = 'circle';
@@ -105,10 +110,18 @@ const TabNavigator = () => {
         }}
       />
       <Tab.Screen
-        name="Settings"
-        component={SettingsScreen}
+        name="Analytics"
+        component={AnalyticsScreen}
         options={{
-          tabBarLabel: 'Settings',
+          tabBarLabel: 'Analytics',
+          presentation: 'card',
+        }}
+      />
+      <Tab.Screen
+        name="Logs"
+        component={LogsScreen}
+        options={{
+          tabBarLabel: 'Logs',
           presentation: 'card',
         }}
       />
