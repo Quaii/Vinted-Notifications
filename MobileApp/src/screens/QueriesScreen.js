@@ -14,12 +14,14 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {QueryCard} from '../components';
 import DatabaseService from '../services/DatabaseService';
+import MonitoringService from '../services/MonitoringService';
 import VintedAPI from '../api/VintedAPI';
 import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
 
 /**
  * Queries Screen
  * Manage search queries
+ * iOS NATIVE DESIGN - Auto-starts monitoring when first query is added
  */
 const QueriesScreen = ({navigation}) => {
   const COLORS = useThemeColors();
@@ -67,6 +69,11 @@ const QueriesScreen = ({navigation}) => {
         newQueryUrl.trim(),
         newQueryName.trim() || null,
       );
+
+      // AUTO-START MONITORING (like Python version)
+      // If this is the first query, monitoring will start automatically
+      await MonitoringService.ensureMonitoringStarted();
+
       Alert.alert('Success', 'Query added successfully');
       setModalVisible(false);
       setNewQueryUrl('');
@@ -126,10 +133,12 @@ const QueriesScreen = ({navigation}) => {
 
   const renderEmpty = () => (
     <View style={styles.emptyState}>
-      <Icon name="search-off" size={64} color={COLORS.textLight} />
+      <View style={styles.emptyIcon}>
+        <Icon name="search-off" size={48} color={COLORS.textTertiary} />
+      </View>
       <Text style={styles.emptyStateText}>No search queries</Text>
       <Text style={styles.emptyStateSubtext}>
-        Add a Vinted search URL to start monitoring
+        Add a Vinted search URL to start tracking new items
       </Text>
       <TouchableOpacity
         style={styles.emptyStateButton}
@@ -142,31 +151,20 @@ const QueriesScreen = ({navigation}) => {
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: COLORS.background,
-    },
-    header: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: SPACING.md,
-      paddingTop: SPACING.lg,
-      backgroundColor: COLORS.surface,
-      borderBottomWidth: 1,
-      borderBottomColor: COLORS.border,
-    },
-    headerTitle: {
-      fontSize: FONT_SIZES.xxl,
-      fontWeight: '700',
-      color: COLORS.text,
-    },
-    deleteAllText: {
-      fontSize: FONT_SIZES.md,
-      color: COLORS.error,
-      fontWeight: '600',
+      backgroundColor: COLORS.groupedBackground,
     },
     listContainer: {
-      paddingVertical: SPACING.sm,
+      paddingTop: SPACING.md,
+      paddingBottom: SPACING.xxl * 2, // Extra space for FAB
     },
+    queriesGroup: {
+      backgroundColor: COLORS.secondaryGroupedBackground,
+      marginHorizontal: SPACING.md,
+      marginVertical: SPACING.xs,
+      borderRadius: BORDER_RADIUS.lg,
+      overflow: 'hidden',
+    },
+    // Empty State
     emptyContainer: {
       flex: 1,
     },
@@ -174,119 +172,130 @@ const QueriesScreen = ({navigation}) => {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      padding: SPACING.xxl,
+      paddingHorizontal: SPACING.md,
+      paddingBottom: SPACING.xxl * 2,
+    },
+    emptyIcon: {
+      marginBottom: SPACING.md,
     },
     emptyStateText: {
-      fontSize: FONT_SIZES.xl,
+      fontSize: FONT_SIZES.title3,
       fontWeight: '600',
       color: COLORS.textSecondary,
-      marginTop: SPACING.lg,
+      marginBottom: SPACING.xs,
     },
     emptyStateSubtext: {
-      fontSize: FONT_SIZES.md,
-      color: COLORS.textLight,
-      marginTop: SPACING.sm,
+      fontSize: FONT_SIZES.subheadline,
+      color: COLORS.textTertiary,
       textAlign: 'center',
+      marginBottom: SPACING.xl,
     },
     emptyStateButton: {
       backgroundColor: COLORS.primary,
-      paddingHorizontal: SPACING.lg,
+      paddingHorizontal: SPACING.xl,
       paddingVertical: SPACING.md,
-      borderRadius: BORDER_RADIUS.md,
-      marginTop: SPACING.lg,
+      borderRadius: BORDER_RADIUS.lg,
     },
     emptyStateButtonText: {
-      color: COLORS.surface,
-      fontSize: FONT_SIZES.md,
+      color: '#FFFFFF',
+      fontSize: FONT_SIZES.body,
       fontWeight: '600',
     },
+    // FAB (iOS style)
     fab: {
       position: 'absolute',
-      right: SPACING.lg,
-      bottom: SPACING.lg,
+      right: SPACING.md,
+      bottom: SPACING.md + 60, // Above tab bar
       width: 56,
       height: 56,
       borderRadius: 28,
       backgroundColor: COLORS.primary,
       justifyContent: 'center',
       alignItems: 'center',
-      elevation: 8,
-      shadowColor: COLORS.shadow,
+      shadowColor: '#000',
       shadowOffset: {width: 0, height: 4},
       shadowOpacity: 0.3,
       shadowRadius: 8,
+      elevation: 8,
     },
+    // Modal (iOS Sheet style)
     modalContainer: {
       flex: 1,
       justifyContent: 'flex-end',
-      backgroundColor: COLORS.overlay,
+      backgroundColor: 'rgba(0, 0, 0, 0.4)',
     },
     modalContent: {
-      backgroundColor: COLORS.surface,
+      backgroundColor: COLORS.secondaryGroupedBackground,
       borderTopLeftRadius: BORDER_RADIUS.xl,
       borderTopRightRadius: BORDER_RADIUS.xl,
-      padding: SPACING.lg,
-      maxHeight: '80%',
+      paddingTop: SPACING.md,
+      paddingBottom: SPACING.xxl,
+      maxHeight: '90%',
     },
     modalHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: SPACING.lg,
+      paddingHorizontal: SPACING.md,
+      paddingBottom: SPACING.md,
+      borderBottomWidth: 0.5,
+      borderBottomColor: COLORS.separator,
     },
     modalTitle: {
-      fontSize: FONT_SIZES.xxl,
-      fontWeight: '700',
-      color: COLORS.text,
-    },
-    inputLabel: {
-      fontSize: FONT_SIZES.md,
+      fontSize: FONT_SIZES.headline,
       fontWeight: '600',
       color: COLORS.text,
-      marginBottom: SPACING.sm,
+    },
+    modalBody: {
+      padding: SPACING.md,
+    },
+    inputLabel: {
+      fontSize: FONT_SIZES.footnote,
+      fontWeight: '600',
+      color: COLORS.textSecondary,
+      marginBottom: SPACING.xs,
       marginTop: SPACING.md,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    inputGroup: {
+      backgroundColor: COLORS.secondaryGroupedBackground,
+      borderRadius: BORDER_RADIUS.lg,
+      borderWidth: 1,
+      borderColor: COLORS.separator,
+      overflow: 'hidden',
     },
     input: {
-      backgroundColor: COLORS.background,
-      borderRadius: BORDER_RADIUS.md,
+      backgroundColor: COLORS.cardBackground,
       padding: SPACING.md,
-      fontSize: FONT_SIZES.md,
+      fontSize: FONT_SIZES.body,
       color: COLORS.text,
-      borderWidth: 1,
-      borderColor: COLORS.border,
+      minHeight: 44,
     },
     helperText: {
-      fontSize: FONT_SIZES.sm,
-      color: COLORS.textSecondary,
-      marginTop: SPACING.md,
-      marginBottom: SPACING.lg,
+      fontSize: FONT_SIZES.footnote,
+      color: COLORS.textTertiary,
+      marginTop: SPACING.sm,
+      marginBottom: SPACING.md,
+      lineHeight: 18,
     },
     addButton: {
       backgroundColor: COLORS.primary,
-      borderRadius: BORDER_RADIUS.md,
-      padding: SPACING.md,
+      borderRadius: BORDER_RADIUS.lg,
+      paddingVertical: SPACING.md,
       alignItems: 'center',
+      marginTop: SPACING.md,
     },
     addButtonText: {
-      color: COLORS.surface,
-      fontSize: FONT_SIZES.lg,
+      color: '#FFFFFF',
+      fontSize: FONT_SIZES.headline,
       fontWeight: '600',
     },
   });
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Search Queries</Text>
-        {queries.length > 0 && (
-          <TouchableOpacity onPress={handleDeleteAllQueries}>
-            <Text style={styles.deleteAllText}>Delete All</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Queries List */}
+      {/* Queries List (iOS Grouped List) */}
       <FlatList
         data={queries}
         renderItem={renderQuery}
@@ -299,16 +308,14 @@ const QueriesScreen = ({navigation}) => {
         onRefresh={loadQueries}
       />
 
-      {/* Add Button */}
-      {queries.length > 0 && (
-        <TouchableOpacity
-          style={styles.fab}
-          onPress={() => setModalVisible(true)}>
-          <Icon name="add" size={28} color={COLORS.surface} />
-        </TouchableOpacity>
-      )}
+      {/* FAB - Add Query Button */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => setModalVisible(true)}>
+        <Icon name="add" size={28} color="#FFFFFF" />
+      </TouchableOpacity>
 
-      {/* Add Query Modal */}
+      {/* Add Query Modal (iOS Sheet) */}
       <Modal
         visible={modalVisible}
         animationType="slide"
@@ -317,6 +324,11 @@ const QueriesScreen = ({navigation}) => {
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.modalContainer}>
+          <TouchableOpacity
+            style={{flex: 1}}
+            activeOpacity={1}
+            onPress={() => setModalVisible(false)}
+          />
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Add Search Query</Text>
@@ -325,35 +337,42 @@ const QueriesScreen = ({navigation}) => {
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.inputLabel}>Vinted Search URL *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="https://www.vinted.com/catalog?..."
-              placeholderTextColor={COLORS.textLight}
-              value={newQueryUrl}
-              onChangeText={setNewQueryUrl}
-              autoCapitalize="none"
-              autoCorrect={false}
-              multiline
-            />
+            <View style={styles.modalBody}>
+              <Text style={styles.inputLabel}>Vinted Search URL</Text>
+              <View style={styles.inputGroup}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="https://www.vinted.com/catalog?..."
+                  placeholderTextColor={COLORS.placeholder}
+                  value={newQueryUrl}
+                  onChangeText={setNewQueryUrl}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="url"
+                  multiline
+                />
+              </View>
 
-            <Text style={styles.inputLabel}>Custom Name (Optional)</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="e.g., Nike Shoes"
-              placeholderTextColor={COLORS.textLight}
-              value={newQueryName}
-              onChangeText={setNewQueryName}
-            />
+              <Text style={styles.inputLabel}>Custom Name (Optional)</Text>
+              <View style={styles.inputGroup}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="e.g., Nike Shoes"
+                  placeholderTextColor={COLORS.placeholder}
+                  value={newQueryName}
+                  onChangeText={setNewQueryName}
+                  returnKeyType="done"
+                />
+              </View>
 
-            <Text style={styles.helperText}>
-              Paste the full URL from a Vinted search. The app will monitor
-              this search and notify you of new items.
-            </Text>
+              <Text style={styles.helperText}>
+                Paste the full URL from a Vinted search. The app will automatically monitor this search and notify you of new items.
+              </Text>
 
-            <TouchableOpacity style={styles.addButton} onPress={handleAddQuery}>
-              <Text style={styles.addButtonText}>Add Query</Text>
-            </TouchableOpacity>
+              <TouchableOpacity style={styles.addButton} onPress={handleAddQuery}>
+                <Text style={styles.addButtonText}>Add Query</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </KeyboardAvoidingView>
       </Modal>
