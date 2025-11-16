@@ -114,26 +114,36 @@ const AnalyticsScreen = () => {
       borderWidth: 1,
       borderColor: COLORS.separator,
     },
-    dayRow: {
+    barChartRow: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
       alignItems: 'center',
-      paddingVertical: SPACING.sm,
-      borderBottomWidth: 1,
-      borderBottomColor: COLORS.separator,
+      marginBottom: SPACING.md,
     },
-    dayRowLast: {
-      borderBottomWidth: 0,
-    },
-    dayName: {
-      fontSize: FONT_SIZES.body,
-      fontWeight: '500',
-      color: COLORS.text,
-    },
-    dayCount: {
-      fontSize: FONT_SIZES.body,
+    barLabel: {
+      fontSize: FONT_SIZES.subheadline,
       fontWeight: '600',
+      color: COLORS.text,
+      width: 36,
+    },
+    barContainer: {
+      flex: 1,
+      height: 24,
+      backgroundColor: COLORS.buttonFill,
+      borderRadius: BORDER_RADIUS.sm,
+      marginHorizontal: SPACING.sm,
+      overflow: 'hidden',
+    },
+    bar: {
+      height: '100%',
+      borderRadius: BORDER_RADIUS.sm,
+      minWidth: 2,
+    },
+    barCount: {
+      fontSize: FONT_SIZES.subheadline,
+      fontWeight: '700',
       color: COLORS.primary,
+      width: 32,
+      textAlign: 'right',
     },
     comingSoon: {
       textAlign: 'center',
@@ -180,21 +190,32 @@ const AnalyticsScreen = () => {
           </View>
         </View>
 
-        {/* Day Distribution */}
+        {/* Day Distribution - Bar Chart */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Items by Day of Week</Text>
           <View style={styles.chartCard}>
-            {Object.entries(stats.dayDistribution).map(([day, count], index, array) => (
-              <View
-                key={day}
-                style={[
-                  styles.dayRow,
-                  index === array.length - 1 && styles.dayRowLast,
-                ]}>
-                <Text style={styles.dayName}>{day}</Text>
-                <Text style={styles.dayCount}>{count}</Text>
-              </View>
-            ))}
+            {Object.entries(stats.dayDistribution).map(([day, count]) => {
+              const maxCount = Math.max(...Object.values(stats.dayDistribution), 1);
+              const barWidth = (count / maxCount) * 100;
+
+              return (
+                <View key={day} style={styles.barChartRow}>
+                  <Text style={styles.barLabel}>{day}</Text>
+                  <View style={styles.barContainer}>
+                    <View
+                      style={[
+                        styles.bar,
+                        {
+                          width: `${barWidth}%`,
+                          backgroundColor: COLORS.primary,
+                        },
+                      ]}
+                    />
+                  </View>
+                  <Text style={styles.barCount}>{count}</Text>
+                </View>
+              );
+            })}
           </View>
         </View>
 
