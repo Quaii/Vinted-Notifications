@@ -7,9 +7,32 @@
 
 // CRITICAL: Explicitly disable Fabric (New Architecture)
 // This overrides RCTAppDelegate's default behavior
+// We need to override BOTH concurrentRootEnabled and bridgelessEnabled
+// to fully disable the New Architecture in React Native 0.81.4
 - (BOOL)concurrentRootEnabled
 {
   return NO;
+}
+
+- (BOOL)bridgelessEnabled
+{
+  return NO;
+}
+
+// Explicitly disable Fabric
+- (BOOL)fabricEnabled
+{
+  return NO;
+}
+
+// Override to ensure legacy bridge mode is used
+- (NSDictionary *)prepareInitialProps
+{
+  NSMutableDictionary *initProps = [NSMutableDictionary new];
+  #if DEBUG
+    // Add any debug props here if needed
+  #endif
+  return initProps;
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
