@@ -1,6 +1,6 @@
 import React from 'react';
 import {View, Text, StyleSheet} from 'react-native';
-import Icon from '@react-native-vector-icons/material-icons';
+import MaterialIcons from '@react-native-vector-icons/material-icons';
 import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
 
 /**
@@ -56,7 +56,7 @@ const StatWidget = ({title, value, icon, iconColor}) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.iconContainer}>
-          <Icon name={icon} size={20} color={iconColor || COLORS.primary} />
+          <MaterialIcons name={icon} size={20} color={iconColor || COLORS.primary} />
         </View>
         <Text style={styles.title}>{title}</Text>
       </View>

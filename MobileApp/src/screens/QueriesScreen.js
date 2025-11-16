@@ -11,7 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import Icon from '@react-native-vector-icons/material-icons';
+import MaterialIcons from '@react-native-vector-icons/material-icons';
 import {QueryCard, PageHeader} from '../components';
 import DatabaseService from '../services/DatabaseService';
 import MonitoringService from '../services/MonitoringService';
@@ -135,7 +135,7 @@ const QueriesScreen = ({navigation}) => {
   const renderEmpty = () => (
     <View style={styles.emptyState}>
       <View style={styles.emptyIcon}>
-        <Icon name="search-off" size={48} color={COLORS.textTertiary} />
+        <MaterialIcons name="search-off" size={48} color={COLORS.textTertiary} />
       </View>
       <Text style={styles.emptyStateText}>No search queries</Text>
       <Text style={styles.emptyStateSubtext}>
@@ -314,7 +314,7 @@ const QueriesScreen = ({navigation}) => {
       <TouchableOpacity
         style={styles.fab}
         onPress={() => setModalVisible(true)}>
-        <Icon name="add" size={28} color="#FFFFFF" />
+        <MaterialIcons name="add" size={28} color="#FFFFFF" />
       </TouchableOpacity>
 
       {/* Add Query Modal (iOS Sheet) */}
@@ -335,7 +335,7 @@ const QueriesScreen = ({navigation}) => {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Add Search Query</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Icon name="close" size={24} color={COLORS.text} />
+                <MaterialIcons name="close" size={24} color={COLORS.text} />
               </TouchableOpacity>
             </View>
 

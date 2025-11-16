@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import Icon from '@react-native-vector-icons/material-icons';
+import MaterialIcons from '@react-native-vector-icons/material-icons';
 import {PageHeader} from '../components';
 import {useTheme} from '../contexts/ThemeContext';
 import DatabaseService from '../services/DatabaseService';
@@ -614,7 +614,7 @@ const SettingsScreen = () => {
               <TouchableOpacity
                 style={styles.addButton}
                 onPress={handleAddCountry}>
-                <Icon name="add" size={20} color="#FFFFFF" />
+                <MaterialIcons name="add" size={20} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
 
@@ -626,7 +626,7 @@ const SettingsScreen = () => {
                     <TouchableOpacity
                       onPress={() => handleRemoveCountry(country)}
                       hitSlop={{top: 8, bottom: 8, left: 8, right: 8}}>
-                      <Icon name="close" size={14} color={COLORS.textSecondary} />
+                      <MaterialIcons name="close" size={14} color={COLORS.textSecondary} />
                     </TouchableOpacity>
                   </View>
                 ))}
@@ -639,7 +639,7 @@ const SettingsScreen = () => {
 
         {/* Save Button */}
         <TouchableOpacity style={styles.saveButton} onPress={handleSaveSettings}>
-          <Icon name="save" size={20} color="#FFFFFF" />
+          <MaterialIcons name="save" size={20} color="#FFFFFF" />
           <Text style={styles.saveButtonText}>Save Settings</Text>
         </TouchableOpacity>
 

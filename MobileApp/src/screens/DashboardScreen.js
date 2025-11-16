@@ -7,7 +7,7 @@ import {
   RefreshControl,
   TouchableOpacity,
 } from 'react-native';
-import Icon from '@react-native-vector-icons/material-icons';
+import MaterialIcons from '@react-native-vector-icons/material-icons';
 import {PageHeader, StatWidget, ItemCard, QueryCard} from '../components';
 import DatabaseService from '../services/DatabaseService';
 import LogService from '../services/LogService';
@@ -249,7 +249,7 @@ const DashboardScreen = ({navigation}) => {
               style={styles.sectionButton}
               onPress={() => navigation.navigate('Items')}>
               <Text style={styles.sectionButtonText}>View All</Text>
-              <Icon name="chevron-right" size={18} color={COLORS.link} />
+              <MaterialIcons name="chevron-right" size={18} color={COLORS.link} />
             </TouchableOpacity>
           </View>
           {lastItem ? (
@@ -269,7 +269,7 @@ const DashboardScreen = ({navigation}) => {
               style={styles.sectionButton}
               onPress={() => navigation.navigate('Queries')}>
               <Text style={styles.sectionButtonText}>Manage</Text>
-              <Icon name="chevron-right" size={18} color={COLORS.link} />
+              <MaterialIcons name="chevron-right" size={18} color={COLORS.link} />
             </TouchableOpacity>
           </View>
           {queries.length > 0 ? (
@@ -295,7 +295,7 @@ const DashboardScreen = ({navigation}) => {
               style={styles.sectionButton}
               onPress={() => navigation.navigate('Logs')}>
               <Text style={styles.sectionButtonText}>View All</Text>
-              <Icon name="chevron-right" size={18} color={COLORS.link} />
+              <MaterialIcons name="chevron-right" size={18} color={COLORS.link} />
             </TouchableOpacity>
           </View>
           {logs.length > 0 ? (
@@ -307,7 +307,7 @@ const DashboardScreen = ({navigation}) => {
                   <View key={log.id} style={[styles.logEntry, {borderLeftColor: levelColor}]}>
                     <View style={styles.logHeader}>
                       <View style={[styles.levelBadge, {backgroundColor: `${levelColor}20`}]}>
-                        <Icon name={levelIcon} size={14} color={levelColor} />
+                        <MaterialIcons name={levelIcon} size={14} color={levelColor} />
                         <Text style={[styles.levelText, {color: levelColor}]}>
                           {log.level || 'INFO'}
                         </Text>

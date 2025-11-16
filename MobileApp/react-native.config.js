@@ -3,5 +3,6 @@ module.exports = {
     ios: {},
     android: {},
   },
-  assets: ['./node_modules/@react-native-vector-icons/material-icons/fonts/'],
+  // The scoped @react-native-vector-icons package auto-links fonts
+  // No manual asset configuration needed
 };

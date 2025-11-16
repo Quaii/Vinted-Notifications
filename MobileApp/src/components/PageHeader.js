@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import Icon from '@react-native-vector-icons/material-icons';
+import MaterialIcons from '@react-native-vector-icons/material-icons';
 import {useNavigation} from '@react-navigation/native';
 import {useThemeColors, SPACING, FONT_SIZES} from '../constants/theme';
 
@@ -57,7 +57,7 @@ const PageHeader = ({title, showSettings = true, showBack = false}) => {
             style={styles.backButton}
             onPress={handleBackPress}
             activeOpacity={0.6}>
-            <Icon name="close" size={34} color={COLORS.text} />
+            <MaterialIcons name="close" size={34} color={COLORS.text} />
           </TouchableOpacity>
         )}
         <Text style={styles.title}>{title}</Text>
@@ -66,7 +66,7 @@ const PageHeader = ({title, showSettings = true, showBack = false}) => {
             style={styles.settingsButton}
             onPress={handleSettingsPress}
             activeOpacity={0.6}>
-            <Icon name="settings" size={34} color={COLORS.primary} />
+            <MaterialIcons name="settings" size={34} color={COLORS.primary} />
           </TouchableOpacity>
         )}
       </View>

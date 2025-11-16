@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import Icon from '@react-native-vector-icons/material-icons';
+import MaterialIcons from '@react-native-vector-icons/material-icons';
 import {PageHeader, ItemCard} from '../components';
 import DatabaseService from '../services/DatabaseService';
 import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
@@ -118,7 +118,7 @@ const ItemsScreen = ({navigation, route}) => {
 
   const renderEmpty = () => (
     <View style={styles.emptyState}>
-      <Icon name="search-off" size={48} color={COLORS.textTertiary} />
+      <MaterialIcons name="search-off" size={48} color={COLORS.textTertiary} />
       <Text style={styles.emptyText}>
         {searchQuery ? 'No items match your search' : 'No items found'}
       </Text>
@@ -272,7 +272,7 @@ const ItemsScreen = ({navigation, route}) => {
             <TouchableOpacity
               style={styles.clearButton}
               onPress={() => setSearchQuery('')}>
-              <Icon name="close" size={20} color={COLORS.textSecondary} />
+              <MaterialIcons name="close" size={20} color={COLORS.textSecondary} />
             </TouchableOpacity>
           )}
         </View>
