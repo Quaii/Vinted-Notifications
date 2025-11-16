@@ -312,12 +312,33 @@ class MonitoringService {
         timestamp = Date.now();
       }
 
-      // Extract price and currency (matching Python desktop app structure)
-      const price = rawItem.price?.amount || rawItem.price || '0.00';
-      const currency = rawItem.price?.currency_code || rawItem.currency || '€';
+      // Extract price - ensure it's always a string
+      let price = '0.00';
+      if (typeof rawItem.price === 'object' && rawItem.price !== null) {
+        // Price is an object like { amount: "5.0", currency_code: "EUR" }
+        price = String(rawItem.price.amount || rawItem.price.value || '0.00');
+      } else if (rawItem.price) {
+        // Price is a direct string or number
+        price = String(rawItem.price);
+      }
 
-      // Extract photo URL (matching Python desktop app structure)
-      const photoUrl = rawItem.photo?.url || rawItem.photo || '';
+      // Extract currency - ensure it's always a string
+      let currency = '€';
+      if (typeof rawItem.price === 'object' && rawItem.price !== null) {
+        currency = String(rawItem.price.currency_code || rawItem.price.currency || '€');
+      } else if (rawItem.currency) {
+        currency = String(rawItem.currency);
+      }
+
+      // Extract photo URL - ensure it's always a string
+      let photoUrl = '';
+      if (typeof rawItem.photo === 'object' && rawItem.photo !== null) {
+        // Photo is an object like { url: "https://...", full_size_url: "...", ... }
+        photoUrl = String(rawItem.photo.url || rawItem.photo.full_size_url || rawItem.photo.temp_uuid || '');
+      } else if (rawItem.photo) {
+        // Photo is a direct URL string
+        photoUrl = String(rawItem.photo);
+      }
 
       // Build item (buyUrl will be auto-generated in constructor)
       const item = new VintedItem({
