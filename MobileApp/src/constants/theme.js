@@ -106,10 +106,6 @@ export const useThemeColors = () => {
   return COLORS; // Returns iOS system colors that auto-adapt
 };
 
-export const useColorScheme = () => {
-  return useColorScheme();
-};
-
 // iOS Typography Scale (Dynamic Type)
 export const FONT_SIZES = {
   largeTitle: 34,    // iOS Large Title
