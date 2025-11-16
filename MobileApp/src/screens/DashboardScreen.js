@@ -7,7 +7,7 @@ import {
   RefreshControl,
   TouchableOpacity,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import Icon from '@react-native-vector-icons/material-icons';
 import {StatCard, ItemCard} from '../components';
 import DatabaseService from '../services/DatabaseService';
 import MonitoringService from '../services/MonitoringService';

@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import Icon from '@react-native-vector-icons/material-icons';
 import {ItemCard} from '../components';
 import DatabaseService from '../services/DatabaseService';
 import {useThemeColors, SPACING, FONT_SIZES} from '../constants/theme';
