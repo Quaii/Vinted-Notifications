@@ -56,18 +56,35 @@ const AppContent = () => {
       alignItems: 'center',
       backgroundColor: COLORS.background,
     },
+    logo: {
+      fontSize: 36,
+      fontWeight: '700',
+      color: COLORS.text,
+      marginBottom: 8,
+      letterSpacing: -1,
+    },
+    tagline: {
+      fontSize: 14,
+      color: COLORS.textTertiary,
+      marginBottom: 48,
+      letterSpacing: 2,
+      textTransform: 'uppercase',
+    },
     loadingText: {
       marginTop: 16,
-      fontSize: 16,
+      fontSize: 14,
       color: COLORS.textSecondary,
+      fontWeight: '500',
     },
   };
 
   if (!isReady) {
     return (
       <View style={styles.loadingContainer}>
+        <Text style={styles.logo}>Vinted Notifications</Text>
+        <Text style={styles.tagline}>Never Miss a Deal</Text>
         <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={styles.loadingText}>Loading...</Text>
+        <Text style={styles.loadingText}>Initializing...</Text>
       </View>
     );
   }
