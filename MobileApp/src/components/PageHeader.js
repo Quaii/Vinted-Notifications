@@ -10,7 +10,7 @@ import {useThemeColors, SPACING, FONT_SIZES} from '../constants/theme';
  * Modern page header with title and settings button
  * Properly handles safe areas for notch/Dynamic Island
  */
-const PageHeader = ({title, showSettings = true, showBack = false}) => {
+const PageHeader = ({title, showSettings = true, showBack = false, centered = false}) => {
   const COLORS = useThemeColors();
   const navigation = useNavigation();
 
@@ -28,7 +28,7 @@ const PageHeader = ({title, showSettings = true, showBack = false}) => {
     },
     container: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
+      justifyContent: centered ? 'center' : 'space-between',
       alignItems: 'center',
       paddingHorizontal: SPACING.lg,
       paddingTop: SPACING.sm,
@@ -40,6 +40,8 @@ const PageHeader = ({title, showSettings = true, showBack = false}) => {
       fontWeight: '700',
       color: COLORS.text,
       letterSpacing: -0.5,
+      flex: centered ? 0 : 1,
+      textAlign: centered ? 'center' : 'left',
     },
     settingsButton: {
       padding: SPACING.xs,
