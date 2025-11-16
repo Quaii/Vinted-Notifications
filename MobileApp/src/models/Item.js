@@ -36,10 +36,26 @@ export class VintedItem {
 
   // Get display photo URL
   getPhotoUrl() {
-    if (typeof this.photo === 'object' && this.photo.url) {
-      return this.photo.url;
+    if (!this.photo) return null;
+
+    // Handle photo object with nested structure
+    if (typeof this.photo === 'object') {
+      // Try different photo URL paths from Vinted API
+      if (this.photo.url) return this.photo.url;
+      if (this.photo.high_resolution?.url) return this.photo.high_resolution.url;
+      if (this.photo.full_size_url) return this.photo.full_size_url;
+      if (this.photo.dominant_color_opaque) {
+        // Last resort: construct URL from dominant color (placeholder)
+        return null;
+      }
     }
-    return this.photo;
+
+    // Handle direct URL string
+    if (typeof this.photo === 'string') {
+      return this.photo;
+    }
+
+    return null;
   }
 
   // Get time since posted

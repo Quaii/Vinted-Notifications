@@ -346,6 +346,16 @@ class DatabaseService {
       const items = [];
       for (let i = 0; i < results.rows.length; i++) {
         const row = results.rows.item(i);
+        // Parse photo JSON if it's stored as string
+        let photo = row.photo;
+        if (typeof photo === 'string' && photo.startsWith('{')) {
+          try {
+            photo = JSON.parse(photo);
+          } catch (e) {
+            console.warn('Failed to parse photo JSON:', e);
+          }
+        }
+
         items.push(new VintedItem({
           id: row.id,
           title: row.title,
@@ -353,7 +363,7 @@ class DatabaseService {
           sizeTitle: row.size_title,
           price: row.price,
           currency: row.currency,
-          photo: row.photo,
+          photo: photo,
           url: row.url,
           buyUrl: row.buy_url,
           createdAtTs: row.created_at_ts,
