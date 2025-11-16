@@ -312,15 +312,22 @@ class MonitoringService {
         timestamp = Date.now();
       }
 
+      // Extract price and currency (matching Python desktop app structure)
+      const price = rawItem.price?.amount || rawItem.price || '0.00';
+      const currency = rawItem.price?.currency_code || rawItem.currency || '€';
+
+      // Extract photo URL (matching Python desktop app structure)
+      const photoUrl = rawItem.photo?.url || rawItem.photo || '';
+
       // Build item (buyUrl will be auto-generated in constructor)
       const item = new VintedItem({
         id: rawItem.id,
         title: rawItem.title,
         brandTitle: rawItem.brand_title || rawItem.brand || '',
         sizeTitle: rawItem.size_title || rawItem.size || '',
-        price: rawItem.price,
-        currency: rawItem.currency || '€',
-        photo: rawItem.photo,
+        price: price,
+        currency: currency,
+        photo: photoUrl,
         url: rawItem.url,
         createdAtTs: timestamp,
         rawTimestamp: rawItem.photo?.high_resolution?.timestamp || '',

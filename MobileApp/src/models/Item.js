@@ -28,34 +28,14 @@ export class VintedItem {
 
   // Format price for display
   getFormattedPrice() {
-    if (typeof this.price === 'object' && this.price.amount) {
-      return `${this.price.amount} ${this.price.currency_code || this.currency}`;
-    }
+    // Price and currency are now always strings (extracted from API correctly)
     return `${this.price} ${this.currency}`;
   }
 
   // Get display photo URL
   getPhotoUrl() {
-    if (!this.photo) return null;
-
-    // Handle photo object with nested structure
-    if (typeof this.photo === 'object') {
-      // Try different photo URL paths from Vinted API
-      if (this.photo.url) return this.photo.url;
-      if (this.photo.high_resolution?.url) return this.photo.high_resolution.url;
-      if (this.photo.full_size_url) return this.photo.full_size_url;
-      if (this.photo.dominant_color_opaque) {
-        // Last resort: construct URL from dominant color (placeholder)
-        return null;
-      }
-    }
-
-    // Handle direct URL string
-    if (typeof this.photo === 'string') {
-      return this.photo;
-    }
-
-    return null;
+    // Photo is now always a string URL (extracted from API as rawItem.photo.url)
+    return this.photo || null;
   }
 
   // Get time since posted
@@ -79,9 +59,9 @@ export class VintedItem {
       title: this.title,
       brand_title: this.brand_title,
       size_title: this.size_title,
-      price: typeof this.price === 'object' ? JSON.stringify(this.price) : this.price,
+      price: this.price,
       currency: this.currency,
-      photo: typeof this.photo === 'object' ? JSON.stringify(this.photo) : this.photo,
+      photo: this.photo,
       url: this.url,
       buy_url: this.buy_url,
       created_at_ts: this.created_at_ts,
