@@ -36,6 +36,16 @@ const App = () => {
       await MonitoringService.initBackgroundFetch();
       console.log('Background fetch initialized');
 
+      // AUTO-START MONITORING (like Python version)
+      // Check if there are queries to monitor
+      const queries = await DatabaseService.getQueries();
+      if (queries && queries.length > 0) {
+        console.log(`Found ${queries.length} queries - auto-starting monitoring`);
+        MonitoringService.startMonitoring();
+      } else {
+        console.log('No queries found - monitoring will start when first query is added');
+      }
+
       console.log('App initialization complete');
       setIsReady(true);
     } catch (err) {
