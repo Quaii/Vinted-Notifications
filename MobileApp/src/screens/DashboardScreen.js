@@ -6,7 +6,6 @@ import {
   ScrollView,
   RefreshControl,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {StatCard, ItemCard} from '../components';
@@ -16,7 +15,8 @@ import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/t
 
 /**
  * Dashboard Screen
- * Main screen showing statistics and recent items (with dark mode support)
+ * Main screen showing statistics and recent items
+ * iOS NATIVE DESIGN - Monitoring runs automatically (like Python version)
  */
 const DashboardScreen = ({navigation}) => {
   const COLORS = useThemeColors();
@@ -64,176 +64,109 @@ const DashboardScreen = ({navigation}) => {
     setRefreshing(false);
   }, [loadData]);
 
-  const toggleMonitoring = async () => {
-    try {
-      if (monitoringStatus.isRunning) {
-        MonitoringService.stopMonitoring();
-        Alert.alert('Success', 'Monitoring stopped');
-      } else {
-        if (monitoringStatus.activeQueries === 0) {
-          Alert.alert(
-            'No Queries',
-            'Please add at least one search query before starting monitoring.',
-            [{text: 'OK'}],
-          );
-          return;
-        }
-        await MonitoringService.startMonitoring();
-        Alert.alert('Success', 'Monitoring started');
-      }
-      await loadData();
-    } catch (error) {
-      Alert.alert('Error', 'Failed to toggle monitoring');
-    }
-  };
-
-  const handleCheckNow = async () => {
-    try {
-      if (monitoringStatus.activeQueries === 0) {
-        Alert.alert(
-          'No Queries',
-          'Please add at least one search query first.',
-          [{text: 'OK'}],
-        );
-        return;
-      }
-
-      Alert.alert('Checking', 'Checking all queries for new items...');
-      const newItems = await MonitoringService.checkAllQueries();
-
-      if (newItems.length > 0) {
-        Alert.alert('Success', `Found ${newItems.length} new item(s)!`);
-      } else {
-        Alert.alert('No New Items', 'No new items found at this time.');
-      }
-
-      await loadData();
-    } catch (error) {
-      Alert.alert('Error', 'Failed to check queries');
-    }
-  };
-
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      backgroundColor: COLORS.groupedBackground,
     },
-    header: {
-      padding: SPACING.lg,
-      paddingTop: SPACING.xl,
-      backgroundColor: COLORS.primary,
+    // iOS Grouped List Section
+    section: {
+      marginTop: SPACING.lg,
     },
-    headerTitle: {
-      fontSize: FONT_SIZES.xxxl,
-      fontWeight: '700',
-      color: COLORS.surface,
-      marginBottom: SPACING.xs,
+    sectionHeader: {
+      paddingHorizontal: SPACING.md,
+      paddingTop: SPACING.sm,
+      paddingBottom: SPACING.xs,
     },
-    headerSubtitle: {
-      fontSize: FONT_SIZES.md,
-      color: COLORS.surface,
-      opacity: 0.9,
+    sectionHeaderText: {
+      fontSize: FONT_SIZES.footnote,
+      color: COLORS.textTertiary,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
     },
-    statusCard: {
-      backgroundColor: COLORS.surface,
-      margin: SPACING.md,
-      padding: SPACING.md,
+    // Status Info (Read-only)
+    infoGroup: {
+      backgroundColor: COLORS.secondaryGroupedBackground,
+      marginHorizontal: SPACING.md,
       borderRadius: BORDER_RADIUS.lg,
+      overflow: 'hidden',
     },
-    statusHeader: {
+    infoRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: SPACING.sm,
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.sm + 2,
+      borderBottomWidth: 0.5,
+      borderBottomColor: COLORS.separator,
     },
+    infoRowLast: {
+      borderBottomWidth: 0,
+    },
+    infoLabel: {
+      fontSize: FONT_SIZES.body,
+      color: COLORS.text,
+    },
+    infoValue: {
+      fontSize: FONT_SIZES.body,
+      color: COLORS.textSecondary,
+    },
+    // Status Indicator
     statusIndicator: {
       flexDirection: 'row',
       alignItems: 'center',
     },
     statusDot: {
-      width: 12,
-      height: 12,
-      borderRadius: 6,
-      marginRight: SPACING.sm,
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      marginRight: SPACING.xs,
     },
-    statusText: {
-      fontSize: FONT_SIZES.lg,
-      fontWeight: '600',
-      color: COLORS.text,
-    },
-    toggleButton: {
-      paddingHorizontal: SPACING.md,
-      paddingVertical: SPACING.sm,
-      borderRadius: BORDER_RADIUS.md,
-    },
-    toggleButtonText: {
-      color: COLORS.surface,
-      fontWeight: '600',
-      fontSize: FONT_SIZES.md,
-    },
-    statusDetails: {
-      marginBottom: SPACING.sm,
-    },
-    statusDetailText: {
-      fontSize: FONT_SIZES.sm,
-      color: COLORS.textSecondary,
-    },
-    checkNowButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: SPACING.sm,
-      borderRadius: BORDER_RADIUS.md,
-      borderWidth: 1,
-      borderColor: COLORS.primary,
-    },
-    checkNowText: {
-      color: COLORS.primary,
-      fontWeight: '600',
-      marginLeft: SPACING.xs,
-    },
-    section: {
-      marginTop: SPACING.md,
-    },
-    sectionHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingHorizontal: SPACING.md,
-      marginBottom: SPACING.sm,
-    },
-    sectionTitle: {
-      fontSize: FONT_SIZES.xl,
-      fontWeight: '700',
-      color: COLORS.text,
-      paddingHorizontal: SPACING.md,
-      marginBottom: SPACING.sm,
-    },
-    seeAllText: {
-      fontSize: FONT_SIZES.md,
-      color: COLORS.primary,
-      fontWeight: '600',
-    },
+    // Statistics Cards
     statsGrid: {
       paddingHorizontal: SPACING.md,
     },
     statItem: {
-      marginBottom: SPACING.md,
+      marginBottom: SPACING.sm,
     },
+    // Recent Items
+    itemsContainer: {
+      backgroundColor: COLORS.secondaryGroupedBackground,
+      marginHorizontal: SPACING.md,
+      borderRadius: BORDER_RADIUS.lg,
+      overflow: 'hidden',
+    },
+    seeAllRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.md,
+      paddingVertical: SPACING.sm,
+      borderBottomWidth: 0.5,
+      borderBottomColor: COLORS.separator,
+    },
+    seeAllText: {
+      fontSize: FONT_SIZES.body,
+      color: COLORS.link,
+    },
+    // Empty State
     emptyState: {
       alignItems: 'center',
-      padding: SPACING.xxl,
+      paddingVertical: SPACING.xxl * 2,
+      paddingHorizontal: SPACING.md,
+    },
+    emptyIcon: {
+      marginBottom: SPACING.md,
     },
     emptyStateText: {
-      fontSize: FONT_SIZES.lg,
+      fontSize: FONT_SIZES.body,
       fontWeight: '600',
       color: COLORS.textSecondary,
-      marginTop: SPACING.md,
+      marginBottom: SPACING.xs,
     },
     emptyStateSubtext: {
-      fontSize: FONT_SIZES.md,
-      color: COLORS.textLight,
-      marginTop: SPACING.xs,
+      fontSize: FONT_SIZES.subheadline,
+      color: COLORS.textTertiary,
       textAlign: 'center',
     },
   });
@@ -244,61 +177,50 @@ const DashboardScreen = ({navigation}) => {
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Vinted Notifications</Text>
-        <Text style={styles.headerSubtitle}>Track new Vinted items</Text>
-      </View>
-
-      {/* Monitoring Status */}
-      <View style={styles.statusCard}>
-        <View style={styles.statusHeader}>
-          <View style={styles.statusIndicator}>
-            <View
-              style={[
-                styles.statusDot,
-                {
-                  backgroundColor: monitoringStatus.isRunning
-                    ? COLORS.success
-                    : COLORS.textLight,
-                },
-              ]}
-            />
-            <Text style={styles.statusText}>
-              {monitoringStatus.isRunning ? 'Monitoring Active' : 'Monitoring Stopped'}
-            </Text>
+      {/* Monitoring Status (Read-Only) */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionHeaderText}>MONITORING STATUS</Text>
+        </View>
+        <View style={styles.infoGroup}>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Status</Text>
+            <View style={styles.statusIndicator}>
+              <View
+                style={[
+                  styles.statusDot,
+                  {
+                    backgroundColor: monitoringStatus.isRunning
+                      ? COLORS.success
+                      : COLORS.textTertiary,
+                  },
+                ]}
+              />
+              <Text style={styles.infoValue}>
+                {monitoringStatus.isRunning ? 'Active' : 'Inactive'}
+              </Text>
+            </View>
           </View>
-          <TouchableOpacity
-            style={[
-              styles.toggleButton,
-              {
-                backgroundColor: monitoringStatus.isRunning
-                  ? COLORS.error
-                  : COLORS.success,
-              },
-            ]}
-            onPress={toggleMonitoring}>
-            <Text style={styles.toggleButtonText}>
-              {monitoringStatus.isRunning ? 'Stop' : 'Start'}
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Active Queries</Text>
+            <Text style={styles.infoValue}>{monitoringStatus.activeQueries}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>Check Interval</Text>
+            <Text style={styles.infoValue}>{monitoringStatus.refreshDelay}s</Text>
+          </View>
+          <View style={[styles.infoRow, styles.infoRowLast]}>
+            <Text style={styles.infoLabel}>Items Per Query</Text>
+            <Text style={styles.infoValue}>{monitoringStatus.itemsPerQuery}</Text>
+          </View>
         </View>
-        <View style={styles.statusDetails}>
-          <Text style={styles.statusDetailText}>
-            Refresh: {monitoringStatus.refreshDelay}s | Items:{' '}
-            {monitoringStatus.itemsPerQuery} | Queries:{' '}
-            {monitoringStatus.activeQueries}
-          </Text>
-        </View>
-        <TouchableOpacity style={styles.checkNowButton} onPress={handleCheckNow}>
-          <Icon name="refresh" size={20} color={COLORS.primary} />
-          <Text style={styles.checkNowText}>Check Now</Text>
-        </TouchableOpacity>
       </View>
 
       {/* Statistics */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Statistics</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionHeaderText}>STATISTICS</Text>
+        </View>
         <View style={styles.statsGrid}>
           <View style={styles.statItem}>
             <StatCard
@@ -313,7 +235,7 @@ const DashboardScreen = ({navigation}) => {
               icon="search"
               label="Active Queries"
               value={statistics.totalQueries}
-              color={COLORS.secondary}
+              color={COLORS.info}
             />
           </View>
           <View style={styles.statItem}>
@@ -330,19 +252,32 @@ const DashboardScreen = ({navigation}) => {
       {/* Recent Items */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recent Items</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Items')}>
-            <Text style={styles.seeAllText}>See All</Text>
-          </TouchableOpacity>
+          <Text style={styles.sectionHeaderText}>RECENT ITEMS</Text>
         </View>
         {recentItems.length > 0 ? (
-          recentItems.map(item => <ItemCard key={item.id} item={item} />)
+          <View style={styles.itemsContainer}>
+            <TouchableOpacity
+              style={styles.seeAllRow}
+              onPress={() => navigation.navigate('Items')}>
+              <Text style={styles.infoLabel}>All Items</Text>
+              <Text style={styles.seeAllText}>See All</Text>
+            </TouchableOpacity>
+            {recentItems.map((item, index) => (
+              <ItemCard
+                key={item.id}
+                item={item}
+                isLast={index === recentItems.length - 1}
+              />
+            ))}
+          </View>
         ) : (
           <View style={styles.emptyState}>
-            <Icon name="inbox" size={64} color={COLORS.textLight} />
+            <View style={styles.emptyIcon}>
+              <Icon name="inbox" size={48} color={COLORS.textTertiary} />
+            </View>
             <Text style={styles.emptyStateText}>No items yet</Text>
             <Text style={styles.emptyStateSubtext}>
-              Add a search query and start monitoring
+              Add a search query to start tracking new Vinted items
             </Text>
           </View>
         )}

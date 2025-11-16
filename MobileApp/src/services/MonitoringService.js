@@ -8,11 +8,38 @@ import {APP_CONFIG} from '../constants/config';
 /**
  * Monitoring Service
  * Handles background monitoring of Vinted queries
+ * AUTO-STARTS when queries are added (like Python version)
  */
 class MonitoringService {
   constructor() {
     this.isRunning = false;
     this.intervalId = null;
+    this.initialized = false;
+  }
+
+  /**
+   * Initialize monitoring state from database
+   * Called on app launch to restore monitoring if it was running
+   */
+  async initializeState() {
+    if (this.initialized) return;
+
+    try {
+      // Check if monitoring was previously running
+      const wasRunning = await DatabaseService.getParameter('monitoring_enabled', 'false');
+      const queries = await DatabaseService.getQueries(true);
+
+      // Auto-start if there are active queries (like Python version)
+      if (queries && queries.length > 0 && wasRunning === 'true') {
+        console.log('[MonitoringService] Restoring monitoring state - auto-starting');
+        await this.startMonitoring();
+      }
+
+      this.initialized = true;
+    } catch (error) {
+      console.error('[MonitoringService] Failed to initialize state:', error);
+      this.initialized = true;
+    }
   }
 
   /**
@@ -55,6 +82,7 @@ class MonitoringService {
 
   /**
    * Start monitoring (foreground)
+   * Automatically persists state to database
    */
   async startMonitoring() {
     if (this.isRunning) {
@@ -64,6 +92,9 @@ class MonitoringService {
 
     console.log('Starting monitoring...');
     this.isRunning = true;
+
+    // Persist monitoring state
+    await DatabaseService.setParameter('monitoring_enabled', 'true');
 
     // Initial check
     await this.checkAllQueries();
@@ -85,8 +116,9 @@ class MonitoringService {
 
   /**
    * Stop monitoring (foreground)
+   * Automatically persists state to database
    */
-  stopMonitoring() {
+  async stopMonitoring() {
     if (!this.isRunning) {
       console.log('Monitoring not running');
       return;
@@ -94,6 +126,9 @@ class MonitoringService {
 
     console.log('Stopping monitoring...');
     this.isRunning = false;
+
+    // Persist monitoring state
+    await DatabaseService.setParameter('monitoring_enabled', 'false');
 
     if (this.intervalId) {
       clearInterval(this.intervalId);
@@ -304,6 +339,20 @@ class MonitoringService {
    */
   isMonitoringRunning() {
     return this.isRunning;
+  }
+
+  /**
+   * Auto-start monitoring when first query is added (like Python version)
+   * Call this after adding a query
+   */
+  async ensureMonitoringStarted() {
+    const queries = await DatabaseService.getQueries(true);
+
+    // If there are queries and monitoring is not running, start it
+    if (queries && queries.length > 0 && !this.isRunning) {
+      console.log('[MonitoringService] First query added - auto-starting monitoring');
+      await this.startMonitoring();
+    }
   }
 
   /**
