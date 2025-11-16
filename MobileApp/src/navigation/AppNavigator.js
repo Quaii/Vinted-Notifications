@@ -17,12 +17,15 @@ const Stack = createStackNavigator();
 
 /**
  * Items Stack Navigator
+ * Using 'card' presentation to avoid iOS 17+ native sheet issues
  */
 const ItemsStack = () => {
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
+        presentation: 'card', // Explicitly use card instead of modal/formSheet
+        animationEnabled: true,
       }}>
       <Stack.Screen name="ItemsList" component={ItemsScreen} />
     </Stack.Navigator>
