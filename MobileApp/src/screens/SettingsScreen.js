@@ -368,7 +368,7 @@ const SettingsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <PageHeader title="Settings" showSettings={false} showBack={true} />
+      <PageHeader title="Settings" showSettings={false} showBack={true} centered={true} />
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
 
         {/* App Settings */}
