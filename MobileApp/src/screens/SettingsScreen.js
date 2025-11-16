@@ -13,7 +13,7 @@ import Icon from '@react-native-vector-icons/material-icons';
 import {PageHeader} from '../components';
 import {useTheme} from '../contexts/ThemeContext';
 import DatabaseService from '../services/DatabaseService';
-import {APP_CONFIG} from '../constants/config';
+import {APP_CONFIG, NOTIFICATION_MODES} from '../constants/config';
 import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
 
 /**
@@ -29,6 +29,8 @@ const SettingsScreen = () => {
     refreshDelay: APP_CONFIG.DEFAULT_REFRESH_DELAY,
     itemsPerQuery: APP_CONFIG.DEFAULT_ITEMS_PER_QUERY,
     banwords: '',
+    // App settings
+    notificationMode: NOTIFICATION_MODES.PRECISE,
     // Advanced settings
     userAgent: '',
     defaultHeaders: '',
@@ -54,6 +56,7 @@ const SettingsScreen = () => {
         APP_CONFIG.DEFAULT_ITEMS_PER_QUERY,
       );
       const banwords = await DatabaseService.getParameter('banwords', '');
+      const notificationMode = await DatabaseService.getParameter('notification_mode', NOTIFICATION_MODES.PRECISE);
       const userAgent = await DatabaseService.getParameter('user_agent', '');
       const defaultHeaders = await DatabaseService.getParameter('default_headers', '');
       const proxyList = await DatabaseService.getParameter('proxy_list', '');
@@ -65,6 +68,7 @@ const SettingsScreen = () => {
         refreshDelay: parseInt(refreshDelay),
         itemsPerQuery: parseInt(itemsPerQuery),
         banwords,
+        notificationMode,
         userAgent,
         defaultHeaders,
         proxyList,
@@ -94,6 +98,7 @@ const SettingsScreen = () => {
         settings.itemsPerQuery.toString(),
       );
       await DatabaseService.setParameter('banwords', settings.banwords);
+      await DatabaseService.setParameter('notification_mode', settings.notificationMode);
       await DatabaseService.setParameter('user_agent', settings.userAgent);
       await DatabaseService.setParameter('default_headers', settings.defaultHeaders);
       await DatabaseService.setParameter('proxy_list', settings.proxyList);
@@ -230,6 +235,30 @@ const SettingsScreen = () => {
       color: COLORS.textTertiary,
       lineHeight: 16,
     },
+    segmentedControl: {
+      flexDirection: 'row',
+      marginTop: SPACING.md,
+      backgroundColor: COLORS.buttonFill,
+      borderRadius: BORDER_RADIUS.lg,
+      padding: 2,
+    },
+    segmentButton: {
+      flex: 1,
+      paddingVertical: SPACING.xs,
+      alignItems: 'center',
+      borderRadius: BORDER_RADIUS.md,
+    },
+    segmentButtonActive: {
+      backgroundColor: COLORS.primary,
+    },
+    segmentButtonText: {
+      fontSize: FONT_SIZES.subheadline,
+      fontWeight: '600',
+      color: COLORS.textSecondary,
+    },
+    segmentButtonTextActive: {
+      color: '#FFFFFF',
+    },
     inlineInput: {
       backgroundColor: COLORS.cardBackground,
       borderRadius: BORDER_RADIUS.md,
@@ -351,7 +380,7 @@ const SettingsScreen = () => {
             Customize the appearance and behavior of the app
           </Text>
           <View style={styles.card}>
-            <View style={[styles.settingRow, styles.settingRowLast]}>
+            <View style={styles.settingRow}>
               <View style={styles.settingLeft}>
                 <Text style={styles.settingLabel}>Dark Mode</Text>
                 <Text style={styles.settingDescription}>
@@ -363,6 +392,47 @@ const SettingsScreen = () => {
                 onValueChange={toggleTheme}
                 trackColor={{false: COLORS.buttonFill, true: COLORS.primary}}
               />
+            </View>
+
+            <View style={[styles.settingRow, styles.settingRowLast]}>
+              <View style={{flex: 1}}>
+                <Text style={styles.settingLabel}>Notification Mode</Text>
+                <Text style={styles.settingDescription}>
+                  {settings.notificationMode === NOTIFICATION_MODES.PRECISE
+                    ? 'Precise: Individual notification for each item with details'
+                    : 'Compact: Summary notification (e.g., "5 new items found")'}
+                </Text>
+                <View style={styles.segmentedControl}>
+                  <TouchableOpacity
+                    style={[
+                      styles.segmentButton,
+                      settings.notificationMode === NOTIFICATION_MODES.PRECISE && styles.segmentButtonActive,
+                    ]}
+                    onPress={() => setSettings({...settings, notificationMode: NOTIFICATION_MODES.PRECISE})}>
+                    <Text
+                      style={[
+                        styles.segmentButtonText,
+                        settings.notificationMode === NOTIFICATION_MODES.PRECISE && styles.segmentButtonTextActive,
+                      ]}>
+                      Precise
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.segmentButton,
+                      settings.notificationMode === NOTIFICATION_MODES.COMPACT && styles.segmentButtonActive,
+                    ]}
+                    onPress={() => setSettings({...settings, notificationMode: NOTIFICATION_MODES.COMPACT})}>
+                    <Text
+                      style={[
+                        styles.segmentButtonText,
+                        settings.notificationMode === NOTIFICATION_MODES.COMPACT && styles.segmentButtonTextActive,
+                      ]}>
+                      Compact
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
           </View>
         </View>
