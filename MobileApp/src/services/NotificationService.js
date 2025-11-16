@@ -1,6 +1,5 @@
 import notifee, {AuthorizationStatus} from '@notifee/react-native';
-import {Platform} from 'react-native';
-import {APP_CONFIG} from '../constants/config';
+import {APP_CONFIG, NOTIFICATION_MODES} from '../constants/config';
 import DatabaseService from './DatabaseService';
 
 /**
@@ -83,6 +82,19 @@ class NotificationService {
   }
 
   /**
+   * Get notification mode (precise or compact)
+   */
+  async getNotificationMode() {
+    try {
+      const mode = await DatabaseService.getParameter('notification_mode', NOTIFICATION_MODES.PRECISE);
+      return mode || NOTIFICATION_MODES.PRECISE;
+    } catch (error) {
+      console.error('[Notifee] Failed to get notification mode:', error);
+      return NOTIFICATION_MODES.PRECISE;
+    }
+  }
+
+  /**
    * Format message using template
    */
   async formatMessage(item) {
@@ -101,7 +113,7 @@ class NotificationService {
   }
 
   /**
-   * Send a local notification for a new item
+   * Send a local notification for a new item (PLAIN TEXT, NO EMOJIS)
    */
   async sendItemNotification(item) {
     // Check if notifications are enabled
@@ -112,43 +124,49 @@ class NotificationService {
     }
 
     try {
-      const message = await this.formatMessage(item);
+      const mode = await this.getNotificationMode();
 
-      await notifee.displayNotification({
-        title: '🆕 New Vinted Item',
-        body: message,
-        subtitle: item.getFormattedPrice(),
-        ios: {
-          sound: 'default',
-          categoryId: 'VINTED_ITEM',
-          attachments: item.photo
-            ? [
-                {
-                  url: item.photo,
-                  thumbnailHidden: false,
-                },
-              ]
-            : [],
-          foregroundPresentationOptions: {
-            banner: true,
-            sound: true,
-            badge: true,
+      // PRECISE mode: Show full details for this item
+      if (mode === NOTIFICATION_MODES.PRECISE) {
+        const message = await this.formatMessage(item);
+
+        await notifee.displayNotification({
+          title: 'New Vinted Item', // PLAIN TEXT, NO EMOJI
+          body: message,
+          subtitle: item.getFormattedPrice(),
+          ios: {
+            sound: 'default',
+            categoryId: 'VINTED_ITEM',
+            attachments: item.photo
+              ? [
+                  {
+                    url: item.photo,
+                    thumbnailHidden: false,
+                  },
+                ]
+              : [],
+            foregroundPresentationOptions: {
+              banner: true,
+              sound: true,
+              badge: true,
+            },
           },
-        },
-        data: {
-          itemId: item.id.toString(),
-          itemUrl: item.url,
-        },
-      });
+          data: {
+            itemId: item.id.toString(),
+            itemUrl: item.url,
+          },
+        });
 
-      console.log('[Notifee] Notification sent for item:', item.id);
+        console.log('[Notifee] Notification sent for item:', item.id);
+      }
+      // COMPACT mode: Don't send individual notifications, wait for bulk
     } catch (error) {
       console.error('[Notifee] Failed to send notification:', error);
     }
   }
 
   /**
-   * Send multiple item notifications
+   * Send multiple item notifications (respects precise/compact mode)
    */
   async sendBulkNotifications(items) {
     const enabled = await this.areNotificationsEnabled();
@@ -160,31 +178,44 @@ class NotificationService {
     if (items.length === 0) return;
 
     try {
-      // If only one item, send individual notification
-      if (items.length === 1) {
-        await this.sendItemNotification(items[0]);
+      const mode = await this.getNotificationMode();
+
+      // PRECISE mode: Send individual notification for each item
+      if (mode === NOTIFICATION_MODES.PRECISE) {
+        for (const item of items) {
+          await this.sendItemNotification(item);
+        }
         return;
       }
 
-      // For multiple items, send a summary notification
-      await notifee.displayNotification({
-        title: '🆕 New Vinted Items',
-        body: `${items.length} new items found!`,
-        ios: {
-          sound: 'default',
-          categoryId: 'VINTED_ITEMS',
-          foregroundPresentationOptions: {
-            banner: true,
-            sound: true,
-            badge: true,
-          },
-        },
-        data: {
-          itemCount: items.length.toString(),
-        },
-      });
+      // COMPACT mode: Send summary notification (PLAIN TEXT, NO EMOJIS)
+      if (mode === NOTIFICATION_MODES.COMPACT) {
+        const title = items.length === 1
+          ? 'New Vinted Item'
+          : 'New Vinted Items';
+        const body = items.length === 1
+          ? `${items[0].title} - ${items[0].getFormattedPrice()}`
+          : `${items.length} new items found`;
 
-      console.log(`[Notifee] Sent bulk notification for ${items.length} items`);
+        await notifee.displayNotification({
+          title: title, // PLAIN TEXT
+          body: body,   // PLAIN TEXT
+          ios: {
+            sound: 'default',
+            categoryId: 'VINTED_ITEMS',
+            foregroundPresentationOptions: {
+              banner: true,
+              sound: true,
+              badge: true,
+            },
+          },
+          data: {
+            itemCount: items.length.toString(),
+          },
+        });
+
+        console.log(`[Notifee] Sent compact notification for ${items.length} items`);
+      }
     } catch (error) {
       console.error('[Notifee] Failed to send bulk notification:', error);
     }

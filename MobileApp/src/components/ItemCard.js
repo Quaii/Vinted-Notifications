@@ -81,6 +81,7 @@ const ItemCard = ({item, onPress, isLast = false}) => {
         source={{
           uri: item.getPhotoUrl() || 'https://via.placeholder.com/150',
           priority: FastImage.priority.normal,
+          cache: FastImage.cacheControl.immutable, // Aggressive caching for Vinted images
         }}
         resizeMode={FastImage.resizeMode.cover}
       />

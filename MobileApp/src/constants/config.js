@@ -42,11 +42,17 @@ export const VINTED_DOMAINS = [
   'vinted.lu',
 ];
 
-// Default message template
-export const DEFAULT_MESSAGE_TEMPLATE = `🆕 Title: {title}
-💶 Price: {price}
-🛍️ Brand: {brand}
-📏 Size: {size}`;
+// Default message template (PLAIN TEXT, NO EMOJIS per user requirement)
+export const DEFAULT_MESSAGE_TEMPLATE = `Title: {title}
+Price: {price}
+Brand: {brand}
+Size: {size}`;
+
+// Notification modes
+export const NOTIFICATION_MODES = {
+  PRECISE: 'precise', // Individual notification for each item with details
+  COMPACT: 'compact', // Summary notification "X new items found"
+};
 
 // User Agents for rotation
 export const USER_AGENTS = [
