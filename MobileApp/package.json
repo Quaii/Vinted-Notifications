@@ -27,7 +27,7 @@
     "react-native-background-fetch": "^4.2.5",
     "axios": "^1.7.9",
     "react-native-vector-icons": "^10.2.0",
-    "react-native-fast-image": "^8.6.3",
+    "@d11/react-native-fast-image": "^8.6.3",
     "date-fns": "^4.1.0"
   },
   "devDependencies": {
