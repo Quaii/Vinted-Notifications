@@ -15,7 +15,6 @@ import {
 import MaterialIcons from '@react-native-vector-icons/material-icons';
 import {PageHeader, ItemCard} from '../components';
 import DatabaseService from '../services/DatabaseService';
-import ImageCacheService from '../services/ImageCacheService';
 import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
 
 const {width} = Dimensions.get('window');
@@ -121,19 +120,12 @@ const ItemsScreen = ({navigation, route}) => {
       }
     };
 
-    const imageUrl = item.getPhotoUrl();
-    const imageSource = ImageCacheService.getImageSource(imageUrl) || ImageCacheService.getPlaceholder();
-
     return (
       <TouchableOpacity style={styles.gridCard} onPress={handlePress} activeOpacity={0.7}>
         <Image
           style={styles.gridImage}
-          source={imageSource}
+          source={{uri: item.getPhotoUrl()}}
           resizeMode="cover"
-          onError={(error) => {
-            console.error('[ItemsScreen] Grid image load error for item', item.id, ':', error.nativeEvent.error);
-            console.log('[ItemsScreen] Failed URL:', imageUrl);
-          }}
         />
         <View style={styles.gridContent}>
           <Text style={styles.gridPrice}>{item.getFormattedPrice()}</Text>

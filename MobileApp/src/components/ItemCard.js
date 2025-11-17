@@ -1,7 +1,6 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Linking, Image} from 'react-native';
 import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
-import ImageCacheService from '../services/ImageCacheService';
 
 /**
  * ItemCard Component
@@ -10,7 +9,6 @@ import ImageCacheService from '../services/ImageCacheService';
  */
 const ItemCard = ({item, onPress, isLast = false}) => {
   const COLORS = useThemeColors();
-  const [imageError, setImageError] = useState(false);
 
   const handlePress = () => {
     if (onPress) {
@@ -19,12 +17,6 @@ const ItemCard = ({item, onPress, isLast = false}) => {
       Linking.openURL(item.url);
     }
   };
-
-  // Get validated image source
-  const imageUrl = item.getPhotoUrl();
-  const imageSource = imageError
-    ? ImageCacheService.getPlaceholder()
-    : ImageCacheService.getImageSource(imageUrl) || ImageCacheService.getPlaceholder();
 
   const styles = StyleSheet.create({
     row: {
@@ -85,13 +77,8 @@ const ItemCard = ({item, onPress, isLast = false}) => {
     <TouchableOpacity style={styles.row} onPress={handlePress} activeOpacity={0.6}>
       <Image
         style={styles.thumbnail}
-        source={imageSource}
+        source={{uri: item.getPhotoUrl()}}
         resizeMode="cover"
-        onError={(error) => {
-          console.error('[ItemCard] Image load error for item', item.id, ':', error.nativeEvent.error);
-          console.log('[ItemCard] Failed URL:', imageUrl);
-          setImageError(true);
-        }}
       />
       <View style={styles.content}>
         <Text style={styles.title} numberOfLines={2}>
