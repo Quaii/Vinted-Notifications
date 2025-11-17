@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, useColorScheme} from 'react-native';
+import {View, useColorScheme, StyleSheet} from 'react-native';
 import {NavigationContainer, DefaultTheme, DarkTheme} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
@@ -24,9 +24,10 @@ const TabNavigator = () => {
 
   return (
     <Tab.Navigator
+      safeAreaInsets={{left: 0, right: 0}}
       screenOptions={({route}) => ({
         headerShown: false,
-        presentation: 'card', // Force card presentation for all tabs
+        presentation: 'card',
         tabBarIcon: ({focused, color, size}) => {
           let iconName;
 
@@ -65,7 +66,12 @@ const TabNavigator = () => {
           height: 100,
           paddingBottom: 20,
           paddingTop: 12,
-          paddingHorizontal: 0, // No horizontal padding - let items distribute evenly
+          paddingLeft: 0,
+          paddingRight: 0,
+          paddingHorizontal: 0,
+          marginLeft: 0,
+          marginRight: 0,
+          marginHorizontal: 0,
         },
         tabBarLabelStyle: {
           fontSize: FONT_SIZES.caption2,
@@ -75,13 +81,12 @@ const TabNavigator = () => {
           textAlign: 'center',
         },
         tabBarItemStyle: {
-          flex: 1, // Each tab takes equal space
+          flex: 1,
           paddingVertical: 4,
+          paddingHorizontal: 0,
+          marginHorizontal: 0,
           alignItems: 'center',
           justifyContent: 'center',
-        },
-        tabBarContentContainerStyle: {
-          justifyContent: 'space-evenly', // Evenly distribute tabs
         },
       })}>
       <Tab.Screen
@@ -128,7 +133,7 @@ const TabNavigator = () => {
         name="Settings"
         component={SettingsScreen}
         options={{
-          tabBarButton: () => null, // Hide from tab bar
+          tabBarButton: () => null,
           presentation: 'modal',
         }}
       />
@@ -159,7 +164,9 @@ const AppNavigator = () => {
 
   return (
     <NavigationContainer theme={navigationTheme}>
-      <TabNavigator />
+      <View style={{flex: 1}}>
+        <TabNavigator />
+      </View>
     </NavigationContainer>
   );
 };
