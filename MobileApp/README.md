@@ -106,6 +106,68 @@ npm install -g react-native-cli
    open ios/VintedNotifications.xcworkspace
    ```
 
+## Building for Production
+
+When building for production (TestFlight, App Store, or running without Metro bundler), you need to bundle the JavaScript into the app:
+
+### Option 1: Quick Bundle (Development/Testing)
+
+Bundle the JavaScript without Metro:
+```bash
+npm run bundle:ios
+```
+
+This creates a `main.jsbundle` file in the `ios/` directory that the app will use instead of connecting to Metro. After bundling, you can run the app from Xcode in Release mode.
+
+### Option 2: Release Build (Full Build)
+
+Build a complete release version:
+```bash
+npm run build:ios
+```
+
+This bundles the JavaScript and builds the app in Release configuration. The output will be in `ios/build/`.
+
+### Option 3: Archive for Distribution (App Store/TestFlight)
+
+Create an archive for submission to the App Store or TestFlight:
+```bash
+npm run build:ios:release
+```
+
+This creates an `.xcarchive` file in `ios/build/VintedNotifications.xcarchive` that you can upload using Xcode's Organizer.
+
+### Building from Xcode
+
+If you prefer to build from Xcode:
+
+1. **Bundle the JavaScript first**:
+   ```bash
+   npm run bundle:ios
+   ```
+
+2. **Open the workspace in Xcode**:
+   ```bash
+   open ios/VintedNotifications.xcworkspace
+   ```
+
+3. **Select the scheme**: Choose "VintedNotifications" and your device/simulator
+
+4. **Build configuration**:
+   - For testing: Product → Scheme → Edit Scheme → Run → Build Configuration → **Release**
+   - For distribution: Product → Archive
+
+5. **Run or Archive**:
+   - For testing: Product → Run (⌘R)
+   - For distribution: Product → Archive (⌘⇧B), then use Organizer to upload
+
+### Important Notes
+
+- **Development mode** (npm run ios) requires Metro bundler running
+- **Production mode** (Release builds) uses the bundled JavaScript and doesn't need Metro
+- The `.jsbundle` file is gitignored - you need to bundle before each release build
+- Always bundle fresh JavaScript before creating archives for submission
+
 ## Project Structure
 
 ```
