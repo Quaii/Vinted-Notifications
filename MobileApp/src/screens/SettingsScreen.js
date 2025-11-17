@@ -17,8 +17,9 @@ import DatabaseService from '../services/DatabaseService';
 import {APP_CONFIG, NOTIFICATION_MODES} from '../constants/config';
 import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
 
-// Import version from package.json
-const packageJson = require('../../package.json');
+// App version
+const APP_VERSION = '1.0.0';
+const APP_AUTHOR = 'Quaii';
 
 /**
  * Custom Toggle Component (simpler and more reliable than Switch)
@@ -455,7 +456,9 @@ const SettingsScreen = () => {
     versionRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: SPACING.xs,
+    },
+    versionIcon: {
+      marginRight: SPACING.xs,
     },
     versionText: {
       fontSize: FONT_SIZES.caption1,
@@ -883,7 +886,7 @@ const SettingsScreen = () => {
               onPress={() => {
                 Alert.alert(
                   'About Vinted Notifications',
-                  `Version: ${packageJson.version}\n\nA mobile application for tracking Vinted listings and receiving instant notifications.\n\nDeveloped by Quaii\n\n© 2024 Vinted Notifications`,
+                  `Version: ${APP_VERSION}\n\nA mobile application for tracking Vinted listings and receiving instant notifications.\n\nDeveloped by ${APP_AUTHOR}\n\n© 2024 Vinted Notifications`,
                   [
                     {
                       text: 'GitHub',
@@ -895,11 +898,11 @@ const SettingsScreen = () => {
               }}
               hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
             >
-              <MaterialIcons name="info-outline" size={14} color={COLORS.textTertiary} />
+              <MaterialIcons name="info-outline" size={14} color={COLORS.textTertiary} style={styles.versionIcon} />
             </TouchableOpacity>
-            <Text style={styles.versionText}>v{packageJson.version}</Text>
+            <Text style={styles.versionText}>v{APP_VERSION}</Text>
           </View>
-          <Text style={styles.authorText}>by Quaii</Text>
+          <Text style={styles.authorText}>by {APP_AUTHOR}</Text>
         </View>
 
         <View style={styles.bottomSpacer} />
