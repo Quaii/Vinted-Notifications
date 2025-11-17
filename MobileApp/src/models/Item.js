@@ -2,29 +2,40 @@
 export class VintedItem {
   constructor(data) {
     this.id = data.id;
-    this.title = data.title || '';
+
+    // Handle title - ensure it's never an object
+    if (typeof data.title === 'string') {
+      this.title = data.title;
+    } else {
+      this.title = '';
+    }
+
     this.brand_title = data.brand_title || data.brandTitle || '';
     this.size_title = data.size_title || data.sizeTitle || '';
 
     // Handle price - ensure it's always a string
     if (typeof data.price === 'object' && data.price !== null) {
+      // Price is an object from API: {amount: "5.0", currency_code: "EUR"}
       this.price = String(data.price.amount || data.price.value || '0.00');
+      this.currency = String(data.price.currency_code || data.price.currency || '€');
     } else if (data.price !== undefined && data.price !== null) {
+      // Price is already extracted as string
       this.price = String(data.price);
+      // Currency should be separate
+      this.currency = data.currency ? String(data.currency) : '€';
     } else {
       this.price = '0.00';
-    }
-
-    // Handle currency - ensure it's always a string
-    if (typeof data.price === 'object' && data.price !== null && data.price.currency_code) {
-      this.currency = String(data.price.currency_code || data.price.currency || '€');
-    } else if (data.currency) {
-      this.currency = String(data.currency);
-    } else {
       this.currency = '€';
     }
 
-    this.photo = data.photo || '';
+    // Handle photo - ensure it's always a URL string
+    if (typeof data.photo === 'object' && data.photo !== null) {
+      // Photo is an object from API: {url: "https://...", full_size_url: "..."}
+      this.photo = String(data.photo.url || data.photo.full_size_url || data.photo.temp_uuid || '');
+    } else {
+      this.photo = data.photo || '';
+    }
+
     this.url = data.url || '';
     this.buy_url = data.buy_url || data.buyUrl || this.generateBuyUrl(data.url, data.id);
     this.created_at_ts = data.created_at_ts || data.createdAtTs || Date.now();
@@ -51,8 +62,19 @@ export class VintedItem {
 
   // Get display photo URL
   getPhotoUrl() {
-    // Photo is now always a string URL (extracted from API as rawItem.photo.url)
-    return this.photo || null;
+    // Photo should always be a string URL (extracted from API as rawItem.photo.url)
+    if (!this.photo || typeof this.photo !== 'string') {
+      console.warn('[Item] Invalid photo for item', this.id, ':', this.photo);
+      return null;
+    }
+
+    // Check if photo looks like a stringified object
+    if (this.photo.includes('[object') || this.photo.includes('{')) {
+      console.error('[Item] Photo is corrupted (contains object) for item', this.id, ':', this.photo);
+      return null;
+    }
+
+    return this.photo;
   }
 
   // Get time since posted
