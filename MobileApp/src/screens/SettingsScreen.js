@@ -65,8 +65,8 @@ const SettingsScreen = () => {
       const countries = await DatabaseService.getAllowlist();
 
       setSettings({
-        refreshDelay: parseInt(refreshDelay),
-        itemsPerQuery: parseInt(itemsPerQuery),
+        refreshDelay: parseInt(refreshDelay, 10),
+        itemsPerQuery: parseInt(itemsPerQuery, 10),
         banwords,
         notificationMode,
         userAgent,
@@ -249,6 +249,7 @@ const SettingsScreen = () => {
       flex: 1,
       marginRight: SPACING.md,
       justifyContent: 'center',
+      pointerEvents: 'none',
     },
     settingLabel: {
       fontSize: FONT_SIZES.body,
@@ -264,6 +265,7 @@ const SettingsScreen = () => {
     switchContainer: {
       minWidth: 51,
       alignItems: 'flex-end',
+      pointerEvents: 'auto',
     },
     segmentedControl: {
       flexDirection: 'row',
@@ -591,7 +593,7 @@ const SettingsScreen = () => {
                 style={styles.inlineInput}
                 value={settings.itemsPerQuery.toString()}
                 onChangeText={text =>
-                  setSettings({...settings, itemsPerQuery: parseInt(text) || 20})
+                  setSettings({...settings, itemsPerQuery: parseInt(text, 10) || 20})
                 }
                 keyboardType="number-pad"
                 returnKeyType="done"
@@ -609,7 +611,7 @@ const SettingsScreen = () => {
                 style={styles.inlineInput}
                 value={settings.refreshDelay.toString()}
                 onChangeText={text =>
-                  setSettings({...settings, refreshDelay: parseInt(text) || 60})
+                  setSettings({...settings, refreshDelay: parseInt(text, 10) || 60})
                 }
                 keyboardType="number-pad"
                 returnKeyType="done"

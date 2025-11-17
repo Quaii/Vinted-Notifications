@@ -70,9 +70,11 @@ const TabNavigator = () => {
         },
         tabBarIconStyle: {
           marginTop: 3,
+          alignSelf: 'center',
         },
         tabBarItemStyle: {
           paddingVertical: 4,
+          flex: 1,
           alignItems: 'center',
           justifyContent: 'center',
         },

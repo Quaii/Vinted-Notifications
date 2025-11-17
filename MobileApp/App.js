@@ -6,6 +6,7 @@ import AppNavigator from './src/navigation/AppNavigator';
 import DatabaseService from './src/services/DatabaseService';
 import NotificationService from './src/services/NotificationService';
 import MonitoringService from './src/services/MonitoringService';
+import LogService from './src/services/LogService';
 import VintedAPI from './src/api/VintedAPI';
 import {useThemeColors} from './src/constants/theme';
 
@@ -25,31 +26,38 @@ const AppContent = () => {
   const initializeApp = async () => {
     try {
       console.log('Initializing Vinted Notifications App...');
+      LogService.info('Vinted Notifications app starting...');
 
       // Initialize database
       await DatabaseService.init();
       console.log('Database initialized');
+      LogService.info('Database initialized successfully');
 
       // Load VintedAPI settings from database (user agents, headers, proxies)
       await VintedAPI.loadSettingsFromDatabase(DatabaseService);
       console.log('VintedAPI settings loaded');
+      LogService.info('VintedAPI settings loaded from database');
 
       // Configure notifications
       await NotificationService.configure();
       console.log('Notifications configured');
+      LogService.info('Notification service configured');
 
       // Initialize background fetch
       await MonitoringService.initBackgroundFetch();
       console.log('Background fetch initialized');
+      LogService.info('Background fetch service initialized');
 
       // Initialize monitoring state (auto-starts if previously running)
       await MonitoringService.initializeState();
       console.log('Monitoring state initialized');
 
       console.log('App initialization complete');
+      LogService.info('App initialization complete - ready to use');
       setIsReady(true);
     } catch (err) {
       console.error('Failed to initialize app:', err);
+      LogService.error(`Failed to initialize app: ${err.message}`);
       setError(err.message);
       setIsReady(true); // Still show app even if some services fail
     }
