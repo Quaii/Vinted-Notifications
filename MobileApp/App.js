@@ -11,8 +11,8 @@ import LogService from './src/services/LogService';
 import VintedAPI from './src/api/VintedAPI';
 import {useThemeColors} from './src/constants/theme';
 
-// Disable yellow box warnings in production
-LogBox.ignoreAllLogs();
+// Development overlays (Building/Downloading bundle) are disabled in index.js
+// This ensures a clean, production-like UI even in development mode
 
 // Intercept console errors and warnings to route to LogService
 // This captures API errors and other issues to display in the Logs screen
