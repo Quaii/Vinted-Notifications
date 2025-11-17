@@ -1,5 +1,6 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Linking, Image} from 'react-native';
+import MaterialIcons from '@react-native-vector-icons/material-icons';
 import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
 
 /**
@@ -9,6 +10,7 @@ import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/t
  */
 const ItemCard = ({item, onPress, isLast = false}) => {
   const COLORS = useThemeColors();
+  const [imageError, setImageError] = useState(false);
 
   const handlePress = () => {
     if (onPress) {
@@ -22,19 +24,28 @@ const ItemCard = ({item, onPress, isLast = false}) => {
     row: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: 5,
-      paddingVertical: 5,
+      paddingHorizontal: 3,
+      paddingVertical: 3,
       backgroundColor: 'transparent',
       borderBottomWidth: 0,
       borderBottomColor: COLORS.separator,
-      minHeight: 74,
+      minHeight: 80,
     },
     thumbnail: {
-      width: 64,
-      height: 64,
+      width: 74,
+      height: 74,
       borderRadius: 10,
       backgroundColor: COLORS.buttonFill,
       marginRight: SPACING.sm,
+    },
+    placeholderContainer: {
+      width: 74,
+      height: 74,
+      borderRadius: 10,
+      backgroundColor: COLORS.buttonFill,
+      marginRight: SPACING.sm,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     content: {
       flex: 1,
@@ -75,11 +86,18 @@ const ItemCard = ({item, onPress, isLast = false}) => {
 
   return (
     <TouchableOpacity style={styles.row} onPress={handlePress} activeOpacity={0.6}>
-      <Image
-        style={styles.thumbnail}
-        source={{uri: item.getPhotoUrl()}}
-        resizeMode="cover"
-      />
+      {imageError || !item.getPhotoUrl() ? (
+        <View style={styles.placeholderContainer}>
+          <MaterialIcons name="broken-image" size={32} color={COLORS.textTertiary} />
+        </View>
+      ) : (
+        <Image
+          style={styles.thumbnail}
+          source={{uri: item.getPhotoUrl()}}
+          resizeMode="cover"
+          onError={() => setImageError(true)}
+        />
+      )}
       <View style={styles.content}>
         <Text style={styles.title} numberOfLines={2}>
           {item.title || '[Corrupt Data - Clear Items in Settings]'}
