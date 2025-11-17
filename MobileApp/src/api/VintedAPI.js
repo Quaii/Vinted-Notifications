@@ -275,6 +275,13 @@ export class VintedAPI {
   }
 
   /**
+   * Sleep helper for retry delays
+   */
+  sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  /**
    * Search for items using a Vinted URL (with full retry logic)
    */
   async search(vintedUrl, nbrItems = APP_CONFIG.DEFAULT_ITEMS_PER_QUERY, page = 1) {
@@ -319,6 +326,7 @@ export class VintedAPI {
 
           if (tried < this.MAX_RETRIES) {
             await this.setCookies();
+            await this.sleep(1000); // Wait 1s before retry
             continue; // Retry
           }
         }
@@ -336,6 +344,7 @@ export class VintedAPI {
             tried = 0; // Reset counter for final attempt
             this.initializeSession(); // Create new session
             await this.setCookies();
+            await this.sleep(1000); // Wait 1s before retry
             continue;
           }
         }
@@ -346,6 +355,16 @@ export class VintedAPI {
       } catch (error) {
         console.error(`[VintedAPI] Request error:`, error.message);
         lastResponse = error.response;
+
+        // For timeout errors, wait before retrying (exponential backoff)
+        if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+          const delay = Math.min(1000 * Math.pow(2, tried - 1), 5000); // Max 5s
+          console.log(`[VintedAPI] Timeout detected, waiting ${delay}ms before retry...`);
+          await this.sleep(delay);
+        } else {
+          // For other errors, short delay
+          await this.sleep(500);
+        }
       }
     }
 
