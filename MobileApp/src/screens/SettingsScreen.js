@@ -436,11 +436,13 @@ const SettingsScreen = () => {
                   {isDarkMode ? 'Dark mode enabled' : 'Light mode enabled'}
                 </Text>
               </View>
-              <View style={styles.switchContainer}>
+              <View style={styles.switchContainer} pointerEvents="auto">
                 <Switch
                   value={isDarkMode}
                   onValueChange={toggleTheme}
                   trackColor={{false: COLORS.buttonFill, true: COLORS.primary}}
+                  thumbColor="#FFFFFF"
+                  ios_backgroundColor={COLORS.buttonFill}
                 />
               </View>
             </View>
@@ -564,11 +566,13 @@ const SettingsScreen = () => {
                   Verify proxies before use (slower but more reliable)
                 </Text>
               </View>
-              <View style={styles.switchContainer}>
+              <View style={styles.switchContainer} pointerEvents="auto">
                 <Switch
                   value={settings.checkProxies}
                   onValueChange={handleToggleCheckProxies}
                   trackColor={{false: COLORS.buttonFill, true: COLORS.primary}}
+                  thumbColor="#FFFFFF"
+                  ios_backgroundColor={COLORS.buttonFill}
                 />
               </View>
             </View>
