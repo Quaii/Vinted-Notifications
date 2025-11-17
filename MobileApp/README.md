@@ -87,28 +87,25 @@ npm install -g react-native-cli
 
 ### iOS
 
-1. **Start the Metro bundler**:
+**IMPORTANT**: This app has been configured to work WITHOUT Metro bundler. You don't need to run `npm start`.
+
+1. **Bundle the JavaScript code** (required before first run and after any code changes):
    ```bash
-   npm start
-   # or
-   yarn start
+   npm run bundle:ios
    ```
 
-2. **In a new terminal, run the iOS app**:
+2. **Run the iOS app**:
    ```bash
    npm run ios
-   # or
-   yarn ios
-   ```
-
-   Or open the project in Xcode:
-   ```bash
+   # or open in Xcode
    open ios/VintedNotifications.xcworkspace
    ```
 
+**Note**: After making any code changes to JavaScript files, you must run `npm run bundle:ios` again to rebuild the bundle before running the app.
+
 ## Building for Production
 
-When building for production (TestFlight, App Store, or running without Metro bundler), you need to bundle the JavaScript into the app:
+The app is already configured to use bundled JavaScript. For production builds (TestFlight, App Store):
 
 ### Option 1: Quick Bundle (Development/Testing)
 
@@ -163,10 +160,10 @@ If you prefer to build from Xcode:
 
 ### Important Notes
 
-- **Development mode** (npm run ios) requires Metro bundler running
-- **Production mode** (Release builds) uses the bundled JavaScript and doesn't need Metro
-- The `.jsbundle` file is gitignored - you need to bundle before each release build
-- Always bundle fresh JavaScript before creating archives for submission
+- **The app now runs WITHOUT Metro bundler** in all modes (Debug and Release)
+- Always run `npm run bundle:ios` after making code changes
+- The `main.jsbundle` file should be committed to the repository for easy deployment
+- For production releases, always bundle fresh JavaScript before creating archives
 
 ## Project Structure
 
@@ -308,6 +305,31 @@ All data is stored locally on your device and never sent to external servers.
 
 ## Troubleshooting
 
+### Connection refused errors (Metro bundler)
+
+If you see errors like `Connection refused` or `Could not connect to the server` on port 8081:
+
+**This is expected!** The app no longer uses Metro bundler. Simply:
+```bash
+npm run bundle:ios
+```
+
+Then rebuild the app in Xcode.
+
+### App shows old code after changes
+
+If your code changes aren't appearing in the app:
+
+1. Rebuild the bundle:
+   ```bash
+   npm run bundle:ios
+   ```
+
+2. Clean and rebuild in Xcode:
+   - Product → Clean Build Folder (⌘⇧K)
+   - Product → Build (⌘B)
+   - Product → Run (⌘R)
+
 ### App won't build
 
 1. Clean the build:
@@ -319,9 +341,9 @@ All data is stored locally on your device and never sent to external servers.
    cd ..
    ```
 
-2. Reset Metro cache:
+2. Ensure the bundle exists:
    ```bash
-   npm start -- --reset-cache
+   npm run bundle:ios
    ```
 
 ### Notifications not working

@@ -40,7 +40,9 @@ yarn-error.log
 **/fastlane/test_output
 
 # Bundle artifacts
+# Note: main.jsbundle is committed since we don't use Metro bundler
 *.jsbundle
+!ios/main.jsbundle
 
 # CocoaPods
 ios/Pods/
