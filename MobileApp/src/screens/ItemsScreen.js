@@ -7,15 +7,22 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  Modal,
+  Dimensions,
+  Image,
+  Linking,
 } from 'react-native';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
 import {PageHeader, ItemCard} from '../components';
 import DatabaseService from '../services/DatabaseService';
 import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
 
+const {width} = Dimensions.get('window');
+const CARD_WIDTH = (width - SPACING.lg * 3) / 2;
+
 /**
  * ItemsScreen
- * Modern items list with search and filters
+ * Modern items list/grid with search and sort dropdown
  */
 const ItemsScreen = ({navigation, route}) => {
   const COLORS = useThemeColors();
@@ -24,8 +31,19 @@ const ItemsScreen = ({navigation, route}) => {
   const [filteredItems, setFilteredItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('date-desc'); // date-desc, date-asc, price-asc, price-desc, alpha-asc, alpha-desc
+  const [sortBy, setSortBy] = useState('date-desc');
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
+  const [sortModalVisible, setSortModalVisible] = useState(false);
   const queryId = route.params?.queryId || null;
+
+  const SORT_OPTIONS = [
+    {label: 'Newest First', value: 'date-desc', icon: 'schedule'},
+    {label: 'Oldest First', value: 'date-asc', icon: 'schedule'},
+    {label: 'Price: Low to High', value: 'price-asc', icon: 'attach-money'},
+    {label: 'Price: High to Low', value: 'price-desc', icon: 'attach-money'},
+    {label: 'Name: A to Z', value: 'alpha-asc', icon: 'sort-by-alpha'},
+    {label: 'Name: Z to A', value: 'alpha-desc', icon: 'sort-by-alpha'},
+  ];
 
   const applyFilters = useCallback((itemList, search, sort) => {
     let filtered = [...itemList];
@@ -90,29 +108,41 @@ const ItemsScreen = ({navigation, route}) => {
     applyFilters(items, searchQuery, sortBy);
   }, [items, searchQuery, sortBy, applyFilters]);
 
-  const renderSortButton = (label, value, icon) => {
-    const isActive = sortBy === value;
+  const handleSortSelect = (value) => {
+    setSortBy(value);
+    setSortModalVisible(false);
+  };
+
+  const renderGridItem = ({item}) => {
+    const handlePress = () => {
+      if (item.url) {
+        Linking.openURL(item.url);
+      }
+    };
+
     return (
-      <TouchableOpacity
-        style={[styles.sortButton, isActive && styles.sortButtonActive]}
-        onPress={() => setSortBy(value)}>
-        <MaterialIcons
-          name={icon}
-          size={16}
-          color={isActive ? '#FFFFFF' : COLORS.textSecondary}
+      <TouchableOpacity style={styles.gridCard} onPress={handlePress} activeOpacity={0.7}>
+        <Image
+          style={styles.gridImage}
+          source={{uri: item.getPhotoUrl() || 'https://via.placeholder.com/150'}}
+          resizeMode="cover"
         />
-        <Text
-          style={[
-            styles.sortButtonText,
-            isActive && styles.sortButtonTextActive,
-          ]}>
-          {label}
-        </Text>
+        <View style={styles.gridContent}>
+          <Text style={styles.gridPrice}>{item.getFormattedPrice()}</Text>
+          <Text style={styles.gridTitle} numberOfLines={2}>
+            {item.title}
+          </Text>
+          {item.brand_title && (
+            <Text style={styles.gridBrand} numberOfLines={1}>
+              {item.brand_title}
+            </Text>
+          )}
+        </View>
       </TouchableOpacity>
     );
   };
 
-  const renderItem = ({item, index}) => (
+  const renderListItem = ({item, index}) => (
     <ItemCard item={item} isLast={index === filteredItems.length - 1} />
   );
 
@@ -130,10 +160,54 @@ const ItemsScreen = ({navigation, route}) => {
     </View>
   );
 
+  const currentSort = SORT_OPTIONS.find(opt => opt.value === sortBy);
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: COLORS.groupedBackground,
+    },
+    // Toolbar
+    toolbar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.lg,
+      paddingBottom: SPACING.md,
+      gap: SPACING.sm,
+    },
+    sortButton: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: COLORS.secondaryGroupedBackground,
+      borderRadius: BORDER_RADIUS.lg,
+      paddingHorizontal: SPACING.md,
+      height: 44,
+      borderWidth: 1,
+      borderColor: COLORS.separator,
+    },
+    sortButtonText: {
+      fontSize: FONT_SIZES.body,
+      fontWeight: '500',
+      color: COLORS.text,
+      flex: 1,
+    },
+    viewModeButtons: {
+      flexDirection: 'row',
+      backgroundColor: COLORS.secondaryGroupedBackground,
+      borderRadius: BORDER_RADIUS.lg,
+      borderWidth: 1,
+      borderColor: COLORS.separator,
+      padding: 2,
+    },
+    viewModeButton: {
+      padding: SPACING.xs,
+      paddingHorizontal: SPACING.sm,
+      borderRadius: BORDER_RADIUS.md,
+    },
+    viewModeButtonActive: {
+      backgroundColor: COLORS.primary,
     },
     // Search Bar
     searchContainer: {
@@ -162,59 +236,6 @@ const ItemsScreen = ({navigation, route}) => {
     clearButton: {
       padding: SPACING.xs,
     },
-    // Filters
-    filtersContainer: {
-      paddingHorizontal: SPACING.lg,
-      paddingBottom: SPACING.md,
-    },
-    filtersLabel: {
-      fontSize: FONT_SIZES.caption1,
-      fontWeight: '600',
-      color: COLORS.textSecondary,
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
-      marginBottom: SPACING.xs,
-    },
-    filtersRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: SPACING.xs,
-    },
-    sortButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: SPACING.sm,
-      paddingVertical: SPACING.xs,
-      borderRadius: BORDER_RADIUS.md,
-      backgroundColor: COLORS.buttonFill,
-      gap: 4,
-    },
-    sortButtonActive: {
-      backgroundColor: COLORS.primary,
-    },
-    sortButtonText: {
-      fontSize: FONT_SIZES.footnote,
-      fontWeight: '600',
-      color: COLORS.textSecondary,
-    },
-    sortButtonTextActive: {
-      color: '#FFFFFF',
-    },
-    comingSoon: {
-      fontSize: FONT_SIZES.caption2,
-      color: COLORS.textTertiary,
-      fontStyle: 'italic',
-      marginTop: SPACING.xs,
-    },
-    // List
-    listContent: {
-      backgroundColor: COLORS.secondaryGroupedBackground,
-      marginHorizontal: SPACING.lg,
-      borderRadius: BORDER_RADIUS.xl,
-      overflow: 'hidden',
-      borderWidth: 1,
-      borderColor: COLORS.separator,
-    },
     // Results Count
     resultsCount: {
       paddingHorizontal: SPACING.lg,
@@ -223,6 +244,111 @@ const ItemsScreen = ({navigation, route}) => {
     resultsText: {
       fontSize: FONT_SIZES.caption1,
       color: COLORS.textTertiary,
+    },
+    // List View
+    listContent: {
+      backgroundColor: COLORS.secondaryGroupedBackground,
+      marginHorizontal: SPACING.lg,
+      borderRadius: BORDER_RADIUS.xl,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: COLORS.separator,
+    },
+    // Grid View
+    gridContent: {
+      paddingHorizontal: SPACING.lg,
+    },
+    gridCard: {
+      width: CARD_WIDTH,
+      backgroundColor: COLORS.secondaryGroupedBackground,
+      borderRadius: 20,
+      marginBottom: SPACING.md,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: COLORS.separator,
+    },
+    gridImage: {
+      width: '100%',
+      height: CARD_WIDTH,
+      backgroundColor: COLORS.buttonFill,
+    },
+    gridContent: {
+      padding: SPACING.sm,
+    },
+    gridPrice: {
+      fontSize: FONT_SIZES.headline,
+      fontWeight: '700',
+      color: COLORS.primary,
+      marginBottom: 4,
+    },
+    gridTitle: {
+      fontSize: FONT_SIZES.footnote,
+      fontWeight: '500',
+      color: COLORS.text,
+      marginBottom: 2,
+      lineHeight: 16,
+    },
+    gridBrand: {
+      fontSize: FONT_SIZES.caption1,
+      color: COLORS.textSecondary,
+    },
+    // Sort Modal
+    modalContainer: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    },
+    modalContent: {
+      backgroundColor: COLORS.secondaryGroupedBackground,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      paddingTop: SPACING.md,
+      paddingBottom: SPACING.xxl + 20,
+    },
+    modalHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.lg,
+      paddingBottom: SPACING.md,
+      borderBottomWidth: 1,
+      borderBottomColor: COLORS.separator,
+    },
+    modalTitle: {
+      fontSize: FONT_SIZES.headline,
+      fontWeight: '700',
+      color: COLORS.text,
+    },
+    sortOption: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: SPACING.lg,
+      paddingVertical: SPACING.md,
+      gap: SPACING.md,
+    },
+    sortOptionActive: {
+      backgroundColor: COLORS.buttonFill,
+    },
+    sortOptionIcon: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: COLORS.buttonFill,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    sortOptionIconActive: {
+      backgroundColor: COLORS.primary,
+    },
+    sortOptionText: {
+      flex: 1,
+      fontSize: FONT_SIZES.body,
+      fontWeight: '500',
+      color: COLORS.text,
+    },
+    sortOptionTextActive: {
+      color: COLORS.primary,
+      fontWeight: '600',
     },
     // Empty State
     emptyState: {
@@ -278,18 +404,37 @@ const ItemsScreen = ({navigation, route}) => {
         </View>
       </View>
 
-      {/* Filters */}
-      <View style={styles.filtersContainer}>
-        <Text style={styles.filtersLabel}>Sort By</Text>
-        <View style={styles.filtersRow}>
-          {renderSortButton('Newest', 'date-desc', 'arrow-downward')}
-          {renderSortButton('Oldest', 'date-asc', 'arrow-upward')}
-          {renderSortButton('Price ↓', 'price-desc', 'trending-down')}
-          {renderSortButton('Price ↑', 'price-asc', 'trending-up')}
-          {renderSortButton('A-Z', 'alpha-asc', 'sort-by-alpha')}
-          {renderSortButton('Z-A', 'alpha-desc', 'sort-by-alpha')}
+      {/* Toolbar: Sort & View Mode */}
+      <View style={styles.toolbar}>
+        <TouchableOpacity
+          style={styles.sortButton}
+          onPress={() => setSortModalVisible(true)}>
+          <Text style={styles.sortButtonText}>
+            {currentSort?.label || 'Sort by'}
+          </Text>
+          <MaterialIcons name="unfold-more" size={20} color={COLORS.textSecondary} />
+        </TouchableOpacity>
+
+        <View style={styles.viewModeButtons}>
+          <TouchableOpacity
+            style={[styles.viewModeButton, viewMode === 'list' && styles.viewModeButtonActive]}
+            onPress={() => setViewMode('list')}>
+            <MaterialIcons
+              name="view-list"
+              size={20}
+              color={viewMode === 'list' ? '#FFFFFF' : COLORS.textSecondary}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.viewModeButton, viewMode === 'grid' && styles.viewModeButtonActive]}
+            onPress={() => setViewMode('grid')}>
+            <MaterialIcons
+              name="grid-view"
+              size={20}
+              color={viewMode === 'grid' ? '#FFFFFF' : COLORS.textSecondary}
+            />
+          </TouchableOpacity>
         </View>
-        <Text style={styles.comingSoon}>Brand filter coming soon</Text>
       </View>
 
       {/* Results Count */}
@@ -302,21 +447,80 @@ const ItemsScreen = ({navigation, route}) => {
         </View>
       )}
 
-      {/* Items List */}
+      {/* Items List/Grid */}
       {filteredItems.length > 0 ? (
-        <View style={styles.listContent}>
+        viewMode === 'list' ? (
+          <View style={styles.listContent}>
+            <FlatList
+              data={filteredItems}
+              renderItem={renderListItem}
+              keyExtractor={item => item.id.toString()}
+              refreshing={loading}
+              onRefresh={loadItems}
+              showsVerticalScrollIndicator={false}
+            />
+          </View>
+        ) : (
           <FlatList
             data={filteredItems}
-            renderItem={renderItem}
+            renderItem={renderGridItem}
             keyExtractor={item => item.id.toString()}
+            numColumns={2}
+            columnWrapperStyle={{justifyContent: 'space-between', paddingHorizontal: SPACING.lg}}
+            contentContainerStyle={{paddingBottom: SPACING.xl}}
             refreshing={loading}
             onRefresh={loadItems}
             showsVerticalScrollIndicator={false}
           />
-        </View>
+        )
       ) : (
         renderEmpty()
       )}
+
+      {/* Sort Modal */}
+      <Modal
+        visible={sortModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setSortModalVisible(false)}>
+        <TouchableOpacity
+          style={styles.modalContainer}
+          activeOpacity={1}
+          onPress={() => setSortModalVisible(false)}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Sort By</Text>
+              <TouchableOpacity onPress={() => setSortModalVisible(false)}>
+                <MaterialIcons name="close" size={24} color={COLORS.text} />
+              </TouchableOpacity>
+            </View>
+
+            {SORT_OPTIONS.map((option) => {
+              const isActive = sortBy === option.value;
+              return (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[styles.sortOption, isActive && styles.sortOptionActive]}
+                  onPress={() => handleSortSelect(option.value)}>
+                  <View style={[styles.sortOptionIcon, isActive && styles.sortOptionIconActive]}>
+                    <MaterialIcons
+                      name={option.icon}
+                      size={18}
+                      color={isActive ? '#FFFFFF' : COLORS.textSecondary}
+                    />
+                  </View>
+                  <Text style={[styles.sortOptionText, isActive && styles.sortOptionTextActive]}>
+                    {option.label}
+                  </Text>
+                  {isActive && (
+                    <MaterialIcons name="check" size={24} color={COLORS.primary} />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };
