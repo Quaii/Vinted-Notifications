@@ -178,7 +178,7 @@ const QueriesScreen = ({navigation}) => {
     },
     listContainer: {
       paddingTop: 20,
-      paddingBottom: SPACING.xxl * 2, // Extra space for FAB
+      paddingBottom: 120, // Extra space for tab bar (100px) + padding
     },
     queriesGroup: {
       backgroundColor: COLORS.secondaryGroupedBackground,

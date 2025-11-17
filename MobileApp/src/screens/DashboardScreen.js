@@ -274,6 +274,9 @@ const DashboardScreen = ({navigation}) => {
       fontStyle: 'italic',
       paddingVertical: SPACING.lg,
     },
+    bottomSpacer: {
+      height: 120, // Extra space to account for tab bar (100px) + padding
+    },
   });
 
   return (
@@ -392,6 +395,9 @@ const DashboardScreen = ({navigation}) => {
             <Text style={styles.emptyText}>No recent logs</Text>
           )}
         </View>
+
+        {/* Bottom spacer for tab bar */}
+        <View style={styles.bottomSpacer} />
       </ScrollView>
     </View>
   );

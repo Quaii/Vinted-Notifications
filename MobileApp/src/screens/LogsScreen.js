@@ -113,6 +113,7 @@ const LogsScreen = () => {
     },
     listContainer: {
       padding: SPACING.lg,
+      paddingBottom: 120, // Extra space to account for tab bar (100px) + padding
     },
     logEntry: {
       backgroundColor: COLORS.secondaryGroupedBackground,
