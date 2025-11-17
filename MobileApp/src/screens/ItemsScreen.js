@@ -448,6 +448,7 @@ const ItemsScreen = ({navigation, route}) => {
       {filteredItems.length > 0 ? (
         viewMode === 'list' ? (
           <FlatList
+            key="list"
             data={filteredItems}
             renderItem={renderListItem}
             keyExtractor={item => item.id.toString()}
@@ -459,6 +460,7 @@ const ItemsScreen = ({navigation, route}) => {
           />
         ) : (
           <FlatList
+            key="grid"
             data={filteredItems}
             renderItem={renderGridItem}
             keyExtractor={item => item.id.toString()}
