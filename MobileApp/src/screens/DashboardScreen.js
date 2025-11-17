@@ -41,7 +41,7 @@ const DashboardScreen = ({navigation}) => {
       // Calculate items per day (last 7 days)
       const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
       const recentItems = items.filter(item => item.created_at_ts >= weekAgo);
-      const itemsPerDay = recentItems.length > 0 ? (recentItems.length / 7).toFixed(1) : 0;
+      const itemsPerDay = recentItems.length > 0 ? Math.round(recentItems.length / 7) : 0;
 
       // Get last item timestamp
       const lastItemTime = items.length > 0 ? items[0].created_at_ts : null;
@@ -192,14 +192,6 @@ const DashboardScreen = ({navigation}) => {
       color: COLORS.textSecondary,
       marginRight: 2,
     },
-    // Last Item Card
-    lastItemCard: {
-      backgroundColor: COLORS.secondaryGroupedBackground,
-      borderRadius: 20,
-      padding: SPACING.md,
-      borderWidth: 1,
-      borderColor: COLORS.separator,
-    },
     // Queries
     queryList: {
       gap: SPACING.sm,
@@ -296,9 +288,7 @@ const DashboardScreen = ({navigation}) => {
             </TouchableOpacity>
           </View>
           {lastItem ? (
-            <View style={styles.lastItemCard}>
-              <ItemCard item={lastItem} />
-            </View>
+            <ItemCard item={lastItem} compact={true} />
           ) : (
             <Text style={styles.emptyText}>No items found yet</Text>
           )}

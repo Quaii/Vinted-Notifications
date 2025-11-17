@@ -143,9 +143,11 @@ const ItemsScreen = ({navigation, route}) => {
     );
   };
 
-  const renderListItem = ({item, index}) => (
-    <ItemCard item={item} isLast={index === filteredItems.length - 1} />
+  const renderListItem = ({item}) => (
+    <ItemCard item={item} />
   );
+
+  const renderItemSeparator = () => <View style={{height: SPACING.md}} />;
 
   const renderEmpty = () => (
     <View style={styles.emptyState}>
@@ -248,15 +250,6 @@ const ItemsScreen = ({navigation, route}) => {
     resultsText: {
       fontSize: FONT_SIZES.caption1,
       color: COLORS.textTertiary,
-    },
-    // List View
-    listContent: {
-      backgroundColor: COLORS.secondaryGroupedBackground,
-      marginHorizontal: SPACING.lg,
-      borderRadius: BORDER_RADIUS.xl,
-      overflow: 'hidden',
-      borderWidth: 1,
-      borderColor: COLORS.separator,
     },
     // Grid View
     gridContent: {
@@ -454,16 +447,16 @@ const ItemsScreen = ({navigation, route}) => {
       {/* Items List/Grid */}
       {filteredItems.length > 0 ? (
         viewMode === 'list' ? (
-          <View style={styles.listContent}>
-            <FlatList
-              data={filteredItems}
-              renderItem={renderListItem}
-              keyExtractor={item => item.id.toString()}
-              refreshing={loading}
-              onRefresh={loadItems}
-              showsVerticalScrollIndicator={false}
-            />
-          </View>
+          <FlatList
+            data={filteredItems}
+            renderItem={renderListItem}
+            keyExtractor={item => item.id.toString()}
+            ItemSeparatorComponent={renderItemSeparator}
+            contentContainerStyle={{paddingBottom: SPACING.xxl * 3}}
+            refreshing={loading}
+            onRefresh={loadItems}
+            showsVerticalScrollIndicator={false}
+          />
         ) : (
           <FlatList
             data={filteredItems}
@@ -471,7 +464,7 @@ const ItemsScreen = ({navigation, route}) => {
             keyExtractor={item => item.id.toString()}
             numColumns={2}
             columnWrapperStyle={{justifyContent: 'space-between', paddingHorizontal: SPACING.lg}}
-            contentContainerStyle={{paddingBottom: SPACING.xl}}
+            contentContainerStyle={{paddingBottom: SPACING.xxl * 3}}
             refreshing={loading}
             onRefresh={loadItems}
             showsVerticalScrollIndicator={false}
