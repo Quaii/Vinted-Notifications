@@ -237,7 +237,8 @@ const SettingsScreen = () => {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingVertical: SPACING.sm,
+      paddingVertical: SPACING.md,
+      paddingHorizontal: SPACING.md,
       borderBottomWidth: 1,
       borderBottomColor: COLORS.separator,
     },
@@ -247,8 +248,7 @@ const SettingsScreen = () => {
     settingLeft: {
       flex: 1,
       marginRight: SPACING.md,
-      paddingRight: SPACING.sm,
-      maxWidth: '75%',
+      justifyContent: 'center',
     },
     settingLabel: {
       fontSize: FONT_SIZES.body,
@@ -309,7 +309,8 @@ const SettingsScreen = () => {
     multilineRow: {
       flexDirection: 'column',
       alignItems: 'stretch',
-      paddingVertical: SPACING.sm,
+      paddingVertical: SPACING.md,
+      paddingHorizontal: SPACING.md,
       borderBottomWidth: 1,
       borderBottomColor: COLORS.separator,
     },
@@ -685,16 +686,22 @@ const SettingsScreen = () => {
           </View>
         </View>
 
+        {/* Save Button */}
+        <TouchableOpacity style={styles.saveButton} onPress={handleSaveSettings}>
+          <MaterialIcons name="save" size={20} color="#FFFFFF" />
+          <Text style={styles.saveButtonText}>Save Settings</Text>
+        </TouchableOpacity>
+
         {/* Danger Zone */}
-        <View style={styles.section}>
+        <View style={[styles.section, {marginTop: SPACING.xl}]}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Danger Zone</Text>
           </View>
           <Text style={styles.sectionDescription}>
-            Clear cached data (use if you see corrupted items or incorrect prices/titles)
+            Dangerous operations that cannot be undone
           </Text>
           <TouchableOpacity
-            style={styles.dangerButton}
+            style={[styles.dangerButton, {marginBottom: SPACING.sm}]}
             onPress={async () => {
               Alert.alert(
                 'Clear All Items',
@@ -719,13 +726,94 @@ const SettingsScreen = () => {
             <MaterialIcons name="delete-sweep" size={20} color="#FFFFFF" />
             <Text style={styles.dangerButtonText}>Clear All Items</Text>
           </TouchableOpacity>
-        </View>
 
-        {/* Save Button */}
-        <TouchableOpacity style={styles.saveButton} onPress={handleSaveSettings}>
-          <MaterialIcons name="save" size={20} color="#FFFFFF" />
-          <Text style={styles.saveButtonText}>Save Settings</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.dangerButton, {marginBottom: SPACING.sm}]}
+            onPress={async () => {
+              Alert.alert(
+                'Delete All Queries',
+                'This will permanently delete all your saved search queries. This action cannot be undone.\n\nAre you sure?',
+                [
+                  {text: 'Cancel', style: 'cancel'},
+                  {
+                    text: 'Delete All',
+                    style: 'destructive',
+                    onPress: async () => {
+                      try {
+                        await DatabaseService.deleteAllQueries();
+                        Alert.alert('Success', 'All queries deleted');
+                      } catch (error) {
+                        Alert.alert('Error', 'Failed to delete queries');
+                      }
+                    },
+                  },
+                ],
+              );
+            }}>
+            <MaterialIcons name="search-off" size={20} color="#FFFFFF" />
+            <Text style={styles.dangerButtonText}>Delete All Queries</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.dangerButton, {marginBottom: SPACING.sm}]}
+            onPress={async () => {
+              Alert.alert(
+                'Clear All Logs',
+                'This will delete all application logs. This action cannot be undone.\n\nAre you sure?',
+                [
+                  {text: 'Cancel', style: 'cancel'},
+                  {
+                    text: 'Clear Logs',
+                    style: 'destructive',
+                    onPress: async () => {
+                      try {
+                        const LogService = require('../services/LogService').default;
+                        LogService.clearLogs();
+                        Alert.alert('Success', 'All logs cleared');
+                      } catch (error) {
+                        Alert.alert('Error', 'Failed to clear logs');
+                      }
+                    },
+                  },
+                ],
+              );
+            }}>
+            <MaterialIcons name="description" size={20} color="#FFFFFF" />
+            <Text style={styles.dangerButtonText}>Clear All Logs</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.dangerButton}
+            onPress={async () => {
+              Alert.alert(
+                'Reset All Data',
+                'This will delete EVERYTHING: all items, all queries, all settings, and all logs. This action cannot be undone.\n\nAre you sure you want to reset the entire app?',
+                [
+                  {text: 'Cancel', style: 'cancel'},
+                  {
+                    text: 'Reset Everything',
+                    style: 'destructive',
+                    onPress: async () => {
+                      try {
+                        await DatabaseService.deleteAllItems();
+                        await DatabaseService.deleteAllQueries();
+                        await DatabaseService.clearAllowlist();
+                        const LogService = require('../services/LogService').default;
+                        LogService.clearLogs();
+                        Alert.alert('Success', 'All data cleared. The app has been reset to defaults.');
+                        loadSettings();
+                      } catch (error) {
+                        Alert.alert('Error', 'Failed to reset app data');
+                      }
+                    },
+                  },
+                ],
+              );
+            }}>
+            <MaterialIcons name="warning" size={20} color="#FFFFFF" />
+            <Text style={styles.dangerButtonText}>Reset All Data</Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.bottomSpacer} />
       </ScrollView>

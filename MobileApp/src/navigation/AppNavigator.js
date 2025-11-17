@@ -62,11 +62,6 @@ const TabNavigator = () => {
           paddingBottom: 20,
           paddingTop: 12,
         },
-        tabBarContentContainerStyle: {
-          justifyContent: 'center',
-          alignItems: 'center',
-          paddingHorizontal: 24,
-        },
         tabBarLabelStyle: {
           fontSize: FONT_SIZES.caption2,
           fontWeight: '600',
@@ -78,9 +73,8 @@ const TabNavigator = () => {
         },
         tabBarItemStyle: {
           paddingVertical: 4,
-          flex: 0,
-          width: 'auto',
-          paddingHorizontal: 9,
+          alignItems: 'center',
+          justifyContent: 'center',
         },
       })}>
       <Tab.Screen
