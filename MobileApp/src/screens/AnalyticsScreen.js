@@ -204,10 +204,11 @@ const AnalyticsScreen = () => {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      minHeight: 70,
+      height: 80,
     },
     widgetLeft: {
       flex: 1,
+      justifyContent: 'center',
     },
     widgetLabel: {
       fontSize: FONT_SIZES.caption1,
@@ -222,6 +223,17 @@ const AnalyticsScreen = () => {
       fontWeight: '700',
       color: COLORS.text,
       letterSpacing: -0.5,
+    },
+    emptyChartState: {
+      paddingVertical: SPACING.xxl * 2,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    emptyChartText: {
+      fontSize: FONT_SIZES.body,
+      color: COLORS.textTertiary,
+      textAlign: 'center',
+      marginTop: SPACING.md,
     },
     widgetIcon: {
       width: 44,
@@ -275,7 +287,7 @@ const AnalyticsScreen = () => {
             </View>
             <View style={styles.analyticsWidget}>
               <View style={styles.widgetLeft}>
-                <Text style={styles.widgetLabel}>Average Price</Text>
+                <Text style={styles.widgetLabel}>Avg. Price</Text>
                 <Text style={styles.widgetValue}>{stats.avgPrice}€</Text>
               </View>
               <View style={[styles.widgetIcon, {backgroundColor: `${COLORS.primary}15`}]}>
@@ -310,7 +322,7 @@ const AnalyticsScreen = () => {
           <Text style={styles.sectionTitle}>Items Over Time</Text>
           <View style={styles.chartCard}>
             <Text style={styles.chartDescription}>Last 30 days</Text>
-            {stats.dailyData.length > 0 && (
+            {stats.dailyData.length > 0 && stats.totalItems > 0 ? (
               <LineChart
                 data={{
                   labels: ['', '', '', '', '', ''],
@@ -324,7 +336,7 @@ const AnalyticsScreen = () => {
                 height={220}
                 yAxisLabel=""
                 yAxisSuffix=""
-                yLabelsOffset={15}
+                yLabelsOffset={25}
                 chartConfig={{
                   ...chartConfig,
                   propsForLabels: {
@@ -335,7 +347,7 @@ const AnalyticsScreen = () => {
                 bezier
                 style={{
                   borderRadius: BORDER_RADIUS.lg,
-                  marginLeft: -15,
+                  marginLeft: -25,
                 }}
                 withInnerLines={true}
                 withOuterLines={true}
@@ -346,6 +358,11 @@ const AnalyticsScreen = () => {
                 fromZero={true}
                 segments={4}
               />
+            ) : (
+              <View style={styles.emptyChartState}>
+                <MaterialIcons name="show-chart" size={64} color={COLORS.textTertiary} />
+                <Text style={styles.emptyChartText}>No information available at this point in time</Text>
+              </View>
             )}
           </View>
         </View>
@@ -355,7 +372,7 @@ const AnalyticsScreen = () => {
           <Text style={styles.sectionTitle}>Items by Day of Week</Text>
           <View style={styles.chartCard}>
             <Text style={styles.chartDescription}>Weekly distribution</Text>
-            {Object.keys(stats.weeklyData).length > 0 && (
+            {Object.keys(stats.weeklyData).length > 0 && stats.totalItems > 0 ? (
               <BarChart
                 data={{
                   labels: Object.keys(stats.weeklyData),
@@ -371,7 +388,7 @@ const AnalyticsScreen = () => {
                 height={220}
                 yAxisLabel=""
                 yAxisSuffix=""
-                yLabelsOffset={15}
+                yLabelsOffset={25}
                 chartConfig={{
                   ...chartConfig,
                   propsForLabels: {
@@ -381,7 +398,7 @@ const AnalyticsScreen = () => {
                 }}
                 style={{
                   borderRadius: BORDER_RADIUS.lg,
-                  marginLeft: -15,
+                  marginLeft: -25,
                 }}
                 withInnerLines={true}
                 showBarTops={false}
@@ -390,6 +407,11 @@ const AnalyticsScreen = () => {
                 withHorizontalLabels={true}
                 segments={4}
               />
+            ) : (
+              <View style={styles.emptyChartState}>
+                <MaterialIcons name="bar-chart" size={64} color={COLORS.textTertiary} />
+                <Text style={styles.emptyChartText}>No information available at this point in time</Text>
+              </View>
             )}
           </View>
         </View>
@@ -399,7 +421,7 @@ const AnalyticsScreen = () => {
           <Text style={styles.sectionTitle}>Price Distribution</Text>
           <View style={styles.chartCard}>
             <Text style={styles.chartDescription}>Items grouped by price range</Text>
-            {stats.priceDistribution.length > 0 && (
+            {stats.priceDistribution.length > 0 && stats.totalItems > 0 ? (
               <PieChart
                 data={stats.priceDistribution}
                 width={CHART_WIDTH - SPACING.lg * 2}
@@ -414,6 +436,11 @@ const AnalyticsScreen = () => {
                   borderRadius: BORDER_RADIUS.lg,
                 }}
               />
+            ) : (
+              <View style={styles.emptyChartState}>
+                <MaterialIcons name="pie-chart" size={64} color={COLORS.textTertiary} />
+                <Text style={styles.emptyChartText}>No information available at this point in time</Text>
+              </View>
             )}
           </View>
         </View>
@@ -423,7 +450,7 @@ const AnalyticsScreen = () => {
           <Text style={styles.sectionTitle}>Cumulative Growth</Text>
           <View style={styles.chartCard}>
             <Text style={styles.chartDescription}>Total items accumulated over last 30 days</Text>
-            {stats.dailyData.length > 0 && (
+            {stats.dailyData.length > 0 && stats.totalItems > 0 ? (
               <LineChart
                 data={{
                   labels: ['', '', '', '', '', ''],
@@ -440,7 +467,7 @@ const AnalyticsScreen = () => {
                 height={220}
                 yAxisLabel=""
                 yAxisSuffix=""
-                yLabelsOffset={15}
+                yLabelsOffset={25}
                 chartConfig={{
                   ...chartConfig,
                   fillShadowGradientFrom: '#C8B588',
@@ -455,7 +482,7 @@ const AnalyticsScreen = () => {
                 bezier
                 style={{
                   borderRadius: BORDER_RADIUS.lg,
-                  marginLeft: -15,
+                  marginLeft: -25,
                 }}
                 withInnerLines={true}
                 withOuterLines={true}
@@ -466,6 +493,11 @@ const AnalyticsScreen = () => {
                 fromZero={true}
                 segments={4}
               />
+            ) : (
+              <View style={styles.emptyChartState}>
+                <MaterialIcons name="trending-up" size={64} color={COLORS.textTertiary} />
+                <Text style={styles.emptyChartText}>No information available at this point in time</Text>
+              </View>
             )}
           </View>
         </View>

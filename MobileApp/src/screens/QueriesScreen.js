@@ -155,7 +155,7 @@ const QueriesScreen = ({navigation}) => {
       backgroundColor: COLORS.groupedBackground,
     },
     listContainer: {
-      paddingTop: 20,
+      paddingTop: 30,
       paddingBottom: SPACING.xxl * 2, // Extra space for FAB
     },
     queriesGroup: {
