@@ -1,5 +1,6 @@
 import axios from 'axios';
 import {APP_CONFIG, USER_AGENTS, DEFAULT_HEADERS} from '../constants/config';
+import LogService from '../services/LogService';
 
 /**
  * Vinted API Client
@@ -39,10 +40,10 @@ export class VintedAPI {
           const customUserAgents = JSON.parse(userAgentsJson);
           if (Array.isArray(customUserAgents) && customUserAgents.length > 0) {
             this.userAgents = customUserAgents;
-            console.log(`[VintedAPI] Loaded ${customUserAgents.length} custom user agents from database`);
+            LogService.info(`[VintedAPI] Loaded ${customUserAgents.length} custom user agents from database`);
           }
         } catch (e) {
-          console.warn('[VintedAPI] Failed to parse custom user agents, using defaults');
+          LogService.warning('[VintedAPI] Failed to parse custom user agents, using defaults');
         }
       }
 
@@ -52,23 +53,23 @@ export class VintedAPI {
           const customHeaders = JSON.parse(headersJson);
           if (typeof customHeaders === 'object' && customHeaders !== null) {
             this.defaultHeaders = {...DEFAULT_HEADERS, ...customHeaders};
-            console.log('[VintedAPI] Loaded custom headers from database');
+            LogService.info('[VintedAPI] Loaded custom headers from database');
           }
         } catch (e) {
-          console.warn('[VintedAPI] Failed to parse custom headers, using defaults');
+          LogService.warning('[VintedAPI] Failed to parse custom headers, using defaults');
         }
       }
 
       // Load proxy list
       if (proxyList && proxyList.trim()) {
         this.proxies = proxyList.split(';').map(p => p.trim()).filter(p => p);
-        console.log(`[VintedAPI] Loaded ${this.proxies.length} proxies from database`);
+        LogService.info(`[VintedAPI] Loaded ${this.proxies.length} proxies from database`);
       }
 
       // Reinitialize session with new settings
       this.initializeSession();
     } catch (error) {
-      console.error('[VintedAPI] Failed to load settings from database:', error);
+      LogService.error(`[VintedAPI] Failed to load settings from database: ${error.message}`);
     }
   }
 
@@ -97,7 +98,7 @@ export class VintedAPI {
       if (proxy) {
         // Note: axios proxy config requires http-proxy-agent for React Native
         // For now, we log it but don't apply (would need native proxy support)
-        console.log(`[VintedAPI] Proxy available but not applied (requires native support): ${proxy}`);
+        LogService.info(`[VintedAPI] Proxy available but not applied (requires native support): ${proxy}`);
         this.currentProxy = proxy;
       }
     }
@@ -146,7 +147,7 @@ export class VintedAPI {
         }
       }
     } catch (error) {
-      console.error('Failed to set locale:', error);
+      LogService.error(`[VintedAPI] Failed to set locale: ${error.message}`);
     }
   }
 
@@ -155,18 +156,18 @@ export class VintedAPI {
    */
   async setCookies() {
     try {
-      console.log(`[VintedAPI] Refreshing cookies for ${this.locale}`);
+      LogService.info(`[VintedAPI] Refreshing cookies for ${this.locale}`);
       const response = await this.axiosInstance.head(this.authUrl);
 
       if (response.status === 200) {
-        console.log('[VintedAPI] Cookies refreshed successfully');
+        LogService.info('[VintedAPI] Cookies refreshed successfully');
         return true;
       }
 
-      console.warn(`[VintedAPI] Cookie refresh returned status ${response.status}`);
+      LogService.warning(`[VintedAPI] Cookie refresh returned status ${response.status}`);
       return false;
     } catch (error) {
-      console.error('[VintedAPI] Failed to refresh cookies:', error.message);
+      LogService.error(`[VintedAPI] Failed to refresh cookies: ${error.message}`);
       return false;
     }
   }
@@ -264,7 +265,7 @@ export class VintedAPI {
     } catch (error) {
       // Only fail on catastrophic URL parsing errors
       // Like Python's urlparse(), we're very permissive
-      console.error('Failed to parse URL:', error.message);
+      LogService.error(`[VintedAPI] Failed to parse URL: ${error.message}`);
 
       // Try to extract at least the domain
       try {
@@ -317,7 +318,7 @@ export class VintedAPI {
       tried++;
 
       try {
-        console.log(`[VintedAPI] Request attempt ${tried}/${this.MAX_RETRIES} to ${apiUrl}`);
+        LogService.info(`[VintedAPI] Request attempt ${tried}/${this.MAX_RETRIES} to ${apiUrl}`);
 
         const response = await this.axiosInstance.get(apiUrl, {
           params: queryParams,
@@ -327,7 +328,7 @@ export class VintedAPI {
 
         // Handle status codes
         if (response.status === 401 || response.status === 404) {
-          console.warn(`[VintedAPI] Got ${response.status}, refreshing cookies...`);
+          LogService.warning(`[VintedAPI] Got ${response.status}, refreshing cookies (attempt ${tried}/${this.MAX_RETRIES})`);
 
           if (tried < this.MAX_RETRIES) {
             await this.setCookies();
@@ -337,14 +338,20 @@ export class VintedAPI {
         }
 
         if (response.status === 200) {
-          console.log(`[VintedAPI] Success! Got ${response.data?.items?.length || 0} items`);
+          LogService.info(`[VintedAPI] Success! Got ${response.data?.items?.length || 0} items`);
           return response.data?.items || [];
         }
 
         // If we've exhausted retries and got 401/403, reset session
         if (tried === this.MAX_RETRIES) {
           if ((response.status === 401 || response.status === 403) && !newSession) {
-            console.log('[VintedAPI] Resetting session and retrying one last time...');
+            // Log detailed error info like desktop app
+            const errorDetails = `[VintedAPI] Received ${response.status} error for URL: ${apiUrl}\n` +
+              `Response headers: ${JSON.stringify(response.headers || {})}\n` +
+              `Response body (first 500 chars): ${JSON.stringify(response.data || '').substring(0, 500)}`;
+            LogService.error(errorDetails);
+
+            LogService.info('[VintedAPI] Resetting session and retrying one last time...');
             newSession = true;
             tried = 0; // Reset counter for final attempt
             this.initializeSession(); // Create new session
@@ -355,16 +362,16 @@ export class VintedAPI {
         }
 
         // For other status codes, log and continue
-        console.warn(`[VintedAPI] Got status ${response.status}`);
+        LogService.warning(`[VintedAPI] Got status ${response.status}, continuing...`);
 
       } catch (error) {
-        console.error(`[VintedAPI] Request error:`, error.message);
+        LogService.error(`[VintedAPI] Request error: ${error.message}`);
         lastResponse = error.response;
 
         // For timeout errors, wait before retrying (exponential backoff)
         if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
           const delay = Math.min(1000 * Math.pow(2, tried - 1), 5000); // Max 5s
-          console.log(`[VintedAPI] Timeout detected, waiting ${delay}ms before retry...`);
+          LogService.warning(`[VintedAPI] Timeout detected, waiting ${delay}ms before retry...`);
           await this.sleep(delay);
         } else {
           // For other errors, short delay
@@ -374,7 +381,7 @@ export class VintedAPI {
     }
 
     // Return empty array if all retries failed
-    console.warn('[VintedAPI] All retries exhausted, returning empty array');
+    LogService.warning('[VintedAPI] All retries exhausted, returning empty array');
     return [];
   }
 
@@ -389,13 +396,13 @@ export class VintedAPI {
     try {
       // Try primary endpoint
       const url = `https://${domain}/api/v2/users/${userId}?localize=false`;
-      console.log(`[VintedAPI] Fetching country for user ${userId}`);
+      LogService.info(`[VintedAPI] Fetching country for user ${userId}`);
 
       const response = await this.axiosInstance.get(url);
 
       // Handle rate limiting
       if (response.status === 429) {
-        console.warn('[VintedAPI] Rate limited (429), trying alternative endpoint...');
+        LogService.warning('[VintedAPI] Rate limited (429), trying alternative endpoint...');
 
         // Fallback to items endpoint
         const altUrl = `https://${domain}/api/v2/users/${userId}/items?page=1&per_page=1`;
@@ -403,26 +410,26 @@ export class VintedAPI {
 
         if (altResponse.status === 200 && altResponse.data?.items?.[0]?.user) {
           const countryCode = altResponse.data.items[0].user.country_iso_code || 'XX';
-          console.log(`[VintedAPI] Got country via fallback: ${countryCode}`);
+          LogService.info(`[VintedAPI] Got country via fallback: ${countryCode}`);
           return countryCode;
         }
 
-        console.warn('[VintedAPI] Fallback endpoint failed');
+        LogService.warning('[VintedAPI] Fallback endpoint failed, returning XX');
         return 'XX';
       }
 
       // Success with primary endpoint
       if (response.status === 200 && response.data?.user) {
         const countryCode = response.data.user.country_iso_code || 'XX';
-        console.log(`[VintedAPI] Got country: ${countryCode}`);
+        LogService.info(`[VintedAPI] Got country: ${countryCode}`);
         return countryCode;
       }
 
-      console.warn(`[VintedAPI] Unexpected status: ${response.status}`);
+      LogService.warning(`[VintedAPI] Unexpected status: ${response.status}`);
       return 'XX';
 
     } catch (error) {
-      console.error('[VintedAPI] Failed to get user country:', error.message);
+      LogService.error(`[VintedAPI] Failed to get user country: ${error.message}`);
       return 'XX';
     }
   }

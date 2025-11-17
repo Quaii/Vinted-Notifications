@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Alert,
   Animated,
+  Linking,
 } from 'react-native';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
 import {PageHeader} from '../components';
@@ -15,6 +16,9 @@ import {useTheme} from '../contexts/ThemeContext';
 import DatabaseService from '../services/DatabaseService';
 import {APP_CONFIG, NOTIFICATION_MODES} from '../constants/config';
 import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
+
+// Import version from package.json
+const packageJson = require('../../package.json');
 
 /**
  * Custom Toggle Component (simpler and more reliable than Switch)
@@ -443,6 +447,27 @@ const SettingsScreen = () => {
     bottomSpacer: {
       height: 120, // Extra space to account for tab bar (100px) + padding
     },
+    versionFooter: {
+      alignItems: 'center',
+      paddingVertical: SPACING.lg,
+      marginTop: SPACING.md,
+    },
+    versionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: SPACING.xs,
+    },
+    versionText: {
+      fontSize: FONT_SIZES.caption1,
+      color: COLORS.textTertiary,
+      textAlign: 'center',
+    },
+    authorText: {
+      fontSize: FONT_SIZES.caption2,
+      color: COLORS.textTertiary,
+      textAlign: 'center',
+      marginTop: SPACING.xs / 2,
+    },
   });
 
   return (
@@ -849,6 +874,32 @@ const SettingsScreen = () => {
             <MaterialIcons name="warning" size={20} color="#FFFFFF" />
             <Text style={styles.dangerButtonText}>Reset All Data</Text>
           </TouchableOpacity>
+        </View>
+
+        {/* Version and Author Footer */}
+        <View style={styles.versionFooter}>
+          <View style={styles.versionRow}>
+            <TouchableOpacity
+              onPress={() => {
+                Alert.alert(
+                  'About Vinted Notifications',
+                  `Version: ${packageJson.version}\n\nA mobile application for tracking Vinted listings and receiving instant notifications.\n\nDeveloped by Quaii\n\n© 2024 Vinted Notifications`,
+                  [
+                    {
+                      text: 'GitHub',
+                      onPress: () => Linking.openURL('https://github.com/Quaii/Vinted-Notifications')
+                    },
+                    {text: 'OK', style: 'cancel'}
+                  ]
+                );
+              }}
+              hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+            >
+              <MaterialIcons name="info-outline" size={14} color={COLORS.textTertiary} />
+            </TouchableOpacity>
+            <Text style={styles.versionText}>v{packageJson.version}</Text>
+          </View>
+          <Text style={styles.authorText}>by Quaii</Text>
         </View>
 
         <View style={styles.bottomSpacer} />
