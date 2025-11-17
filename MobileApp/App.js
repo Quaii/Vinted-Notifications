@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, Component} from 'react';
 import {StatusBar, View, Text, ActivityIndicator, LogBox} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
@@ -13,6 +13,69 @@ import {useThemeColors} from './src/constants/theme';
 
 // Disable yellow box warnings in production
 LogBox.ignoreAllLogs();
+
+// Intercept console errors and warnings to route to LogService
+// This captures API errors and other issues to display in the Logs screen
+const originalConsoleError = console.error;
+const originalConsoleWarn = console.warn;
+
+console.error = (...args) => {
+  // Format the error message
+  const message = args.map(arg =>
+    typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+  ).join(' ');
+
+  // Log to LogService (which also logs to console internally)
+  LogService.error(message);
+
+  // Don't call original to avoid duplicate logs
+  // originalConsoleError.apply(console, args);
+};
+
+console.warn = (...args) => {
+  // Format the warning message
+  const message = args.map(arg =>
+    typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+  ).join(' ');
+
+  // Log to LogService (which also logs to console internally)
+  LogService.warning(message);
+
+  // Don't call original to avoid duplicate logs
+  // originalConsoleWarn.apply(console, args);
+};
+
+// Global error handler for unhandled promise rejections
+const handleUnhandledRejection = (event) => {
+  const error = event.reason || event;
+  const message = error.message || String(error);
+  LogService.error(`Unhandled Promise Rejection: ${message}`);
+};
+
+// Set up global error handlers
+if (global.ErrorUtils) {
+  const originalGlobalHandler = global.ErrorUtils.getGlobalHandler();
+  global.ErrorUtils.setGlobalHandler((error, isFatal) => {
+    LogService.error(`${isFatal ? 'Fatal ' : ''}Error: ${error.message || String(error)}`);
+    if (originalGlobalHandler) {
+      originalGlobalHandler(error, isFatal);
+    }
+  });
+}
+
+/**
+ * Error Boundary Component
+ * Catches React component errors and logs them to LogService
+ */
+class ErrorBoundary extends Component {
+  componentDidCatch(error, errorInfo) {
+    LogService.error(`React Error: ${error.message} - ${errorInfo.componentStack}`);
+  }
+
+  render() {
+    return this.props.children;
+  }
+}
 
 /**
  * Main App Content (wrapped by ThemeProvider)
@@ -134,13 +197,15 @@ const AppContent = () => {
  */
 const App = () => {
   return (
-    <GestureHandlerRootView style={{flex: 1}}>
-      <SafeAreaProvider>
-        <ThemeProvider>
-          <AppContent />
-        </ThemeProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <ErrorBoundary>
+      <GestureHandlerRootView style={{flex: 1}}>
+        <SafeAreaProvider>
+          <ThemeProvider>
+            <AppContent />
+          </ThemeProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </ErrorBoundary>
   );
 };
 
