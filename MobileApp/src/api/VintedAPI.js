@@ -21,12 +21,19 @@ export class VintedAPI {
 
   /**
    * Load custom settings from database (called after DB initialization)
+   * OPTIMIZED: Loads all parameters in parallel for faster initialization
    * @param {Object} DatabaseService - The database service instance
    */
   async loadSettingsFromDatabase(DatabaseService) {
     try {
+      // Load all parameters in parallel for faster initialization
+      const [userAgentsJson, headersJson, proxyList] = await Promise.all([
+        DatabaseService.getParameter('user_agents', null),
+        DatabaseService.getParameter('default_headers', null),
+        DatabaseService.getParameter('proxy_list', ''),
+      ]);
+
       // Load custom user agents
-      const userAgentsJson = await DatabaseService.getParameter('user_agents', null);
       if (userAgentsJson) {
         try {
           const customUserAgents = JSON.parse(userAgentsJson);
@@ -40,7 +47,6 @@ export class VintedAPI {
       }
 
       // Load custom default headers
-      const headersJson = await DatabaseService.getParameter('default_headers', null);
       if (headersJson) {
         try {
           const customHeaders = JSON.parse(headersJson);
@@ -54,7 +60,6 @@ export class VintedAPI {
       }
 
       // Load proxy list
-      const proxyList = await DatabaseService.getParameter('proxy_list', '');
       if (proxyList && proxyList.trim()) {
         this.proxies = proxyList.split(';').map(p => p.trim()).filter(p => p);
         console.log(`[VintedAPI] Loaded ${this.proxies.length} proxies from database`);
