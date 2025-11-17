@@ -13,7 +13,7 @@ export const APP_CONFIG = {
 
   // API
   API_MAX_RETRIES: 3,
-  API_TIMEOUT: 10000, // 10 seconds
+  API_TIMEOUT: 30000, // 30 seconds (increased for backgrounded apps)
 
   // Notification
   NOTIFICATION_CHANNEL_ID: 'vinted_notifications',
