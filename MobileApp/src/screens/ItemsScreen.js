@@ -13,6 +13,7 @@ import {
   Linking,
 } from 'react-native';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
+import {useFocusEffect} from '@react-navigation/native';
 import {PageHeader, ItemCard} from '../components';
 import DatabaseService from '../services/DatabaseService';
 import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
@@ -97,12 +98,12 @@ const ItemsScreen = ({navigation, route}) => {
     }
   }, [queryId, searchQuery, sortBy, applyFilters]);
 
-  useEffect(() => {
-    loadItems();
-
-    const unsubscribe = navigation.addListener('focus', loadItems);
-    return unsubscribe;
-  }, [navigation, loadItems]);
+  // Reload items when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      loadItems();
+    }, [loadItems])
+  );
 
   useEffect(() => {
     applyFilters(items, searchQuery, sortBy);

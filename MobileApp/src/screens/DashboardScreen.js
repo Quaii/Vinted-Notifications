@@ -7,6 +7,7 @@ import {
   RefreshControl,
   TouchableOpacity,
 } from 'react-native';
+import {useFocusEffect} from '@react-navigation/native';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
 import {PageHeader, StatWidget, ItemCard, QueryCard} from '../components';
 import DatabaseService from '../services/DatabaseService';
@@ -59,16 +60,21 @@ const DashboardScreen = ({navigation}) => {
     }
   }, []);
 
-  useEffect(() => {
-    loadDashboard();
+  // Reload dashboard when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      loadDashboard();
+    }, [loadDashboard])
+  );
 
-    // Subscribe to log updates
+  // Subscribe to log updates (only once)
+  useEffect(() => {
     const unsubscribe = LogService.subscribe(() => {
       setLogs(LogService.getLogs(5));
     });
 
     return unsubscribe;
-  }, [loadDashboard]);
+  }, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
