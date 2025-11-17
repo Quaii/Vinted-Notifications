@@ -79,11 +79,15 @@ const DashboardScreen = ({navigation}) => {
 
   // Subscribe to log updates (only once)
   useEffect(() => {
-    const unsubscribe = LogService.subscribe(() => {
-      setLogs(LogService.getLogs(3));
+    const unsubscribe = LogService.subscribe((updatedLogs) => {
+      setLogs(updatedLogs.slice(0, 3));
     });
 
-    return unsubscribe;
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
   const onRefresh = async () => {

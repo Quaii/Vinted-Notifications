@@ -241,15 +241,15 @@ const SettingsScreen = () => {
       paddingHorizontal: SPACING.md,
       borderBottomWidth: 1,
       borderBottomColor: COLORS.separator,
+      minHeight: 60,
     },
     settingRowLast: {
       borderBottomWidth: 0,
     },
     settingLeft: {
-      flex: 1,
-      marginRight: SPACING.md,
+      flexShrink: 1,
+      marginRight: SPACING.sm,
       justifyContent: 'center',
-      maxWidth: '75%',
     },
     settingLabel: {
       fontSize: FONT_SIZES.body,
@@ -264,7 +264,9 @@ const SettingsScreen = () => {
     },
     switchContainer: {
       width: 51,
-      alignItems: 'flex-end',
+      height: 31,
+      alignItems: 'center',
+      justifyContent: 'center',
       flexShrink: 0,
     },
     segmentedControl: {
