@@ -66,7 +66,7 @@ const QueryCard = ({query, onPress, onDelete, onEdit, isLast = false, disableSwi
       height: '100%',
     },
     editButton: {
-      backgroundColor: COLORS.primary,
+      backgroundColor: COLORS.primary, // Champagne gold accent color
     },
     deleteActionButton: {
       backgroundColor: COLORS.error,
@@ -101,7 +101,7 @@ const QueryCard = ({query, onPress, onDelete, onEdit, isLast = false, disableSwi
         ]}>
         {onEdit && (
           <TouchableOpacity
-            style={[styles.actionButton, styles.editButton]}
+            style={[styles.actionButton, {backgroundColor: COLORS.primary}]}
             onPress={() => {
               swipeableRef.current?.close();
               onEdit(query);
