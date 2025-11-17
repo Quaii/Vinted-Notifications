@@ -441,7 +441,7 @@ const SettingsScreen = () => {
       marginLeft: SPACING.sm,
     },
     bottomSpacer: {
-      height: SPACING.xxl,
+      height: 120, // Extra space to account for tab bar (100px) + padding
     },
   });
 

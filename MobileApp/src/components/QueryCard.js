@@ -1,6 +1,6 @@
-import React, {useRef} from 'react';
+import React, {useRef, useState} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet, Animated} from 'react-native';
-import {Swipeable} from 'react-native-gesture-handler';
+import {Swipeable, TapGestureHandler, State} from 'react-native-gesture-handler';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
 import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
 
@@ -13,6 +13,7 @@ import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/t
 const QueryCard = ({query, onPress, onDelete, onEdit, isLast = false, disableSwipe = false}) => {
   const COLORS = useThemeColors();
   const swipeableRef = useRef(null);
+  const [isSwiping, setIsSwiping] = useState(false);
 
   const styles = StyleSheet.create({
     row: {
@@ -125,11 +126,19 @@ const QueryCard = ({query, onPress, onDelete, onEdit, isLast = false, disableSwi
     );
   };
 
+  const handlePress = () => {
+    // Only trigger press if we're not actively swiping
+    if (!isSwiping && onPress) {
+      onPress(query);
+    }
+  };
+
   const cardContent = (
     <TouchableOpacity
       style={styles.row}
-      onPress={() => onPress && onPress(query)}
-      activeOpacity={0.6}>
+      onPress={handlePress}
+      activeOpacity={0.6}
+      disabled={isSwiping}>
       <View style={styles.iconContainer}>
         <MaterialIcons name="search" size={22} color={COLORS.primary} />
       </View>
@@ -160,7 +169,12 @@ const QueryCard = ({query, onPress, onDelete, onEdit, isLast = false, disableSwi
       renderRightActions={renderRightActions}
       overshootRight={false}
       friction={2}
-      rightThreshold={40}>
+      rightThreshold={40}
+      onSwipeableWillOpen={() => setIsSwiping(true)}
+      onSwipeableClose={() => setIsSwiping(false)}
+      onSwipeableOpen={() => setIsSwiping(true)}
+      onBegan={() => setIsSwiping(true)}
+      onEnded={() => setTimeout(() => setIsSwiping(false), 100)}>
       {cardContent}
     </Swipeable>
   );

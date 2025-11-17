@@ -10,8 +10,11 @@ import {name as appName} from './app.json';
 // Completely disable all development mode overlays and warnings
 LogBox.ignoreAllLogs(true);
 
-// Disable the Metro bundler progress overlay
+// Disable the Metro bundler progress overlay completely
 if (__DEV__) {
+  // Completely disable the dev loading view
+  global.__DEV__ = false; // Trick React Native into thinking it's production
+
   // Hide "Building JavaScript bundle" and download progress
   const originalWarn = console.warn;
   const originalLog = console.log;
@@ -20,9 +23,10 @@ if (__DEV__) {
     const message = args.join(' ');
     // Filter out Metro bundler messages
     if (
-      message.includes('Building JavaScript bundle') ||
-      message.includes('Downloading JavaScript bundle') ||
-      message.includes('Loading from Metro')
+      message.includes('Building') ||
+      message.includes('Downloading') ||
+      message.includes('Loading from Metro') ||
+      message.includes('bundle')
     ) {
       return; // Suppress these messages
     }
@@ -33,9 +37,10 @@ if (__DEV__) {
     const message = args.join(' ');
     // Filter out Metro bundler messages
     if (
-      message.includes('Building JavaScript bundle') ||
-      message.includes('Downloading JavaScript bundle') ||
-      message.includes('Loading from Metro')
+      message.includes('Building') ||
+      message.includes('Downloading') ||
+      message.includes('Loading from Metro') ||
+      message.includes('bundle')
     ) {
       return; // Suppress these messages
     }

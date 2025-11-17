@@ -267,6 +267,9 @@ const AnalyticsScreen = () => {
       marginTop: SPACING.sm,
       marginBottom: SPACING.md,
     },
+    bottomSpacer: {
+      height: 120, // Extra space to account for tab bar (100px) + padding
+    },
   });
 
   return (
@@ -505,6 +508,9 @@ const AnalyticsScreen = () => {
             )}
           </View>
         </View>
+
+        {/* Bottom spacer for tab bar */}
+        <View style={styles.bottomSpacer} />
       </ScrollView>
     </View>
   );
