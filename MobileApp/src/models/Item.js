@@ -62,8 +62,19 @@ export class VintedItem {
 
   // Get display photo URL
   getPhotoUrl() {
-    // Photo is now always a string URL (extracted from API as rawItem.photo.url)
-    return this.photo || null;
+    // Photo should always be a string URL (extracted from API as rawItem.photo.url)
+    if (!this.photo || typeof this.photo !== 'string') {
+      console.warn('[Item] Invalid photo for item', this.id, ':', this.photo);
+      return null;
+    }
+
+    // Check if photo looks like a stringified object
+    if (this.photo.includes('[object') || this.photo.includes('{')) {
+      console.error('[Item] Photo is corrupted (contains object) for item', this.id, ':', this.photo);
+      return null;
+    }
+
+    return this.photo;
   }
 
   // Get time since posted
