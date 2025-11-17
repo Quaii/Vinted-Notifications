@@ -157,7 +157,7 @@ const DashboardScreen = ({navigation}) => {
     // Last Item Card
     lastItemCard: {
       backgroundColor: COLORS.secondaryGroupedBackground,
-      borderRadius: BORDER_RADIUS.xl,
+      borderRadius: 20,
       padding: SPACING.md,
       borderWidth: 1,
       borderColor: COLORS.separator,

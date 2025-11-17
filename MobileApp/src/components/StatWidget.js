@@ -12,9 +12,10 @@ const StatWidget = ({title, value, icon, iconColor}) => {
 
   const styles = StyleSheet.create({
     container: {
-      flex: 1,
+      width: 170,
+      height: 174,
       backgroundColor: COLORS.secondaryGroupedBackground,
-      borderRadius: BORDER_RADIUS.xl,
+      borderRadius: 20,
       padding: SPACING.lg,
       shadowColor: '#000',
       shadowOffset: {width: 0, height: 2},
