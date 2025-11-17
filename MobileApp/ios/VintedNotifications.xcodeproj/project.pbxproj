@@ -381,6 +381,11 @@
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_BITCODE = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"RCT_DEV=0",
+					"RCT_ENABLE_INSPECTOR=0",
+					"$(inherited)",
+				);
 				INFOPLIST_FILE = VintedNotifications/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

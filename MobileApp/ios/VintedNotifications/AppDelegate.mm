@@ -3,6 +3,10 @@
 #import <React/RCTBundleURLProvider.h>
 #import <UserNotifications/UserNotifications.h>
 
+// Disable Metro packager entirely by forcing release mode
+#define RCT_DEV 0
+#define RCT_ENABLE_INSPECTOR 0
+
 @implementation AppDelegate
 
 // CRITICAL: Explicitly disable Fabric (New Architecture)
@@ -69,6 +73,19 @@
   // Always use the bundled JavaScript (no Metro bundler required)
   // To update the bundle, run: npm run bundle:ios
   return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
+}
+
+// Disable Metro packager connection attempts
+- (BOOL)shouldStartLoadingViewWithProps:(NSDictionary *)props
+{
+  // Always return YES to skip packager connection check
+  return YES;
+}
+
+// Override to prevent RN from trying to connect to packager
++ (BOOL)shouldBridgeInitializeNativeModules
+{
+  return YES;
 }
 
 @end
