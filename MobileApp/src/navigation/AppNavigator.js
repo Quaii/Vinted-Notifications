@@ -65,6 +65,7 @@ const TabNavigator = () => {
           height: 100,
           paddingBottom: 20,
           paddingTop: 12,
+          paddingHorizontal: 0, // No horizontal padding - let items distribute evenly
         },
         tabBarLabelStyle: {
           fontSize: FONT_SIZES.caption2,
@@ -74,9 +75,13 @@ const TabNavigator = () => {
           textAlign: 'center',
         },
         tabBarItemStyle: {
+          flex: 1, // Each tab takes equal space
           paddingVertical: 4,
           alignItems: 'center',
           justifyContent: 'center',
+        },
+        tabBarContentContainerStyle: {
+          justifyContent: 'space-evenly', // Evenly distribute tabs
         },
       })}>
       <Tab.Screen
