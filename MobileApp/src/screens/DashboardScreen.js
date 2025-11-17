@@ -6,6 +6,7 @@ import {
   ScrollView,
   RefreshControl,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
@@ -94,6 +95,35 @@ const DashboardScreen = ({navigation}) => {
     setRefreshing(true);
     await loadDashboard();
     setRefreshing(false);
+  };
+
+  const handleDeleteQuery = async query => {
+    Alert.alert(
+      'Delete Query',
+      `Are you sure you want to delete "${query.query_name}"?`,
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await DatabaseService.deleteQuery(query.id);
+              Alert.alert('Success', 'Query deleted');
+              loadDashboard();
+            } catch (error) {
+              console.error('Failed to delete query:', error);
+              Alert.alert('Error', 'Failed to delete query');
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const handleEditQuery = (query) => {
+    // Navigate to Queries screen for full edit functionality
+    navigation.navigate('Queries');
   };
 
   const formatLogTime = timestamp => {
@@ -313,7 +343,8 @@ const DashboardScreen = ({navigation}) => {
                   key={query.id}
                   query={query}
                   onPress={() => navigation.navigate('Items', {queryId: query.id})}
-                  disableSwipe={true}
+                  onDelete={handleDeleteQuery}
+                  onEdit={handleEditQuery}
                 />
               ))}
             </View>
