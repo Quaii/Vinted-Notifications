@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {StatusBar, View, Text, ActivityIndicator} from 'react-native';
+import {StatusBar, View, Text, ActivityIndicator, LogBox} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {ThemeProvider, useTheme} from './src/contexts/ThemeContext';
@@ -10,6 +10,9 @@ import MonitoringService from './src/services/MonitoringService';
 import LogService from './src/services/LogService';
 import VintedAPI from './src/api/VintedAPI';
 import {useThemeColors} from './src/constants/theme';
+
+// Disable yellow box warnings in production
+LogBox.ignoreAllLogs();
 
 /**
  * Main App Content (wrapped by ThemeProvider)
