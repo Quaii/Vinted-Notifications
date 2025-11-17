@@ -216,13 +216,15 @@ const SettingsScreen = () => {
       paddingVertical: SPACING.sm,
       borderBottomWidth: 1,
       borderBottomColor: COLORS.separator,
+      paddingHorizontal: SPACING.xs,
     },
     settingRowLast: {
       borderBottomWidth: 0,
     },
     settingLeft: {
       flex: 1,
-      marginRight: SPACING.md,
+      marginRight: SPACING.sm,
+      paddingRight: SPACING.xs,
     },
     settingLabel: {
       fontSize: FONT_SIZES.body,

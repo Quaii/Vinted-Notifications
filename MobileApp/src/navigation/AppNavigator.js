@@ -58,18 +58,23 @@ const TabNavigator = () => {
           backgroundColor: COLORS.secondaryGroupedBackground,
           borderTopColor: COLORS.border,
           borderTopWidth: 1,
-          paddingTop: 8,
-          paddingBottom: 4,
-          height: 60,
-          // Let React Navigation handle safe area for home indicator
+          height: 100,
+          paddingBottom: 20,
+          paddingTop: 12,
+          paddingHorizontal: 24,
+          justifyContent: 'center',
         },
         tabBarLabelStyle: {
           fontSize: FONT_SIZES.caption2,
           fontWeight: '600',
           marginTop: 4,
+          marginBottom: 0,
         },
         tabBarIconStyle: {
-          marginTop: 4,
+          marginTop: 8,
+        },
+        tabBarItemStyle: {
+          paddingVertical: 4,
         },
       })}>
       <Tab.Screen

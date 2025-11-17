@@ -34,6 +34,7 @@ const PageHeader = ({title, showSettings = true, showBack = false, centered = fa
       paddingTop: SPACING.sm,
       paddingBottom: SPACING.md,
       backgroundColor: COLORS.background,
+      position: 'relative',
     },
     title: {
       fontSize: FONT_SIZES.largeTitle,
@@ -48,6 +49,9 @@ const PageHeader = ({title, showSettings = true, showBack = false, centered = fa
     },
     backButton: {
       padding: SPACING.xs,
+      position: centered ? 'absolute' : 'relative',
+      left: centered ? SPACING.lg : 0,
+      zIndex: 10,
     },
   });
 
@@ -59,7 +63,7 @@ const PageHeader = ({title, showSettings = true, showBack = false, centered = fa
             style={styles.backButton}
             onPress={handleBackPress}
             activeOpacity={0.6}>
-            <MaterialIcons name="close" size={34} color={COLORS.text} />
+            <MaterialIcons name="arrow-back" size={34} color={COLORS.text} />
           </TouchableOpacity>
         )}
         <Text style={styles.title}>{title}</Text>
