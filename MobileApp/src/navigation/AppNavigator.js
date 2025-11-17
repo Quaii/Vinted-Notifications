@@ -50,7 +50,11 @@ const TabNavigator = () => {
               iconName = 'circle';
           }
 
-          return <MaterialIcons name={iconName} size={size} color={color} />;
+          return (
+            <View style={{alignItems: 'center', justifyContent: 'center'}}>
+              <MaterialIcons name={iconName} size={size} color={color} />
+            </View>
+          );
         },
         tabBarActiveTintColor: COLORS.primary,
         tabBarInactiveTintColor: COLORS.textSecondary,
@@ -71,6 +75,8 @@ const TabNavigator = () => {
         },
         tabBarItemStyle: {
           paddingVertical: 4,
+          alignItems: 'center',
+          justifyContent: 'center',
         },
       })}>
       <Tab.Screen

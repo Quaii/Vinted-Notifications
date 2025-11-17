@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {StatusBar, View, Text, ActivityIndicator} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {ThemeProvider, useTheme} from './src/contexts/ThemeContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import DatabaseService from './src/services/DatabaseService';
@@ -119,15 +120,17 @@ const AppContent = () => {
 };
 
 /**
- * Main App Component with ThemeProvider and SafeAreaProvider
+ * Main App Component with GestureHandlerRootView, ThemeProvider and SafeAreaProvider
  */
 const App = () => {
   return (
-    <SafeAreaProvider>
-      <ThemeProvider>
-        <AppContent />
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{flex: 1}}>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <AppContent />
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 };
 

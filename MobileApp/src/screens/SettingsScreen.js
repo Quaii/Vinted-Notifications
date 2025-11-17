@@ -5,9 +5,9 @@ import {
   StyleSheet,
   ScrollView,
   TextInput,
-  Switch,
   TouchableOpacity,
   Alert,
+  Animated,
 } from 'react-native';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
 import {PageHeader} from '../components';
@@ -15,6 +15,40 @@ import {useTheme} from '../contexts/ThemeContext';
 import DatabaseService from '../services/DatabaseService';
 import {APP_CONFIG, NOTIFICATION_MODES} from '../constants/config';
 import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
+
+/**
+ * Custom Toggle Component (simpler and more reliable than Switch)
+ */
+const CustomToggle = ({value, onValueChange, activeColor, inactiveColor}) => {
+  return (
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={() => onValueChange(!value)}
+      style={{
+        width: 51,
+        height: 31,
+        borderRadius: 15.5,
+        backgroundColor: value ? activeColor : inactiveColor,
+        padding: 2,
+        justifyContent: 'center',
+      }}>
+      <View
+        style={{
+          width: 27,
+          height: 27,
+          borderRadius: 13.5,
+          backgroundColor: '#FFFFFF',
+          transform: [{translateX: value ? 20 : 0}],
+          shadowColor: '#000',
+          shadowOffset: {width: 0, height: 2},
+          shadowOpacity: 0.2,
+          shadowRadius: 2.5,
+          elevation: 4,
+        }}
+      />
+    </TouchableOpacity>
+  );
+};
 
 /**
  * SettingsScreen
@@ -432,13 +466,12 @@ const SettingsScreen = () => {
                   {isDarkMode ? 'Dark mode enabled' : 'Light mode enabled'}
                 </Text>
               </View>
-              <View style={styles.switchContainer} pointerEvents="auto">
-                <Switch
+              <View style={styles.switchContainer}>
+                <CustomToggle
                   value={isDarkMode}
                   onValueChange={toggleTheme}
-                  trackColor={{false: COLORS.buttonFill, true: COLORS.primary}}
-                  thumbColor="#FFFFFF"
-                  ios_backgroundColor={COLORS.buttonFill}
+                  activeColor={COLORS.primary}
+                  inactiveColor={COLORS.buttonFill}
                 />
               </View>
             </View>
@@ -562,13 +595,12 @@ const SettingsScreen = () => {
                   Verify proxies before use (slower but more reliable)
                 </Text>
               </View>
-              <View style={styles.switchContainer} pointerEvents="auto">
-                <Switch
+              <View style={styles.switchContainer}>
+                <CustomToggle
                   value={settings.checkProxies}
                   onValueChange={handleToggleCheckProxies}
-                  trackColor={{false: COLORS.buttonFill, true: COLORS.primary}}
-                  thumbColor="#FFFFFF"
-                  ios_backgroundColor={COLORS.buttonFill}
+                  activeColor={COLORS.primary}
+                  inactiveColor={COLORS.buttonFill}
                 />
               </View>
             </View>
