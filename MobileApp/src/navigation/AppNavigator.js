@@ -24,7 +24,8 @@ const TabNavigator = () => {
 
   return (
     <Tab.Navigator
-      safeAreaInsets={{left: 0, right: 0}}
+      safeAreaInsets={{left: 0, right: 0, bottom: 0, top: 0}}
+      sceneContainerStyle={{backgroundColor: COLORS.background}}
       screenOptions={({route}) => ({
         headerShown: false,
         presentation: 'card',
@@ -51,15 +52,15 @@ const TabNavigator = () => {
               iconName = 'circle';
           }
 
-          return (
-            <View style={{alignItems: 'center', justifyContent: 'center'}}>
-              <MaterialIcons name={iconName} size={size} color={color} />
-            </View>
-          );
+          return <MaterialIcons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: COLORS.primary,
         tabBarInactiveTintColor: COLORS.textSecondary,
         tabBarStyle: {
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          bottom: 0,
           backgroundColor: COLORS.secondaryGroupedBackground,
           borderTopColor: COLORS.border,
           borderTopWidth: 1,
@@ -68,25 +69,23 @@ const TabNavigator = () => {
           paddingTop: 12,
           paddingLeft: 0,
           paddingRight: 0,
-          paddingHorizontal: 0,
-          marginLeft: 0,
-          marginRight: 0,
-          marginHorizontal: 0,
+          width: '100%',
         },
         tabBarLabelStyle: {
           fontSize: FONT_SIZES.caption2,
           fontWeight: '600',
           marginTop: 4,
           marginBottom: 0,
-          textAlign: 'center',
         },
         tabBarItemStyle: {
-          flex: 1,
+          width: '20%', // 5 visible tabs = 20% each for perfect distribution
           paddingVertical: 4,
           paddingHorizontal: 0,
           marginHorizontal: 0,
-          alignItems: 'center',
-          justifyContent: 'center',
+        },
+        tabBarIconStyle: {
+          marginTop: 0,
+          marginBottom: 0,
         },
       })}>
       <Tab.Screen
