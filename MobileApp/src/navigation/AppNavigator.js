@@ -51,7 +51,7 @@ const TabNavigator = () => {
           }
 
           return (
-            <View style={{width: '100%', alignItems: 'center', justifyContent: 'center'}}>
+            <View style={{alignItems: 'center', justifyContent: 'center'}}>
               <MaterialIcons name={iconName} size={size} color={color} />
             </View>
           );
