@@ -249,7 +249,7 @@ const SettingsScreen = () => {
       flex: 1,
       marginRight: SPACING.md,
       justifyContent: 'center',
-      pointerEvents: 'none',
+      maxWidth: '75%',
     },
     settingLabel: {
       fontSize: FONT_SIZES.body,
@@ -263,9 +263,9 @@ const SettingsScreen = () => {
       lineHeight: 16,
     },
     switchContainer: {
-      minWidth: 51,
+      width: 51,
       alignItems: 'flex-end',
-      pointerEvents: 'auto',
+      flexShrink: 0,
     },
     segmentedControl: {
       flexDirection: 'row',
