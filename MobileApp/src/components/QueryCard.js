@@ -8,9 +8,9 @@ import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/t
  * QueryCard Component
  * Displays a search query in iOS list row format
  * iOS NATIVE DESIGN - Horizontal list row with icon and chevron
- * SWIPEABLE - Swipe left to reveal delete/edit, or fully swipe to delete
+ * SWIPEABLE - Swipe left to reveal delete/edit (only when onDelete/onEdit provided)
  */
-const QueryCard = ({query, onPress, onDelete, onEdit, isLast = false}) => {
+const QueryCard = ({query, onPress, onDelete, onEdit, isLast = false, disableSwipe = false}) => {
   const COLORS = useThemeColors();
   const swipeableRef = useRef(null);
 
@@ -110,18 +110,49 @@ const QueryCard = ({query, onPress, onDelete, onEdit, isLast = false}) => {
             <Text style={styles.actionText}>Edit</Text>
           </TouchableOpacity>
         )}
-        <TouchableOpacity
-          style={[styles.actionButton, styles.deleteActionButton]}
-          onPress={() => {
-            swipeableRef.current?.close();
-            onDelete(query);
-          }}>
-          <MaterialIcons name="delete" size={22} color="#FFFFFF" />
-          <Text style={styles.actionText}>Delete</Text>
-        </TouchableOpacity>
+        {onDelete && (
+          <TouchableOpacity
+            style={[styles.actionButton, styles.deleteActionButton]}
+            onPress={() => {
+              swipeableRef.current?.close();
+              onDelete(query);
+            }}>
+            <MaterialIcons name="delete" size={22} color="#FFFFFF" />
+            <Text style={styles.actionText}>Delete</Text>
+          </TouchableOpacity>
+        )}
       </Animated.View>
     );
   };
+
+  const cardContent = (
+    <TouchableOpacity
+      style={styles.row}
+      onPress={() => onPress && onPress(query)}
+      activeOpacity={0.6}>
+      <View style={styles.iconContainer}>
+        <MaterialIcons name="search" size={22} color={COLORS.primary} />
+      </View>
+      <View style={styles.content}>
+        <Text style={styles.title} numberOfLines={1}>
+          {query.query_name}
+        </Text>
+        <Text style={styles.subtitle} numberOfLines={1}>
+          {subtitle}
+        </Text>
+      </View>
+      <View style={styles.chevron}>
+        <MaterialIcons name="chevron-right" size={20} color={COLORS.textTertiary} />
+      </View>
+    </TouchableOpacity>
+  );
+
+  // Only enable swipe if handlers are provided and swipe is not disabled
+  const swipeEnabled = !disableSwipe && (onDelete || onEdit);
+
+  if (!swipeEnabled) {
+    return cardContent;
+  }
 
   return (
     <Swipeable
@@ -130,25 +161,7 @@ const QueryCard = ({query, onPress, onDelete, onEdit, isLast = false}) => {
       overshootRight={false}
       friction={2}
       rightThreshold={40}>
-      <TouchableOpacity
-        style={styles.row}
-        onPress={() => onPress && onPress(query)}
-        activeOpacity={0.6}>
-        <View style={styles.iconContainer}>
-          <MaterialIcons name="search" size={22} color={COLORS.primary} />
-        </View>
-        <View style={styles.content}>
-          <Text style={styles.title} numberOfLines={1}>
-            {query.query_name}
-          </Text>
-          <Text style={styles.subtitle} numberOfLines={1}>
-            {subtitle}
-          </Text>
-        </View>
-        <View style={styles.chevron}>
-          <MaterialIcons name="chevron-right" size={20} color={COLORS.textTertiary} />
-        </View>
-      </TouchableOpacity>
+      {cardContent}
     </Swipeable>
   );
 };
