@@ -29,7 +29,7 @@ const StatWidget = ({tag, value, subheading, lastUpdated, icon, iconColor}) => {
     header: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      alignItems: 'flex-start',
+      alignItems: 'center',
       marginBottom: SPACING.xs,
     },
     tag: {
