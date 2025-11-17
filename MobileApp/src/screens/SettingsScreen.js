@@ -263,10 +263,6 @@ const SettingsScreen = () => {
       lineHeight: 16,
     },
     switchContainer: {
-      width: 51,
-      height: 31,
-      alignItems: 'center',
-      justifyContent: 'center',
       flexShrink: 0,
     },
     segmentedControl: {

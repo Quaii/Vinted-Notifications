@@ -278,7 +278,7 @@ const AnalyticsScreen = () => {
           <View style={styles.widgetRow}>
             <View style={styles.analyticsWidget}>
               <View style={styles.widgetLeft}>
-                <Text style={styles.widgetLabel}>Total Items</Text>
+                <Text style={styles.widgetLabel} numberOfLines={1}>Total Items</Text>
                 <Text style={styles.widgetValue}>{stats.totalItems}</Text>
               </View>
               <View style={[styles.widgetIcon, {backgroundColor: `${COLORS.primary}15`}]}>
