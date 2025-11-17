@@ -2,6 +2,7 @@ import BackgroundFetch from 'react-native-background-fetch';
 import VintedAPI from '../api/VintedAPI';
 import DatabaseService from './DatabaseService';
 import NotificationService from './NotificationService';
+import LogService from './LogService';
 import {VintedItem} from '../models/Item';
 import {APP_CONFIG} from '../constants/config';
 
@@ -86,10 +87,12 @@ class MonitoringService {
    */
   async startMonitoring() {
     if (this.isRunning) {
+      LogService.info('Monitoring already running');
       console.log('Monitoring already running');
       return;
     }
 
+    LogService.info('Starting monitoring...');
     console.log('Starting monitoring...');
     this.isRunning = true;
 
@@ -111,6 +114,7 @@ class MonitoringService {
       }
     }, parseInt(refreshDelay) * 1000);
 
+    LogService.info(`Monitoring started with ${refreshDelay}s interval`);
     console.log(`Monitoring started with ${refreshDelay}s interval`);
   }
 
@@ -173,6 +177,7 @@ class MonitoringService {
 
       // Send notifications for new items
       if (newItems.length > 0) {
+        LogService.info(`Found ${newItems.length} new items`);
         console.log(`Found ${newItems.length} new items`);
         await NotificationService.sendBulkNotifications(newItems);
       } else {
@@ -181,6 +186,7 @@ class MonitoringService {
 
       return newItems;
     } catch (error) {
+      LogService.error(`Failed to check queries: ${error.message}`);
       console.error('Failed to check queries:', error);
       return [];
     }
@@ -279,6 +285,7 @@ class MonitoringService {
             latestTimestamp = item.created_at_ts;
           }
 
+          LogService.info(`New item: ${item.title} - ${item.getFormattedPrice()}`);
           console.log(`New item found: ${item.title} (${item.id})`);
         } catch (error) {
           console.error('Failed to process item:', error);
