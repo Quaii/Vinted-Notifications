@@ -24,6 +24,8 @@ const DashboardScreen = ({navigation}) => {
   const [stats, setStats] = useState({
     totalItems: 0,
     itemsPerDay: 0,
+    lastItemTime: null,
+    lastCalculatedTime: Date.now(),
   });
   const [lastItem, setLastItem] = useState(null);
   const [queries, setQueries] = useState([]);
@@ -41,7 +43,15 @@ const DashboardScreen = ({navigation}) => {
       const recentItems = items.filter(item => item.created_at_ts >= weekAgo);
       const itemsPerDay = recentItems.length > 0 ? (recentItems.length / 7).toFixed(1) : 0;
 
-      setStats({totalItems, itemsPerDay});
+      // Get last item timestamp
+      const lastItemTime = items.length > 0 ? items[0].created_at_ts : null;
+
+      setStats({
+        totalItems,
+        itemsPerDay,
+        lastItemTime,
+        lastCalculatedTime: Date.now(),
+      });
 
       // Load last found item
       if (items.length > 0) {
@@ -93,6 +103,23 @@ const DashboardScreen = ({navigation}) => {
     const diffHours = Math.floor(diffMins / 60);
     if (diffHours < 24) return `${diffHours}h ago`;
     return date.toLocaleDateString();
+  };
+
+  const formatRelativeTime = timestamp => {
+    if (!timestamp) return 'Never';
+
+    const now = Date.now();
+    const diff = now - timestamp;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+    if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+    if (days === 1) return 'Yesterday';
+    if (days < 7) return `${days} days ago`;
+    return `${days} days ago`;
   };
 
   const getLevelColor = level => {
@@ -235,14 +262,18 @@ const DashboardScreen = ({navigation}) => {
         {/* Stats Widgets */}
         <View style={styles.widgetRow}>
           <StatWidget
-            title="Total Items"
+            tag="Total Items"
             value={stats.totalItems.toString()}
+            subheading={stats.totalItems === 0 ? 'No items yet' : `${stats.totalItems} item${stats.totalItems === 1 ? '' : 's'} cached`}
+            lastUpdated={stats.lastItemTime ? formatRelativeTime(stats.lastItemTime) : 'No items found'}
             icon="inventory"
             iconColor="#007AFF"
           />
           <StatWidget
-            title="Items / Day"
+            tag="Items / Day"
             value={stats.itemsPerDay.toString()}
+            subheading="Last 7 days"
+            lastUpdated={formatRelativeTime(stats.lastCalculatedTime)}
             icon="trending-up"
             iconColor="#34C759"
           />
