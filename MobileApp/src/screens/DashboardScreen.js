@@ -145,13 +145,14 @@ const DashboardScreen = ({navigation}) => {
     sectionButton: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: SPACING.sm,
-      paddingVertical: SPACING.xs,
+      paddingHorizontal: 0,
+      paddingVertical: 0,
+      backgroundColor: 'transparent',
     },
     sectionButtonText: {
       fontSize: FONT_SIZES.subheadline,
       fontWeight: '600',
-      color: COLORS.link,
+      color: COLORS.textSecondary,
       marginRight: 2,
     },
     // Last Item Card
@@ -247,9 +248,10 @@ const DashboardScreen = ({navigation}) => {
             <Text style={styles.sectionTitle}>Last Found Item</Text>
             <TouchableOpacity
               style={styles.sectionButton}
-              onPress={() => navigation.navigate('Items')}>
+              onPress={() => navigation.navigate('Items')}
+              activeOpacity={0.6}>
               <Text style={styles.sectionButtonText}>View All</Text>
-              <MaterialIcons name="chevron-right" size={18} color={COLORS.link} />
+              <MaterialIcons name="chevron-right" size={18} color={COLORS.textSecondary} />
             </TouchableOpacity>
           </View>
           {lastItem ? (
@@ -267,9 +269,10 @@ const DashboardScreen = ({navigation}) => {
             <Text style={styles.sectionTitle}>Queries</Text>
             <TouchableOpacity
               style={styles.sectionButton}
-              onPress={() => navigation.navigate('Queries')}>
+              onPress={() => navigation.navigate('Queries')}
+              activeOpacity={0.6}>
               <Text style={styles.sectionButtonText}>Manage</Text>
-              <MaterialIcons name="chevron-right" size={18} color={COLORS.link} />
+              <MaterialIcons name="chevron-right" size={18} color={COLORS.textSecondary} />
             </TouchableOpacity>
           </View>
           {queries.length > 0 ? (
@@ -293,9 +296,10 @@ const DashboardScreen = ({navigation}) => {
             <Text style={styles.sectionTitle}>Recent Logs</Text>
             <TouchableOpacity
               style={styles.sectionButton}
-              onPress={() => navigation.navigate('Logs')}>
+              onPress={() => navigation.navigate('Logs')}
+              activeOpacity={0.6}>
               <Text style={styles.sectionButtonText}>View All</Text>
-              <MaterialIcons name="chevron-right" size={18} color={COLORS.link} />
+              <MaterialIcons name="chevron-right" size={18} color={COLORS.textSecondary} />
             </TouchableOpacity>
           </View>
           {logs.length > 0 ? (

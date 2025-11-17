@@ -216,15 +216,17 @@ const SettingsScreen = () => {
       paddingVertical: SPACING.sm,
       borderBottomWidth: 1,
       borderBottomColor: COLORS.separator,
-      paddingHorizontal: SPACING.xs,
+      paddingHorizontal: SPACING.md,
+      paddingRight: SPACING.lg,
     },
     settingRowLast: {
       borderBottomWidth: 0,
     },
     settingLeft: {
       flex: 1,
-      marginRight: SPACING.sm,
-      paddingRight: SPACING.xs,
+      marginRight: SPACING.md,
+      paddingRight: SPACING.sm,
+      maxWidth: '75%',
     },
     settingLabel: {
       fontSize: FONT_SIZES.body,
@@ -236,6 +238,10 @@ const SettingsScreen = () => {
       fontSize: FONT_SIZES.footnote,
       color: COLORS.textTertiary,
       lineHeight: 16,
+    },
+    switchContainer: {
+      minWidth: 51,
+      alignItems: 'flex-end',
     },
     segmentedControl: {
       flexDirection: 'row',
@@ -389,11 +395,13 @@ const SettingsScreen = () => {
                   {isDarkMode ? 'Dark mode enabled' : 'Light mode enabled'}
                 </Text>
               </View>
-              <Switch
-                value={isDarkMode}
-                onValueChange={toggleTheme}
-                trackColor={{false: COLORS.buttonFill, true: COLORS.primary}}
-              />
+              <View style={styles.switchContainer}>
+                <Switch
+                  value={isDarkMode}
+                  onValueChange={toggleTheme}
+                  trackColor={{false: COLORS.buttonFill, true: COLORS.primary}}
+                />
+              </View>
             </View>
 
             <View style={[styles.settingRow, styles.settingRowLast]}>
@@ -515,11 +523,13 @@ const SettingsScreen = () => {
                   Verify proxies before use (slower but more reliable)
                 </Text>
               </View>
-              <Switch
-                value={settings.checkProxies}
-                onValueChange={value => setSettings({...settings, checkProxies: value})}
-                trackColor={{false: COLORS.buttonFill, true: COLORS.primary}}
-              />
+              <View style={styles.switchContainer}>
+                <Switch
+                  value={settings.checkProxies}
+                  onValueChange={value => setSettings({...settings, checkProxies: value})}
+                  trackColor={{false: COLORS.buttonFill, true: COLORS.primary}}
+                />
+              </View>
             </View>
           </View>
         </View>

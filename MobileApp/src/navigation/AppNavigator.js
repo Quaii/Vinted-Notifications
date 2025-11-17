@@ -74,13 +74,13 @@ const TabNavigator = () => {
           marginBottom: 0,
         },
         tabBarIconStyle: {
-          marginTop: 8,
+          marginTop: 3,
         },
         tabBarItemStyle: {
           paddingVertical: 4,
           flex: 0,
           width: 'auto',
-          paddingHorizontal: 12,
+          paddingHorizontal: 9,
         },
       })}>
       <Tab.Screen
