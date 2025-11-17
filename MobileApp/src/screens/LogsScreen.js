@@ -155,7 +155,7 @@ const LogsScreen = () => {
     logTime: {
       fontSize: FONT_SIZES.caption1,
       color: COLORS.textTertiary,
-      fontFamily: 'monospace',
+      fontFamily: 'Courier',
     },
     logMessage: {
       fontSize: FONT_SIZES.subheadline,
