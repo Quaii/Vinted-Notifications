@@ -313,6 +313,7 @@ const DashboardScreen = ({navigation}) => {
                   key={query.id}
                   query={query}
                   onPress={() => navigation.navigate('Items', {queryId: query.id})}
+                  disableSwipe={true}
                 />
               ))}
             </View>
