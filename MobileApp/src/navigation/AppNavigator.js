@@ -78,12 +78,12 @@ const TabNavigator = () => {
           marginBottom: 0,
         },
         tabBarItemStyle: {
-          width: '20%', // 5 visible tabs = 20% each for perfect distribution
+          flex: 1, // let each tab take equal space
           paddingVertical: 4,
           paddingHorizontal: 0,
           marginHorizontal: 0,
-          alignItems: 'center',
-          justifyContent: 'center',
+          alignItems: 'center', // center icon+label horizontally
+          justifyContent: 'center', // center vertically within the tab item
         },
         tabBarIconStyle: {
           marginTop: 0,
