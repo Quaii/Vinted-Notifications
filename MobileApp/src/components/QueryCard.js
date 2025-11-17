@@ -129,16 +129,7 @@ const QueryCard = ({query, onPress, onDelete, onEdit, isLast = false}) => {
       renderRightActions={renderRightActions}
       overshootRight={false}
       friction={2}
-      rightThreshold={80}
-      onSwipeableOpen={(direction) => {
-        if (direction === 'right') {
-          // Full swipe to delete
-          setTimeout(() => {
-            swipeableRef.current?.close();
-            onDelete(query);
-          }, 100);
-        }
-      }}>
+      rightThreshold={40}>
       <TouchableOpacity
         style={styles.row}
         onPress={() => onPress && onPress(query)}
