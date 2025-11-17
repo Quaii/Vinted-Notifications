@@ -82,7 +82,7 @@ const ItemCard = ({item, onPress, isLast = false}) => {
       />
       <View style={styles.content}>
         <Text style={styles.title} numberOfLines={2}>
-          {item.title}
+          {item.title || '[Corrupt Data - Clear Items in Settings]'}
         </Text>
         {subtitle ? (
           <Text style={styles.subtitle} numberOfLines={1}>

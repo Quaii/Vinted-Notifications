@@ -131,7 +131,7 @@ const ItemsScreen = ({navigation, route}) => {
         <View style={styles.gridContent}>
           <Text style={styles.gridPrice}>{item.getFormattedPrice()}</Text>
           <Text style={styles.gridTitle} numberOfLines={2}>
-            {item.title}
+            {item.title || '[Corrupt Data]'}
           </Text>
           {item.brand_title && (
             <Text style={styles.gridBrand} numberOfLines={1}>

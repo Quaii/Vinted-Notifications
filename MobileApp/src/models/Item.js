@@ -3,9 +3,17 @@ export class VintedItem {
   constructor(data) {
     this.id = data.id;
 
-    // Handle title - ensure it's never an object
+    // Handle title - ensure it's never an object or stringified JSON
     if (typeof data.title === 'string') {
-      this.title = data.title;
+      // Detect corrupt data where title contains stringified price object
+      if (data.title.includes('{"amount"') ||
+          data.title.includes('"currency_code"') ||
+          (data.title.startsWith('{') && data.title.includes('"'))) {
+        console.warn('[Item] Corrupt title detected (stringified object):', data.title);
+        this.title = ''; // Reject corrupt data
+      } else {
+        this.title = data.title;
+      }
     } else {
       this.title = '';
     }
