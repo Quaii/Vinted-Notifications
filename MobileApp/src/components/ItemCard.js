@@ -8,7 +8,7 @@ import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/t
  * Displays a Vinted item in iOS list row format
  * iOS NATIVE DESIGN - Horizontal list row with thumbnail
  */
-const ItemCard = ({item, onPress, isLast = false}) => {
+const ItemCard = ({item, onPress, isLast = false, compact = false}) => {
   const COLORS = useThemeColors();
   const [imageError, setImageError] = useState(false);
 
@@ -20,30 +20,40 @@ const ItemCard = ({item, onPress, isLast = false}) => {
     }
   };
 
+  const thumbnailSize = compact ? 90 : 74;
+  const thumbnailPadding = compact ? SPACING.xs : SPACING.md;
+  const cardMargin = compact ? 0 : SPACING.lg;
+
   const styles = StyleSheet.create({
+    card: {
+      backgroundColor: COLORS.secondaryGroupedBackground,
+      marginHorizontal: cardMargin,
+      borderRadius: BORDER_RADIUS.xl,
+      borderWidth: 1,
+      borderColor: COLORS.separator,
+      overflow: 'hidden',
+    },
     row: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: 3,
-      paddingVertical: 3,
+      paddingHorizontal: thumbnailPadding,
+      paddingVertical: thumbnailPadding,
       backgroundColor: 'transparent',
-      borderBottomWidth: 0,
-      borderBottomColor: COLORS.separator,
-      minHeight: 80,
+      minHeight: compact ? 106 : 90,
     },
     thumbnail: {
-      width: 74,
-      height: 74,
+      width: thumbnailSize,
+      height: thumbnailSize,
       borderRadius: 10,
       backgroundColor: COLORS.buttonFill,
-      marginRight: SPACING.sm,
+      marginRight: SPACING.md,
     },
     placeholderContainer: {
-      width: 74,
-      height: 74,
+      width: thumbnailSize,
+      height: thumbnailSize,
       borderRadius: 10,
       backgroundColor: COLORS.buttonFill,
-      marginRight: SPACING.sm,
+      marginRight: SPACING.md,
       justifyContent: 'center',
       alignItems: 'center',
     },
@@ -85,34 +95,36 @@ const ItemCard = ({item, onPress, isLast = false}) => {
   const subtitle = subtitleParts.join(' • ');
 
   return (
-    <TouchableOpacity style={styles.row} onPress={handlePress} activeOpacity={0.6}>
-      {imageError || !item.getPhotoUrl() ? (
-        <View style={styles.placeholderContainer}>
-          <MaterialIcons name="broken-image" size={32} color={COLORS.textTertiary} />
-        </View>
-      ) : (
-        <Image
-          style={styles.thumbnail}
-          source={{uri: item.getPhotoUrl()}}
-          resizeMode="cover"
-          onError={() => setImageError(true)}
-        />
-      )}
-      <View style={styles.content}>
-        <Text style={styles.title} numberOfLines={2}>
-          {item.title || '[Corrupt Data - Clear Items in Settings]'}
-        </Text>
-        {subtitle ? (
-          <Text style={styles.subtitle} numberOfLines={1}>
-            {subtitle}
+    <View style={styles.card}>
+      <TouchableOpacity style={styles.row} onPress={handlePress} activeOpacity={0.6}>
+        {imageError || !item.getPhotoUrl() ? (
+          <View style={styles.placeholderContainer}>
+            <MaterialIcons name="broken-image" size={32} color={COLORS.textTertiary} />
+          </View>
+        ) : (
+          <Image
+            style={styles.thumbnail}
+            source={{uri: item.getPhotoUrl()}}
+            resizeMode="cover"
+            onError={() => setImageError(true)}
+          />
+        )}
+        <View style={styles.content}>
+          <Text style={styles.title} numberOfLines={2}>
+            {item.title || '[Corrupt Data - Clear Items in Settings]'}
           </Text>
-        ) : null}
-        <Text style={styles.time}>{item.getTimeSincePosted()}</Text>
-      </View>
-      <View style={styles.priceContainer}>
-        <Text style={styles.price}>{item.getFormattedPrice()}</Text>
-      </View>
-    </TouchableOpacity>
+          {subtitle ? (
+            <Text style={styles.subtitle} numberOfLines={1}>
+              {subtitle}
+            </Text>
+          ) : null}
+          <Text style={styles.time}>{item.getTimeSincePosted()}</Text>
+        </View>
+        <View style={styles.priceContainer}>
+          <Text style={styles.price}>{item.getFormattedPrice()}</Text>
+        </View>
+      </TouchableOpacity>
+    </View>
   );
 };
 

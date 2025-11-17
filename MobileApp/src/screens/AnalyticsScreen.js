@@ -211,15 +211,15 @@ const AnalyticsScreen = () => {
       justifyContent: 'center',
     },
     widgetLabel: {
-      fontSize: FONT_SIZES.caption1,
+      fontSize: FONT_SIZES.caption2,
       fontWeight: '700',
       color: COLORS.textTertiary,
-      letterSpacing: 0.5,
+      letterSpacing: 0.4,
       textTransform: 'uppercase',
       marginBottom: 4,
     },
     widgetValue: {
-      fontSize: FONT_SIZES.title1,
+      fontSize: FONT_SIZES.title2,
       fontWeight: '700',
       color: COLORS.text,
       letterSpacing: -0.5,
@@ -317,7 +317,7 @@ const AnalyticsScreen = () => {
           </View>
         </View>
 
-        {/* Line Chart - Items Over Time (Last 30 Days) */}
+        {/* Area Chart - Items Over Time (Last 30 Days) */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Items Over Time</Text>
           <View style={styles.chartCard}>
@@ -339,6 +339,10 @@ const AnalyticsScreen = () => {
                 yLabelsOffset={25}
                 chartConfig={{
                   ...chartConfig,
+                  fillShadowGradientFrom: '#C8B588',
+                  fillShadowGradientFromOpacity: 0.8,
+                  fillShadowGradientTo: COLORS.secondaryGroupedBackground,
+                  fillShadowGradientToOpacity: 0.2,
                   propsForLabels: {
                     fontSize: 13,
                     fontWeight: '600',
@@ -354,7 +358,7 @@ const AnalyticsScreen = () => {
                 withVerticalLines={false}
                 withHorizontalLines={true}
                 withDots={false}
-                withShadow={false}
+                withShadow={true}
                 fromZero={true}
                 segments={4}
               />

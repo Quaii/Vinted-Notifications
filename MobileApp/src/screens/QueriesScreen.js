@@ -31,6 +31,7 @@ const QueriesScreen = ({navigation}) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [newQueryUrl, setNewQueryUrl] = useState('');
   const [newQueryName, setNewQueryName] = useState('');
+  const [editingQuery, setEditingQuery] = useState(null);
 
   const loadQueries = useCallback(async () => {
     try {
@@ -65,24 +66,44 @@ const QueriesScreen = ({navigation}) => {
     }
 
     try {
-      await DatabaseService.addQuery(
-        newQueryUrl.trim(),
-        newQueryName.trim() || null,
-      );
+      if (editingQuery) {
+        // Update existing query
+        await DatabaseService.updateQuery(
+          editingQuery.id,
+          newQueryUrl.trim(),
+          newQueryName.trim() || null,
+        );
+        Alert.alert('Success', 'Query updated successfully');
+      } else {
+        // Add new query
+        await DatabaseService.addQuery(
+          newQueryUrl.trim(),
+          newQueryName.trim() || null,
+        );
 
-      // AUTO-START MONITORING (like Python version)
-      // If this is the first query, monitoring will start automatically
-      await MonitoringService.ensureMonitoringStarted();
+        // AUTO-START MONITORING (like Python version)
+        // If this is the first query, monitoring will start automatically
+        await MonitoringService.ensureMonitoringStarted();
 
-      Alert.alert('Success', 'Query added successfully');
+        Alert.alert('Success', 'Query added successfully');
+      }
+
       setModalVisible(false);
       setNewQueryUrl('');
       setNewQueryName('');
+      setEditingQuery(null);
       loadQueries();
     } catch (error) {
-      console.error('Failed to add query:', error);
-      Alert.alert('Error', 'Failed to add query. It may already exist.');
+      console.error('Failed to save query:', error);
+      Alert.alert('Error', 'Failed to save query. It may already exist.');
     }
+  };
+
+  const handleEditQuery = (query) => {
+    setEditingQuery(query);
+    setNewQueryUrl(query.vinted_url);
+    setNewQueryName(query.query_name || '');
+    setModalVisible(true);
   };
 
   const handleDeleteQuery = async query => {
@@ -129,6 +150,7 @@ const QueriesScreen = ({navigation}) => {
       query={item}
       onPress={handleQueryPress}
       onDelete={handleDeleteQuery}
+      onEdit={handleEditQuery}
     />
   );
 
@@ -333,8 +355,15 @@ const QueriesScreen = ({navigation}) => {
           />
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Add Search Query</Text>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
+              <Text style={styles.modalTitle}>
+                {editingQuery ? 'Edit Search Query' : 'Add Search Query'}
+              </Text>
+              <TouchableOpacity onPress={() => {
+                setModalVisible(false);
+                setEditingQuery(null);
+                setNewQueryUrl('');
+                setNewQueryName('');
+              }}>
                 <MaterialIcons name="close" size={24} color={COLORS.text} />
               </TouchableOpacity>
             </View>
@@ -372,7 +401,9 @@ const QueriesScreen = ({navigation}) => {
               </Text>
 
               <TouchableOpacity style={styles.addButton} onPress={handleAddQuery}>
-                <Text style={styles.addButtonText}>Add Query</Text>
+                <Text style={styles.addButtonText}>
+                  {editingQuery ? 'Update Query' : 'Add Query'}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
