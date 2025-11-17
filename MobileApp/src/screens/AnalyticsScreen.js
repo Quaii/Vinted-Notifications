@@ -1,7 +1,8 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import {View, Text, StyleSheet, ScrollView, Dimensions} from 'react-native';
 import {LineChart, BarChart, PieChart} from 'react-native-chart-kit';
-import {PageHeader, StatWidget} from '../components';
+import MaterialIcons from '@react-native-vector-icons/material-icons';
+import {PageHeader} from '../components';
 import DatabaseService from '../services/DatabaseService';
 import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
 
@@ -165,14 +166,18 @@ const AnalyticsScreen = () => {
       borderRadius: BORDER_RADIUS.xl,
     },
     propsForDots: {
-      r: '4',
-      strokeWidth: '2',
+      r: '2',
+      strokeWidth: '1',
       stroke: '#C8B588',
     },
     propsForBackgroundLines: {
       strokeDasharray: '',
       stroke: 'rgba(255, 255, 255, 0.06)',
       strokeWidth: 1,
+    },
+    propsForLabels: {
+      fontSize: 14,
+      fontWeight: '600',
     },
   };
 
@@ -188,6 +193,43 @@ const AnalyticsScreen = () => {
       flexDirection: 'row',
       gap: SPACING.md,
       marginBottom: SPACING.md,
+    },
+    analyticsWidget: {
+      flex: 1,
+      backgroundColor: COLORS.secondaryGroupedBackground,
+      borderRadius: BORDER_RADIUS.lg,
+      padding: SPACING.md,
+      borderWidth: 1,
+      borderColor: COLORS.separator,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      minHeight: 70,
+    },
+    widgetLeft: {
+      flex: 1,
+    },
+    widgetLabel: {
+      fontSize: FONT_SIZES.caption1,
+      fontWeight: '700',
+      color: COLORS.textTertiary,
+      letterSpacing: 0.5,
+      textTransform: 'uppercase',
+      marginBottom: 4,
+    },
+    widgetValue: {
+      fontSize: FONT_SIZES.title1,
+      fontWeight: '700',
+      color: COLORS.text,
+      letterSpacing: -0.5,
+    },
+    widgetIcon: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginLeft: SPACING.sm,
     },
     section: {
       marginBottom: SPACING.xl,
@@ -222,32 +264,44 @@ const AnalyticsScreen = () => {
         {/* Overview Stats */}
         <View style={styles.section}>
           <View style={styles.widgetRow}>
-            <StatWidget
-              title="Total Items"
-              value={stats.totalItems.toString()}
-              icon="inventory"
-              iconColor={COLORS.primary}
-            />
-            <StatWidget
-              title="Average Price"
-              value={`${stats.avgPrice}€`}
-              icon="euro"
-              iconColor={COLORS.primary}
-            />
+            <View style={styles.analyticsWidget}>
+              <View style={styles.widgetLeft}>
+                <Text style={styles.widgetLabel}>Total Items</Text>
+                <Text style={styles.widgetValue}>{stats.totalItems}</Text>
+              </View>
+              <View style={[styles.widgetIcon, {backgroundColor: `${COLORS.primary}15`}]}>
+                <MaterialIcons name="inventory" size={24} color={COLORS.primary} />
+              </View>
+            </View>
+            <View style={styles.analyticsWidget}>
+              <View style={styles.widgetLeft}>
+                <Text style={styles.widgetLabel}>Average Price</Text>
+                <Text style={styles.widgetValue}>{stats.avgPrice}€</Text>
+              </View>
+              <View style={[styles.widgetIcon, {backgroundColor: `${COLORS.primary}15`}]}>
+                <MaterialIcons name="euro" size={24} color={COLORS.primary} />
+              </View>
+            </View>
           </View>
           <View style={styles.widgetRow}>
-            <StatWidget
-              title="Today"
-              value={stats.itemsToday.toString()}
-              icon="today"
-              iconColor={COLORS.primary}
-            />
-            <StatWidget
-              title="This Week"
-              value={stats.itemsThisWeek.toString()}
-              icon="calendar-today"
-              iconColor={COLORS.primary}
-            />
+            <View style={styles.analyticsWidget}>
+              <View style={styles.widgetLeft}>
+                <Text style={styles.widgetLabel}>Today</Text>
+                <Text style={styles.widgetValue}>{stats.itemsToday}</Text>
+              </View>
+              <View style={[styles.widgetIcon, {backgroundColor: `${COLORS.primary}15`}]}>
+                <MaterialIcons name="today" size={24} color={COLORS.primary} />
+              </View>
+            </View>
+            <View style={styles.analyticsWidget}>
+              <View style={styles.widgetLeft}>
+                <Text style={styles.widgetLabel}>This Week</Text>
+                <Text style={styles.widgetValue}>{stats.itemsThisWeek}</Text>
+              </View>
+              <View style={[styles.widgetIcon, {backgroundColor: `${COLORS.primary}15`}]}>
+                <MaterialIcons name="calendar-today" size={24} color={COLORS.primary} />
+              </View>
+            </View>
           </View>
         </View>
 
@@ -268,18 +322,29 @@ const AnalyticsScreen = () => {
                 }}
                 width={CHART_WIDTH - SPACING.lg * 2}
                 height={220}
-                chartConfig={chartConfig}
+                yAxisLabel=""
+                yAxisSuffix=""
+                yLabelsOffset={15}
+                chartConfig={{
+                  ...chartConfig,
+                  propsForLabels: {
+                    fontSize: 13,
+                    fontWeight: '600',
+                  },
+                }}
                 bezier
                 style={{
                   borderRadius: BORDER_RADIUS.lg,
+                  marginLeft: -15,
                 }}
                 withInnerLines={true}
                 withOuterLines={true}
                 withVerticalLines={false}
                 withHorizontalLines={true}
-                withDots={true}
+                withDots={false}
                 withShadow={false}
                 fromZero={true}
+                segments={4}
               />
             )}
           </View>
@@ -304,15 +369,26 @@ const AnalyticsScreen = () => {
                 }}
                 width={CHART_WIDTH - SPACING.lg * 2}
                 height={220}
-                chartConfig={chartConfig}
+                yAxisLabel=""
+                yAxisSuffix=""
+                yLabelsOffset={15}
+                chartConfig={{
+                  ...chartConfig,
+                  propsForLabels: {
+                    fontSize: 13,
+                    fontWeight: '600',
+                  },
+                }}
                 style={{
                   borderRadius: BORDER_RADIUS.lg,
+                  marginLeft: -15,
                 }}
                 withInnerLines={true}
                 showBarTops={false}
                 fromZero={true}
                 withVerticalLabels={true}
                 withHorizontalLabels={true}
+                segments={4}
               />
             )}
           </View>
@@ -362,16 +438,24 @@ const AnalyticsScreen = () => {
                 }}
                 width={CHART_WIDTH - SPACING.lg * 2}
                 height={220}
+                yAxisLabel=""
+                yAxisSuffix=""
+                yLabelsOffset={15}
                 chartConfig={{
                   ...chartConfig,
                   fillShadowGradientFrom: '#C8B588',
                   fillShadowGradientFromOpacity: 0.8,
                   fillShadowGradientTo: COLORS.secondaryGroupedBackground,
                   fillShadowGradientToOpacity: 0.2,
+                  propsForLabels: {
+                    fontSize: 13,
+                    fontWeight: '600',
+                  },
                 }}
                 bezier
                 style={{
                   borderRadius: BORDER_RADIUS.lg,
+                  marginLeft: -15,
                 }}
                 withInnerLines={true}
                 withOuterLines={true}
@@ -380,6 +464,7 @@ const AnalyticsScreen = () => {
                 withDots={false}
                 withShadow={true}
                 fromZero={true}
+                segments={4}
               />
             )}
           </View>
