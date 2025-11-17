@@ -369,6 +369,20 @@ const SettingsScreen = () => {
       fontWeight: '600',
       marginLeft: SPACING.sm,
     },
+    dangerButton: {
+      backgroundColor: COLORS.error,
+      borderRadius: BORDER_RADIUS.lg,
+      paddingVertical: SPACING.md,
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'center',
+    },
+    dangerButtonText: {
+      color: '#FFFFFF',
+      fontSize: FONT_SIZES.headline,
+      fontWeight: '600',
+      marginLeft: SPACING.sm,
+    },
     bottomSpacer: {
       height: SPACING.xxl,
     },
@@ -647,6 +661,42 @@ const SettingsScreen = () => {
               <Text style={styles.emptyText}>No countries in allowlist</Text>
             )}
           </View>
+        </View>
+
+        {/* Database Management */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Database Management</Text>
+          </View>
+          <Text style={styles.sectionDescription}>
+            Clear cached data (use if you see corrupted items or incorrect prices/titles)
+          </Text>
+          <TouchableOpacity
+            style={styles.dangerButton}
+            onPress={async () => {
+              Alert.alert(
+                'Clear All Items',
+                'This will delete all cached items. Items will be re-fetched from Vinted on next check. Your queries and settings will not be affected.\n\nAre you sure?',
+                [
+                  {text: 'Cancel', style: 'cancel'},
+                  {
+                    text: 'Clear Items',
+                    style: 'destructive',
+                    onPress: async () => {
+                      try {
+                        await DatabaseService.deleteAllItems();
+                        Alert.alert('Success', 'All items cleared. Items will be re-fetched on next monitoring cycle.');
+                      } catch (error) {
+                        Alert.alert('Error', 'Failed to clear items');
+                      }
+                    },
+                  },
+                ],
+              );
+            }}>
+            <MaterialIcons name="delete-sweep" size={20} color="#FFFFFF" />
+            <Text style={styles.dangerButtonText}>Clear All Items</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Save Button */}
