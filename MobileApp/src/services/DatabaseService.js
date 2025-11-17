@@ -37,6 +37,7 @@ class DatabaseService {
 
   /**
    * Create database tables
+   * OPTIMIZED: Executes all SQL statements in parallel for faster initialization
    */
   async createTables() {
     const queries = [
@@ -87,15 +88,15 @@ class DatabaseService {
       `CREATE INDEX IF NOT EXISTS idx_queries_is_active ON queries(is_active)`,
     ];
 
-    for (const query of queries) {
-      await this.db.executeSql(query);
-    }
+    // Execute all queries in parallel for faster initialization
+    await Promise.all(queries.map(query => this.db.executeSql(query)));
 
     console.log('Database tables created successfully');
   }
 
   /**
    * Initialize default parameters
+   * OPTIMIZED: Executes all INSERT statements in parallel for faster initialization
    */
   async initializeParameters() {
     const defaultParams = [
@@ -107,12 +108,15 @@ class DatabaseService {
       {key: 'notifications_enabled', value: '1'},
     ];
 
-    for (const param of defaultParams) {
-      await this.db.executeSql(
-        'INSERT OR IGNORE INTO parameters (key, value) VALUES (?, ?)',
-        [param.key, param.value],
-      );
-    }
+    // Execute all inserts in parallel for faster initialization
+    await Promise.all(
+      defaultParams.map(param =>
+        this.db.executeSql(
+          'INSERT OR IGNORE INTO parameters (key, value) VALUES (?, ?)',
+          [param.key, param.value],
+        )
+      )
+    );
   }
 
   /**

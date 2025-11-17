@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {StatusBar, View, Text, ActivityIndicator} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {ThemeProvider, useTheme} from './src/contexts/ThemeContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import DatabaseService from './src/services/DatabaseService';
@@ -28,27 +29,34 @@ const AppContent = () => {
       console.log('Initializing Vinted Notifications App...');
       LogService.info('Vinted Notifications app starting...');
 
-      // Initialize database
+      // Initialize database first (required by other services)
       await DatabaseService.init();
       console.log('Database initialized');
       LogService.info('Database initialized successfully');
 
-      // Load VintedAPI settings from database (user agents, headers, proxies)
-      await VintedAPI.loadSettingsFromDatabase(DatabaseService);
-      console.log('VintedAPI settings loaded');
-      LogService.info('VintedAPI settings loaded from database');
+      // OPTIMIZATION: Parallelize independent service initialization
+      // These services don't depend on each other and can run concurrently
+      await Promise.all([
+        // Load VintedAPI settings from database
+        VintedAPI.loadSettingsFromDatabase(DatabaseService).then(() => {
+          console.log('VintedAPI settings loaded');
+          LogService.info('VintedAPI settings loaded from database');
+        }),
 
-      // Configure notifications
-      await NotificationService.configure();
-      console.log('Notifications configured');
-      LogService.info('Notification service configured');
+        // Configure notifications (independent of VintedAPI)
+        NotificationService.configure().then(() => {
+          console.log('Notifications configured');
+          LogService.info('Notification service configured');
+        }),
 
-      // Initialize background fetch
-      await MonitoringService.initBackgroundFetch();
-      console.log('Background fetch initialized');
-      LogService.info('Background fetch service initialized');
+        // Initialize background fetch (independent of VintedAPI)
+        MonitoringService.initBackgroundFetch().then(() => {
+          console.log('Background fetch initialized');
+          LogService.info('Background fetch service initialized');
+        }),
+      ]);
 
-      // Initialize monitoring state (auto-starts if previously running)
+      // Initialize monitoring state (depends on database, run after parallel tasks)
       await MonitoringService.initializeState();
       console.log('Monitoring state initialized');
 
@@ -119,15 +127,17 @@ const AppContent = () => {
 };
 
 /**
- * Main App Component with ThemeProvider and SafeAreaProvider
+ * Main App Component with GestureHandlerRootView, ThemeProvider and SafeAreaProvider
  */
 const App = () => {
   return (
-    <SafeAreaProvider>
-      <ThemeProvider>
-        <AppContent />
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{flex: 1}}>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <AppContent />
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 };
 
