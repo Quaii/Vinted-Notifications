@@ -1,14 +1,16 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import {View, Text, StyleSheet, ScrollView, Dimensions} from 'react-native';
+import {LineChart, BarChart, PieChart} from 'react-native-chart-kit';
 import {PageHeader, StatWidget} from '../components';
 import DatabaseService from '../services/DatabaseService';
 import {useThemeColors, SPACING, FONT_SIZES, BORDER_RADIUS} from '../constants/theme';
 
 const {width} = Dimensions.get('window');
+const CHART_WIDTH = width - SPACING.lg * 2;
 
 /**
  * AnalyticsScreen
- * Detailed statistics and analytics
+ * Detailed statistics and analytics with proper charts
  */
 const AnalyticsScreen = () => {
   const COLORS = useThemeColors();
@@ -17,8 +19,10 @@ const AnalyticsScreen = () => {
     avgPrice: 0,
     itemsToday: 0,
     itemsThisWeek: 0,
-    topBrands: [],
-    dayDistribution: {},
+    dailyData: [],
+    weeklyData: {},
+    priceDistribution: [],
+    brandDistribution: {},
   });
 
   const loadAnalytics = useCallback(async () => {
@@ -49,22 +53,85 @@ const AnalyticsScreen = () => {
         return item.created_at_ts >= weekAgo;
       }).length;
 
-      // Day distribution (last 7 days)
-      const dayDistribution = {};
-      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      for (let i = 0; i < 7; i++) {
+      // Daily data for line chart (last 30 days)
+      const dailyData = [];
+      const dailyCounts = {};
+      for (let i = 29; i >= 0; i--) {
         const date = new Date();
         date.setDate(date.getDate() - i);
         date.setHours(0, 0, 0, 0);
-        const dayName = days[date.getDay()];
-        dayDistribution[dayName] = 0;
+        const dateKey = date.toISOString().split('T')[0];
+        dailyCounts[dateKey] = 0;
       }
 
       items.forEach(item => {
         const date = new Date(item.created_at_ts);
-        const dayName = days[date.getDay()];
-        if (dayDistribution.hasOwnProperty(dayName)) {
-          dayDistribution[dayName]++;
+        date.setHours(0, 0, 0, 0);
+        const dateKey = date.toISOString().split('T')[0];
+        if (dailyCounts.hasOwnProperty(dateKey)) {
+          dailyCounts[dateKey]++;
+        }
+      });
+
+      Object.keys(dailyCounts).forEach(dateKey => {
+        dailyData.push(dailyCounts[dateKey]);
+      });
+
+      // Weekly data for bar chart (day of week distribution)
+      const weeklyData = {
+        Mon: 0,
+        Tue: 0,
+        Wed: 0,
+        Thu: 0,
+        Fri: 0,
+        Sat: 0,
+        Sun: 0,
+      };
+      const dayMapping = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+      items.forEach(item => {
+        const date = new Date(item.created_at_ts);
+        const dayName = dayMapping[date.getDay()];
+        weeklyData[dayName]++;
+      });
+
+      // Price distribution for pie chart
+      const priceRanges = {
+        '0-10€': 0,
+        '10-25€': 0,
+        '25-50€': 0,
+        '50-100€': 0,
+        '100+€': 0,
+      };
+
+      items.forEach(item => {
+        const price = parseFloat(item.price) || 0;
+        if (price < 10) priceRanges['0-10€']++;
+        else if (price < 25) priceRanges['10-25€']++;
+        else if (price < 50) priceRanges['25-50€']++;
+        else if (price < 100) priceRanges['50-100€']++;
+        else priceRanges['100+€']++;
+      });
+
+      const priceDistribution = Object.entries(priceRanges).map(([name, count], index) => ({
+        name,
+        count,
+        color: [
+          '#C8B588',
+          '#B09D6F',
+          '#D8C38F',
+          '#6A7A8C',
+          '#8F9BA8',
+        ][index],
+        legendFontColor: COLORS.text,
+        legendFontSize: 13,
+      }));
+
+      // Brand distribution
+      const brandCounts = {};
+      items.forEach(item => {
+        if (item.brand_title) {
+          brandCounts[item.brand_title] = (brandCounts[item.brand_title] || 0) + 1;
         }
       });
 
@@ -73,17 +140,41 @@ const AnalyticsScreen = () => {
         avgPrice,
         itemsToday,
         itemsThisWeek,
-        topBrands: [],
-        dayDistribution,
+        dailyData,
+        weeklyData,
+        priceDistribution,
+        brandDistribution: brandCounts,
       });
     } catch (error) {
       console.error('Failed to load analytics:', error);
     }
-  }, []);
+  }, [COLORS.text]);
 
   useEffect(() => {
     loadAnalytics();
   }, [loadAnalytics]);
+
+  const chartConfig = {
+    backgroundColor: COLORS.secondaryGroupedBackground,
+    backgroundGradientFrom: COLORS.secondaryGroupedBackground,
+    backgroundGradientTo: COLORS.secondaryGroupedBackground,
+    decimalPlaces: 0,
+    color: (opacity = 1) => `rgba(200, 181, 136, ${opacity})`, // Champagne gold
+    labelColor: (opacity = 1) => `rgba(250, 250, 250, ${opacity})`,
+    style: {
+      borderRadius: BORDER_RADIUS.xl,
+    },
+    propsForDots: {
+      r: '4',
+      strokeWidth: '2',
+      stroke: '#C8B588',
+    },
+    propsForBackgroundLines: {
+      strokeDasharray: '',
+      stroke: 'rgba(255, 255, 255, 0.06)',
+      strokeWidth: 1,
+    },
+  };
 
   const styles = StyleSheet.create({
     container: {
@@ -113,44 +204,14 @@ const AnalyticsScreen = () => {
       padding: SPACING.lg,
       borderWidth: 1,
       borderColor: COLORS.separator,
-    },
-    barChartRow: {
-      flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: SPACING.md,
     },
-    barLabel: {
-      fontSize: FONT_SIZES.subheadline,
-      fontWeight: '600',
-      color: COLORS.text,
-      width: 36,
-    },
-    barContainer: {
-      flex: 1,
-      height: 24,
-      backgroundColor: COLORS.buttonFill,
-      borderRadius: BORDER_RADIUS.sm,
-      marginHorizontal: SPACING.sm,
-      overflow: 'hidden',
-    },
-    bar: {
-      height: '100%',
-      borderRadius: BORDER_RADIUS.sm,
-      minWidth: 2,
-    },
-    barCount: {
-      fontSize: FONT_SIZES.subheadline,
-      fontWeight: '700',
-      color: COLORS.primary,
-      width: 32,
-      textAlign: 'right',
-    },
-    comingSoon: {
-      textAlign: 'center',
-      fontSize: FONT_SIZES.subheadline,
+    chartDescription: {
+      fontSize: FONT_SIZES.footnote,
       color: COLORS.textTertiary,
-      fontStyle: 'italic',
-      paddingVertical: SPACING.xl,
+      textAlign: 'center',
+      marginTop: SPACING.sm,
+      marginBottom: SPACING.md,
     },
   });
 
@@ -165,13 +226,13 @@ const AnalyticsScreen = () => {
               title="Total Items"
               value={stats.totalItems.toString()}
               icon="inventory"
-              iconColor="#007AFF"
+              iconColor={COLORS.primary}
             />
             <StatWidget
               title="Average Price"
               value={`${stats.avgPrice}€`}
               icon="euro"
-              iconColor="#34C759"
+              iconColor={COLORS.primary}
             />
           </View>
           <View style={styles.widgetRow}>
@@ -179,53 +240,148 @@ const AnalyticsScreen = () => {
               title="Today"
               value={stats.itemsToday.toString()}
               icon="today"
-              iconColor="#FF9500"
+              iconColor={COLORS.primary}
             />
             <StatWidget
               title="This Week"
               value={stats.itemsThisWeek.toString()}
               icon="calendar-today"
-              iconColor="#5856D6"
+              iconColor={COLORS.primary}
             />
           </View>
         </View>
 
-        {/* Day Distribution - Bar Chart */}
+        {/* Line Chart - Items Over Time (Last 30 Days) */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Items by Day of Week</Text>
+          <Text style={styles.sectionTitle}>Items Over Time</Text>
           <View style={styles.chartCard}>
-            {Object.entries(stats.dayDistribution).map(([day, count]) => {
-              const maxCount = Math.max(...Object.values(stats.dayDistribution), 1);
-              const barWidth = (count / maxCount) * 100;
-
-              return (
-                <View key={day} style={styles.barChartRow}>
-                  <Text style={styles.barLabel}>{day}</Text>
-                  <View style={styles.barContainer}>
-                    <View
-                      style={[
-                        styles.bar,
-                        {
-                          width: `${barWidth}%`,
-                          backgroundColor: COLORS.primary,
-                        },
-                      ]}
-                    />
-                  </View>
-                  <Text style={styles.barCount}>{count}</Text>
-                </View>
-              );
-            })}
+            <Text style={styles.chartDescription}>Last 30 days</Text>
+            {stats.dailyData.length > 0 && (
+              <LineChart
+                data={{
+                  labels: ['', '', '', '', '', ''],
+                  datasets: [
+                    {
+                      data: stats.dailyData.length > 0 ? stats.dailyData : [0],
+                    },
+                  ],
+                }}
+                width={CHART_WIDTH - SPACING.lg * 2}
+                height={220}
+                chartConfig={chartConfig}
+                bezier
+                style={{
+                  borderRadius: BORDER_RADIUS.lg,
+                }}
+                withInnerLines={true}
+                withOuterLines={true}
+                withVerticalLines={false}
+                withHorizontalLines={true}
+                withDots={true}
+                withShadow={false}
+                fromZero={true}
+              />
+            )}
           </View>
         </View>
 
-        {/* Brand Analytics - Coming Soon */}
+        {/* Bar Chart - Items by Day of Week */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Brand Analytics</Text>
+          <Text style={styles.sectionTitle}>Items by Day of Week</Text>
           <View style={styles.chartCard}>
-            <Text style={styles.comingSoon}>
-              Brand statistics will be available once brand tracking is implemented
-            </Text>
+            <Text style={styles.chartDescription}>Weekly distribution</Text>
+            {Object.keys(stats.weeklyData).length > 0 && (
+              <BarChart
+                data={{
+                  labels: Object.keys(stats.weeklyData),
+                  datasets: [
+                    {
+                      data: Object.values(stats.weeklyData).length > 0
+                        ? Object.values(stats.weeklyData)
+                        : [0],
+                    },
+                  ],
+                }}
+                width={CHART_WIDTH - SPACING.lg * 2}
+                height={220}
+                chartConfig={chartConfig}
+                style={{
+                  borderRadius: BORDER_RADIUS.lg,
+                }}
+                withInnerLines={true}
+                showBarTops={false}
+                fromZero={true}
+                withVerticalLabels={true}
+                withHorizontalLabels={true}
+              />
+            )}
+          </View>
+        </View>
+
+        {/* Pie Chart - Price Distribution */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Price Distribution</Text>
+          <View style={styles.chartCard}>
+            <Text style={styles.chartDescription}>Items grouped by price range</Text>
+            {stats.priceDistribution.length > 0 && (
+              <PieChart
+                data={stats.priceDistribution}
+                width={CHART_WIDTH - SPACING.lg * 2}
+                height={220}
+                chartConfig={chartConfig}
+                accessor="count"
+                backgroundColor="transparent"
+                paddingLeft="15"
+                absolute
+                hasLegend={true}
+                style={{
+                  borderRadius: BORDER_RADIUS.lg,
+                }}
+              />
+            )}
+          </View>
+        </View>
+
+        {/* Area Chart - Cumulative Items */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Cumulative Growth</Text>
+          <View style={styles.chartCard}>
+            <Text style={styles.chartDescription}>Total items accumulated over last 30 days</Text>
+            {stats.dailyData.length > 0 && (
+              <LineChart
+                data={{
+                  labels: ['', '', '', '', '', ''],
+                  datasets: [
+                    {
+                      data: stats.dailyData.reduce((acc, val, idx) => {
+                        acc.push((acc[idx - 1] || 0) + val);
+                        return acc;
+                      }, []),
+                    },
+                  ],
+                }}
+                width={CHART_WIDTH - SPACING.lg * 2}
+                height={220}
+                chartConfig={{
+                  ...chartConfig,
+                  fillShadowGradientFrom: '#C8B588',
+                  fillShadowGradientFromOpacity: 0.8,
+                  fillShadowGradientTo: COLORS.secondaryGroupedBackground,
+                  fillShadowGradientToOpacity: 0.2,
+                }}
+                bezier
+                style={{
+                  borderRadius: BORDER_RADIUS.lg,
+                }}
+                withInnerLines={true}
+                withOuterLines={true}
+                withVerticalLines={false}
+                withHorizontalLines={true}
+                withDots={false}
+                withShadow={true}
+                fromZero={true}
+              />
+            )}
           </View>
         </View>
       </ScrollView>
