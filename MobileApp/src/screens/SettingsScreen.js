@@ -686,8 +686,14 @@ const SettingsScreen = () => {
           </View>
         </View>
 
+        {/* Save Button */}
+        <TouchableOpacity style={styles.saveButton} onPress={handleSaveSettings}>
+          <MaterialIcons name="save" size={20} color="#FFFFFF" />
+          <Text style={styles.saveButtonText}>Save Settings</Text>
+        </TouchableOpacity>
+
         {/* Danger Zone */}
-        <View style={styles.section}>
+        <View style={[styles.section, {marginTop: SPACING.xl}]}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Danger Zone</Text>
           </View>
@@ -808,12 +814,6 @@ const SettingsScreen = () => {
             <Text style={styles.dangerButtonText}>Reset All Data</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Save Button */}
-        <TouchableOpacity style={styles.saveButton} onPress={handleSaveSettings}>
-          <MaterialIcons name="save" size={20} color="#FFFFFF" />
-          <Text style={styles.saveButtonText}>Save Settings</Text>
-        </TouchableOpacity>
 
         <View style={styles.bottomSpacer} />
       </ScrollView>

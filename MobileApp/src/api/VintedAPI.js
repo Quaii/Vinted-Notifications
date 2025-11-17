@@ -1,5 +1,6 @@
 import axios from 'axios';
 import {APP_CONFIG, USER_AGENTS, DEFAULT_HEADERS} from '../constants/config';
+import LogService from '../services/LogService';
 
 /**
  * Vinted API Client
@@ -280,6 +281,7 @@ export class VintedAPI {
   async search(vintedUrl, nbrItems = APP_CONFIG.DEFAULT_ITEMS_PER_QUERY, page = 1) {
     const parsed = this.parseUrl(vintedUrl);
     if (!parsed) {
+      LogService.error('Invalid Vinted URL provided to API');
       throw new Error('Invalid Vinted URL');
     }
 
@@ -316,6 +318,7 @@ export class VintedAPI {
         // Handle status codes
         if (response.status === 401 || response.status === 404) {
           console.warn(`[VintedAPI] Got ${response.status}, refreshing cookies...`);
+          LogService.warning(`API returned ${response.status}, refreshing session`);
 
           if (tried < this.MAX_RETRIES) {
             await this.setCookies();
@@ -332,6 +335,7 @@ export class VintedAPI {
         if (tried === this.MAX_RETRIES) {
           if ((response.status === 401 || response.status === 403) && !newSession) {
             console.log('[VintedAPI] Resetting session and retrying one last time...');
+            LogService.warning('API authentication failed, resetting session');
             newSession = true;
             tried = 0; // Reset counter for final attempt
             this.initializeSession(); // Create new session
@@ -342,15 +346,18 @@ export class VintedAPI {
 
         // For other status codes, log and continue
         console.warn(`[VintedAPI] Got status ${response.status}`);
+        LogService.warning(`API returned unexpected status ${response.status}`);
 
       } catch (error) {
         console.error(`[VintedAPI] Request error:`, error.message);
+        LogService.error(`API request failed: ${error.message}`);
         lastResponse = error.response;
       }
     }
 
     // Return empty array if all retries failed
     console.warn('[VintedAPI] All retries exhausted, returning empty array');
+    LogService.error('API request failed after all retries');
     return [];
   }
 
@@ -372,6 +379,7 @@ export class VintedAPI {
       // Handle rate limiting
       if (response.status === 429) {
         console.warn('[VintedAPI] Rate limited (429), trying alternative endpoint...');
+        LogService.warning('API rate limited, using fallback endpoint');
 
         // Fallback to items endpoint
         const altUrl = `https://${domain}/api/v2/users/${userId}/items?page=1&per_page=1`;
