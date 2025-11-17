@@ -1,5 +1,5 @@
 import React from 'react';
-import {useColorScheme} from 'react-native';
+import {View, useColorScheme} from 'react-native';
 import {NavigationContainer, DefaultTheme, DarkTheme} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
@@ -50,7 +50,11 @@ const TabNavigator = () => {
               iconName = 'circle';
           }
 
-          return <MaterialIcons name={iconName} size={size} color={color} />;
+          return (
+            <View style={{width: '100%', alignItems: 'center', justifyContent: 'center'}}>
+              <MaterialIcons name={iconName} size={size} color={color} />
+            </View>
+          );
         },
         tabBarActiveTintColor: COLORS.primary,
         tabBarInactiveTintColor: COLORS.textSecondary,
