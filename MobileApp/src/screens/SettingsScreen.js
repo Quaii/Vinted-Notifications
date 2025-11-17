@@ -169,6 +169,30 @@ const SettingsScreen = () => {
     );
   };
 
+  const handleToggleCheckProxies = async (value) => {
+    // Update local state immediately for UI responsiveness
+    setSettings({...settings, checkProxies: value});
+
+    // Auto-save to database
+    try {
+      await DatabaseService.setParameter('check_proxies', value ? 'True' : 'False');
+    } catch (error) {
+      console.error('Failed to save check proxies setting:', error);
+    }
+  };
+
+  const handleChangeNotificationMode = async (mode) => {
+    // Update local state immediately for UI responsiveness
+    setSettings({...settings, notificationMode: mode});
+
+    // Auto-save to database
+    try {
+      await DatabaseService.setParameter('notification_mode', mode);
+    } catch (error) {
+      console.error('Failed to save notification mode:', error);
+    }
+  };
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -432,7 +456,7 @@ const SettingsScreen = () => {
                       styles.segmentButton,
                       settings.notificationMode === NOTIFICATION_MODES.PRECISE && styles.segmentButtonActive,
                     ]}
-                    onPress={() => setSettings({...settings, notificationMode: NOTIFICATION_MODES.PRECISE})}>
+                    onPress={() => handleChangeNotificationMode(NOTIFICATION_MODES.PRECISE)}>
                     <Text
                       style={[
                         styles.segmentButtonText,
@@ -446,7 +470,7 @@ const SettingsScreen = () => {
                       styles.segmentButton,
                       settings.notificationMode === NOTIFICATION_MODES.COMPACT && styles.segmentButtonActive,
                     ]}
-                    onPress={() => setSettings({...settings, notificationMode: NOTIFICATION_MODES.COMPACT})}>
+                    onPress={() => handleChangeNotificationMode(NOTIFICATION_MODES.COMPACT)}>
                     <Text
                       style={[
                         styles.segmentButtonText,
@@ -540,7 +564,7 @@ const SettingsScreen = () => {
               <View style={styles.switchContainer}>
                 <Switch
                   value={settings.checkProxies}
-                  onValueChange={value => setSettings({...settings, checkProxies: value})}
+                  onValueChange={handleToggleCheckProxies}
                   trackColor={{false: COLORS.buttonFill, true: COLORS.primary}}
                 />
               </View>
@@ -663,10 +687,10 @@ const SettingsScreen = () => {
           </View>
         </View>
 
-        {/* Database Management */}
+        {/* Danger Zone */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Database Management</Text>
+            <Text style={styles.sectionTitle}>Danger Zone</Text>
           </View>
           <Text style={styles.sectionDescription}>
             Clear cached data (use if you see corrupted items or incorrect prices/titles)
