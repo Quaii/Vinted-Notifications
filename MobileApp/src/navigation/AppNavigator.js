@@ -82,6 +82,8 @@ const TabNavigator = () => {
           paddingVertical: 4,
           paddingHorizontal: 0,
           marginHorizontal: 0,
+          alignItems: 'center',
+          justifyContent: 'center',
         },
         tabBarIconStyle: {
           marginTop: 0,
