@@ -480,6 +480,20 @@ class DatabaseService {
   }
 
   /**
+   * Delete all items (useful for clearing corrupt data)
+   */
+  async deleteAllItems() {
+    try {
+      await this.db.executeSql('DELETE FROM items');
+      console.log('All items deleted');
+      return true;
+    } catch (error) {
+      console.error('Failed to delete all items:', error);
+      return false;
+    }
+  }
+
+  /**
    * Close database connection
    */
   async close() {
