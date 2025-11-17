@@ -189,7 +189,16 @@ const LogsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <PageHeader title="Logs" />
+      <PageHeader
+        title="Logs"
+        rightButton={
+          logs.length > 0 ? (
+            <TouchableOpacity onPress={handleClearLogs}>
+              <MaterialIcons name="delete-sweep" size={24} color={COLORS.primary} />
+            </TouchableOpacity>
+          ) : null
+        }
+      />
       {logs.length > 0 ? (
         <FlatList
           data={logs}

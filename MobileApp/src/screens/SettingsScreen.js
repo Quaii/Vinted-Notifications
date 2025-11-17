@@ -240,8 +240,6 @@ const SettingsScreen = () => {
       paddingVertical: SPACING.sm,
       borderBottomWidth: 1,
       borderBottomColor: COLORS.separator,
-      paddingHorizontal: SPACING.md,
-      paddingRight: SPACING.lg,
     },
     settingRowLast: {
       borderBottomWidth: 0,

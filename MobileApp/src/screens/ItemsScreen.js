@@ -201,11 +201,14 @@ const ItemsScreen = ({navigation, route}) => {
       borderWidth: 1,
       borderColor: COLORS.separator,
       padding: 2,
+      height: 44,
     },
     viewModeButton: {
       padding: SPACING.xs,
       paddingHorizontal: SPACING.sm,
       borderRadius: BORDER_RADIUS.md,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     viewModeButtonActive: {
       backgroundColor: COLORS.primary,
