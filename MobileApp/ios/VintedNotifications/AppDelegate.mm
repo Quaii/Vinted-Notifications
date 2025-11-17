@@ -66,11 +66,9 @@
 
 - (NSURL *)bundleURL
 {
-#if DEBUG
-  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
-#else
+  // Always use the bundled JavaScript (no Metro bundler required)
+  // To update the bundle, run: npm run bundle:ios
   return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
-#endif
 }
 
 @end
