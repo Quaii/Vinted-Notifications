@@ -2,6 +2,7 @@ import React from 'react';
 import {View, useColorScheme, StyleSheet} from 'react-native';
 import {NavigationContainer, DefaultTheme, DarkTheme} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import MaterialIcons from '@react-native-vector-icons/material-icons';
 import {
   DashboardScreen,
@@ -14,10 +15,11 @@ import {
 import {useThemeColors, FONT_SIZES} from '../constants/theme';
 
 const Tab = createBottomTabNavigator();
+const RootStack = createNativeStackNavigator();
 
 /**
  * Bottom Tab Navigator (with dark mode support)
- * NO Stack Navigator to avoid Fabric issues
+ * Contains only the 5 visible tabs for proper distribution
  */
 const TabNavigator = () => {
   const COLORS = useThemeColors();
@@ -130,20 +132,13 @@ const TabNavigator = () => {
           presentation: 'card',
         }}
       />
-      <Tab.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{
-          tabBarButton: () => null,
-          presentation: 'modal',
-        }}
-      />
     </Tab.Navigator>
   );
 };
 
 /**
  * Main App Navigator (with dark mode support)
+ * Uses a Stack Navigator to hold Tabs + Settings modal
  */
 const AppNavigator = () => {
   const COLORS = useThemeColors();
@@ -165,9 +160,14 @@ const AppNavigator = () => {
 
   return (
     <NavigationContainer theme={navigationTheme}>
-      <View style={{flex: 1}}>
-        <TabNavigator />
-      </View>
+      <RootStack.Navigator screenOptions={{headerShown: false}}>
+        <RootStack.Screen name="Tabs" component={TabNavigator} />
+        <RootStack.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{presentation: 'modal'}}
+        />
+      </RootStack.Navigator>
     </NavigationContainer>
   );
 };
