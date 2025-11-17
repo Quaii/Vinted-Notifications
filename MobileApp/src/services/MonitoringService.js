@@ -92,6 +92,15 @@ class MonitoringService {
       return;
     }
 
+    // SAFETY CHECK: Don't start if there are no active queries
+    const queries = await DatabaseService.getQueries(true);
+    if (!queries || queries.length === 0) {
+      LogService.info('Cannot start monitoring: no active queries');
+      console.log('Cannot start monitoring: no active queries');
+      await DatabaseService.setParameter('monitoring_enabled', 'false');
+      return;
+    }
+
     LogService.info('Starting monitoring...');
     console.log('Starting monitoring...');
     this.isRunning = true;
@@ -153,6 +162,14 @@ class MonitoringService {
       const queries = await DatabaseService.getQueries(true);
       if (queries.length === 0) {
         console.log('No active queries to check');
+
+        // AUTO-STOP: If monitoring is running but there are no queries, stop it
+        if (this.isRunning) {
+          LogService.info('No queries remaining - auto-stopping monitoring');
+          console.log('No queries remaining - auto-stopping monitoring');
+          await this.stopMonitoring();
+        }
+
         return;
       }
 
