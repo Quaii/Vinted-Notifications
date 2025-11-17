@@ -206,7 +206,7 @@ const QueriesScreen = ({navigation}) => {
     fab: {
       position: 'absolute',
       right: SPACING.md,
-      bottom: SPACING.md + 110, // Above tab bar (100px height) + extra spacing
+      bottom: 20, // 20px from bottom (close to navigation bar)
       width: 56,
       height: 56,
       borderRadius: 28,

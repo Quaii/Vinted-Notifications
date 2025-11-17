@@ -62,8 +62,8 @@ const DashboardScreen = ({navigation}) => {
       const allQueries = await DatabaseService.getQueries(true);
       setQueries(allQueries.slice(0, 2));
 
-      // Load recent logs (max 5)
-      setLogs(LogService.getLogs(5));
+      // Load recent logs (max 3)
+      setLogs(LogService.getLogs(3));
     } catch (error) {
       console.error('Failed to load dashboard:', error);
       LogService.log(`Failed to load dashboard: ${error.message}`);
@@ -80,7 +80,7 @@ const DashboardScreen = ({navigation}) => {
   // Subscribe to log updates (only once)
   useEffect(() => {
     const unsubscribe = LogService.subscribe(() => {
-      setLogs(LogService.getLogs(5));
+      setLogs(LogService.getLogs(3));
     });
 
     return unsubscribe;
@@ -267,7 +267,7 @@ const DashboardScreen = ({navigation}) => {
             subheading={stats.totalItems === 0 ? 'No items yet' : `${stats.totalItems} item${stats.totalItems === 1 ? '' : 's'} cached`}
             lastUpdated={stats.lastItemTime ? formatRelativeTime(stats.lastItemTime) : 'No items found'}
             icon="inventory"
-            iconColor="#007AFF"
+            iconColor={COLORS.primary}
           />
           <StatWidget
             tag="Items / Day"
@@ -275,7 +275,7 @@ const DashboardScreen = ({navigation}) => {
             subheading="Last 7 days"
             lastUpdated={formatRelativeTime(stats.lastCalculatedTime)}
             icon="trending-up"
-            iconColor="#34C759"
+            iconColor={COLORS.primary}
           />
         </View>
 
