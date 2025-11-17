@@ -7,78 +7,78 @@ import {ThemeContext} from '../contexts/ThemeContext';
  * Dark mode first approach with light mode toggle
  */
 
-// Dark theme colors (default)
+// Dark theme colors (default) - Elegant champagne gold theme
 const DARK_COLORS = {
-  // Primary
-  primary: '#10B981',
-  primaryDark: '#059669',
-  primaryLight: '#34D399',
+  // Primary - Champagne gold accent
+  primary: '#C8B588',
+  primaryDark: '#B09D6F',
+  primaryLight: '#D8C38F',
 
-  // Backgrounds
-  background: '#0F172A',
-  secondaryBackground: '#1E293B',
-  groupedBackground: '#0F172A',
-  secondaryGroupedBackground: '#1E293B',
-  cardBackground: '#1E293B',
-  tertiaryBackground: '#334155',
+  // Backgrounds - Soft black & charcoal
+  background: '#0C0C0C',
+  secondaryBackground: '#1A1A1A',
+  groupedBackground: '#0C0C0C',
+  secondaryGroupedBackground: '#1A1A1A',
+  cardBackground: '#1A1A1A',
+  tertiaryBackground: '#242424',
 
-  // Text
-  text: '#F1F5F9',
-  textSecondary: '#CBD5E1',
-  textTertiary: '#94A3B8',
-  placeholder: '#64748B',
+  // Text - High contrast, elegant
+  text: '#FAFAFA',           // Headings
+  textSecondary: '#CCCCCC',   // Body text
+  textTertiary: '#888888',    // Muted text
+  placeholder: '#666666',
 
   // Status
-  success: '#10B981',
+  success: '#D8C38F',         // Light champagne for highlights
   error: '#EF4444',
   warning: '#F59E0B',
-  info: '#3B82F6',
+  info: '#6A7A8C',           // Ink-blue accent
 
   // UI Elements
-  separator: '#334155',
-  border: '#334155',
-  link: '#3B82F6',
+  separator: 'rgba(255, 255, 255, 0.06)',
+  border: 'rgba(255, 255, 255, 0.08)',
+  link: '#6A7A8C',           // Ink-blue accent
 
   // Buttons & Controls
-  buttonFill: '#334155',
-  secondaryButtonFill: '#475569',
+  buttonFill: 'rgba(255, 255, 255, 0.06)',
+  secondaryButtonFill: '#1A1A1A',
 };
 
-// Light theme colors
+// Light theme colors - Elegant light version
 const LIGHT_COLORS = {
-  // Primary
-  primary: '#10B981',
-  primaryDark: '#059669',
-  primaryLight: '#34D399',
+  // Primary - Champagne gold accent
+  primary: '#B09D6F',
+  primaryDark: '#8F7D52',
+  primaryLight: '#C8B588',
 
-  // Backgrounds
-  background: '#F8FAFC',
+  // Backgrounds - Soft whites and creams
+  background: '#FAFAFA',
   secondaryBackground: '#FFFFFF',
-  groupedBackground: '#F8FAFC',
+  groupedBackground: '#FAFAFA',
   secondaryGroupedBackground: '#FFFFFF',
   cardBackground: '#FFFFFF',
-  tertiaryBackground: '#F1F5F9',
+  tertiaryBackground: '#F5F5F5',
 
-  // Text
-  text: '#0F172A',
-  textSecondary: '#475569',
-  textTertiary: '#64748B',
-  placeholder: '#94A3B8',
+  // Text - Dark, elegant
+  text: '#0C0C0C',
+  textSecondary: '#333333',
+  textTertiary: '#666666',
+  placeholder: '#999999',
 
   // Status
-  success: '#10B981',
+  success: '#B09D6F',
   error: '#EF4444',
   warning: '#F59E0B',
-  info: '#3B82F6',
+  info: '#6A7A8C',
 
   // UI Elements
-  separator: '#E2E8F0',
-  border: '#E2E8F0',
-  link: '#3B82F6',
+  separator: 'rgba(0, 0, 0, 0.08)',
+  border: 'rgba(0, 0, 0, 0.12)',
+  link: '#6A7A8C',
 
   // Buttons & Controls
-  buttonFill: '#F1F5F9',
-  secondaryButtonFill: '#E2E8F0',
+  buttonFill: 'rgba(0, 0, 0, 0.04)',
+  secondaryButtonFill: '#F5F5F5',
 };
 
 // Hook to get current theme colors
