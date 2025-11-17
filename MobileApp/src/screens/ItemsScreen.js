@@ -452,7 +452,7 @@ const ItemsScreen = ({navigation, route}) => {
             renderItem={renderListItem}
             keyExtractor={item => item.id.toString()}
             ItemSeparatorComponent={renderItemSeparator}
-            contentContainerStyle={{paddingBottom: SPACING.xxl * 3}}
+            contentContainerStyle={{paddingBottom: 120}}
             refreshing={loading}
             onRefresh={loadItems}
             showsVerticalScrollIndicator={false}
@@ -464,7 +464,7 @@ const ItemsScreen = ({navigation, route}) => {
             keyExtractor={item => item.id.toString()}
             numColumns={2}
             columnWrapperStyle={{justifyContent: 'space-between', paddingHorizontal: SPACING.lg}}
-            contentContainerStyle={{paddingBottom: SPACING.xxl * 3}}
+            contentContainerStyle={{paddingBottom: 120}}
             refreshing={loading}
             onRefresh={loadItems}
             showsVerticalScrollIndicator={false}
