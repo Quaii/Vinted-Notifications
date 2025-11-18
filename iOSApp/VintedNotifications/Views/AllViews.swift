@@ -80,7 +80,7 @@ struct PageHeader: View {
             }
 
             Text(title)
-                .font(.system(size: FontSizes.largeTitle, weight: .bold))
+                .font(.system(size: centered ? FontSizes.title1 : FontSizes.largeTitle, weight: .bold))
                 .foregroundColor(theme.text)
 
             Spacer()
@@ -96,8 +96,8 @@ struct PageHeader: View {
             }
         }
         .padding(.horizontal, Spacing.lg)
-        .padding(.top, Spacing.sm)
-        .padding(.bottom, Spacing.md)
+        .padding(.top, centered ? Spacing.xs : Spacing.sm)
+        .padding(.bottom, centered ? Spacing.sm : Spacing.md)
         .background(theme.background)
     }
 }
@@ -1607,7 +1607,7 @@ struct SettingsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            PageHeader(title: "Settings", showSettings: false, showBack: true, centered: true)
+            PageHeader(title: "Settings", showSettings: false, showBack: false, centered: true)
 
             ScrollView {
                 VStack(spacing: Spacing.xl) {
