@@ -76,7 +76,8 @@ class DashboardViewModel: ObservableObject {
     }
 
     func deleteQuery(_ query: VintedQuery) {
-        DatabaseService.shared.deleteQuery(query)
+        guard let id = query.id else { return }
+        DatabaseService.shared.deleteQuery(id: id)
         Task {
             await loadDashboard()
         }
