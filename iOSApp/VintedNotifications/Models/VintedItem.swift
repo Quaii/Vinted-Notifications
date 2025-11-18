@@ -21,6 +21,8 @@ struct VintedItem: Identifiable, Codable {
     var rawTimestamp: String?
     var queryId: Int64?
     var notified: Bool = false
+    var userId: Int64?
+    var userCountry: String?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -36,6 +38,8 @@ struct VintedItem: Identifiable, Codable {
         case rawTimestamp = "raw_timestamp"
         case queryId = "query_id"
         case notified
+        case userId = "user_id"
+        case userCountry = "user_country"
     }
 
     // Initialize from API response
@@ -85,6 +89,14 @@ struct VintedItem: Identifiable, Codable {
         self.rawTimestamp = apiData["raw_timestamp"] as? String ?? apiData["rawTimestamp"] as? String
         self.queryId = queryId
 
+        // Extract user ID from user object
+        if let userDict = apiData["user"] as? [String: Any] {
+            self.userId = userDict["id"] as? Int64
+        } else {
+            self.userId = nil
+        }
+        self.userCountry = nil // Will be fetched separately if needed
+
         // Generate buy URL if not provided
         if self.buyUrl == nil || self.buyUrl?.isEmpty == true {
             self.buyUrl = self.generateBuyUrl()
@@ -92,7 +104,7 @@ struct VintedItem: Identifiable, Codable {
     }
 
     // Initialize from database row
-    init(id: Int64, title: String, brandTitle: String?, sizeTitle: String?, price: String, currency: String, photo: String?, url: String?, buyUrl: String?, createdAtTs: Int64, rawTimestamp: String?, queryId: Int64?, notified: Bool = false) {
+    init(id: Int64, title: String, brandTitle: String?, sizeTitle: String?, price: String, currency: String, photo: String?, url: String?, buyUrl: String?, createdAtTs: Int64, rawTimestamp: String?, queryId: Int64?, notified: Bool = false, userId: Int64? = nil, userCountry: String? = nil) {
         self.id = id
         self.title = title
         self.brandTitle = brandTitle
@@ -106,6 +118,8 @@ struct VintedItem: Identifiable, Codable {
         self.rawTimestamp = rawTimestamp
         self.queryId = queryId
         self.notified = notified
+        self.userId = userId
+        self.userCountry = userCountry
     }
 
     // Generate buy URL from item URL and ID

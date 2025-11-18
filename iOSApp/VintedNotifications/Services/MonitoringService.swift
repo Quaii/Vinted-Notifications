@@ -134,22 +134,40 @@ class MonitoringService: ObservableObject {
 
         LogService.shared.info("[MonitoringService] Checking \(queries.count) queries")
 
+        // Load settings
         var totalNewItems = 0
         let notificationMode = NotificationMode(rawValue: DatabaseService.shared.getParameter("notification_mode")) ?? .precise
+        let itemsPerQuery = Int(DatabaseService.shared.getParameter("items_per_query", defaultValue: "\(AppConfig.defaultItemsPerQuery)")) ?? AppConfig.defaultItemsPerQuery
+        let allowlist = DatabaseService.shared.getAllowlist()
 
         for query in queries {
             do {
-                // Fetch items
-                let items = try await VintedAPI.shared.search(url: query.vintedUrl)
+                // Fetch items with configured items_per_query setting
+                let items = try await VintedAPI.shared.search(url: query.vintedUrl, itemsPerQuery: itemsPerQuery)
 
                 LogService.shared.info("[MonitoringService] Query \(query.id ?? 0): Got \(items.count) items")
 
                 // Filter new items
                 var newItems: [VintedItem] = []
-                for item in items {
+                for var item in items {
                     // Skip if item already exists
                     if DatabaseService.shared.itemExists(itemId: item.id) {
                         continue
+                    }
+
+                    // Check country allowlist
+                    if !allowlist.isEmpty {
+                        if let userId = item.userId {
+                            // Fetch user's country
+                            let userCountry = await VintedAPI.shared.getUserCountry(userId: userId, domain: query.domain())
+                            item.userCountry = userCountry
+
+                            // Skip if user's country is not in allowlist (XX is unknown/error)
+                            if userCountry != "XX" && !allowlist.contains(userCountry) {
+                                LogService.shared.info("[MonitoringService] Skipping item (country \(userCountry) not in allowlist): \(item.title)")
+                                continue
+                            }
+                        }
                     }
 
                     // Skip if title contains banwords

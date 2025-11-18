@@ -645,23 +645,27 @@ struct QuerySheet: View {
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section("Vinted Search URL") {
-                    TextField("https://www.vinted.com/catalog?...", text: $viewModel.newQueryUrl)
-                        .autocapitalization(.none)
-                        .textInputAutocapitalization(.never)
+        VStack(spacing: 0) {
+            // Custom Header
+            HStack {
+                Button(action: {
+                    viewModel.newQueryUrl = ""
+                    viewModel.newQueryName = ""
+                    viewModel.editingQuery = nil
+                    dismiss()
+                }) {
+                    Text("Cancel")
+                        .font(.system(size: FontSizes.body))
+                        .foregroundColor(theme.primary)
                 }
 
-                Section("Custom Name (Optional)") {
-                    TextField("e.g., Nike Shoes", text: $viewModel.newQueryName)
-                }
+                Spacer()
 
-                Section {
-                    Text("Paste the full URL from a Vinted search. The app will automatically monitor this search and notify you of new items.")
-                        .font(.system(size: FontSizes.footnote))
-                        .foregroundColor(theme.textTertiary)
-                }
+                Text(viewModel.editingQuery != nil ? "Edit Query" : "Add Query")
+                    .font(.system(size: FontSizes.headline, weight: .bold))
+                    .foregroundColor(theme.text)
+
+                Spacer()
 
                 Button(action: {
                     viewModel.addQuery()
@@ -669,26 +673,94 @@ struct QuerySheet: View {
                         dismiss()
                     }
                 }) {
-                    Text(viewModel.editingQuery != nil ? "Update Query" : "Add Query")
-                        .font(.system(size: FontSizes.headline, weight: .semibold))
-                        .frame(maxWidth: .infinity)
+                    Text(viewModel.editingQuery != nil ? "Update" : "Add")
+                        .font(.system(size: FontSizes.body, weight: .semibold))
+                        .foregroundColor(theme.primary)
                 }
-                .listRowBackground(theme.primary)
-                .foregroundColor(.white)
             }
-            .navigationTitle(viewModel.editingQuery != nil ? "Edit Query" : "Add Query")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        viewModel.newQueryUrl = ""
-                        viewModel.newQueryName = ""
-                        viewModel.editingQuery = nil
-                        dismiss()
+            .padding(.horizontal, Spacing.lg)
+            .padding(.vertical, Spacing.md)
+            .background(theme.background)
+
+            Divider()
+
+            ScrollView {
+                VStack(spacing: Spacing.xl) {
+                    // URL Input Section
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        Text("Vinted Search URL")
+                            .font(.system(size: FontSizes.subheadline, weight: .semibold))
+                            .foregroundColor(theme.text)
+
+                        TextField("https://www.vinted.com/catalog?...", text: $viewModel.newQueryUrl)
+                            .font(.system(size: FontSizes.body))
+                            .autocapitalization(.none)
+                            .textInputAutocapitalization(.never)
+                            .padding(Spacing.md)
+                            .background(theme.secondaryGroupedBackground)
+                            .cornerRadius(BorderRadius.lg)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: BorderRadius.lg)
+                                    .stroke(theme.border, lineWidth: 1)
+                            )
+                    }
+
+                    // Name Input Section
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        Text("Custom Name (Optional)")
+                            .font(.system(size: FontSizes.subheadline, weight: .semibold))
+                            .foregroundColor(theme.text)
+
+                        TextField("e.g., Nike Shoes", text: $viewModel.newQueryName)
+                            .font(.system(size: FontSizes.body))
+                            .padding(Spacing.md)
+                            .background(theme.secondaryGroupedBackground)
+                            .cornerRadius(BorderRadius.lg)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: BorderRadius.lg)
+                                    .stroke(theme.border, lineWidth: 1)
+                            )
+                    }
+
+                    // Info Section
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        HStack(alignment: .top, spacing: Spacing.sm) {
+                            Image(systemName: "info.circle")
+                                .font(.system(size: FontSizes.body))
+                                .foregroundColor(theme.primary)
+
+                            Text("Paste the full URL from a Vinted search. The app will automatically monitor this search and notify you of new items.")
+                                .font(.system(size: FontSizes.footnote))
+                                .foregroundColor(theme.textSecondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(Spacing.md)
+                        .background(theme.primary.opacity(0.1))
+                        .cornerRadius(BorderRadius.lg)
+                    }
+
+                    // Error Message
+                    if let error = viewModel.errorMessage {
+                        HStack(alignment: .top, spacing: Spacing.sm) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .font(.system(size: FontSizes.body))
+                                .foregroundColor(.red)
+
+                            Text(error)
+                                .font(.system(size: FontSizes.footnote))
+                                .foregroundColor(.red)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(Spacing.md)
+                        .background(Color.red.opacity(0.1))
+                        .cornerRadius(BorderRadius.lg)
                     }
                 }
+                .padding(Spacing.lg)
             }
+            .background(theme.groupedBackground)
         }
+        .background(theme.groupedBackground)
     }
 }
 
@@ -1897,9 +1969,7 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            PageHeader(title: "Settings", showSettings: false, showBack: true, centered: false)
-
+        NavigationStack {
             ScrollView {
                 VStack(spacing: Spacing.xl) {
                     appSettingsSection
@@ -1917,8 +1987,9 @@ struct SettingsView: View {
             }
             .scrollIndicators(.hidden)
             .background(theme.groupedBackground)
+            .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
         }
-        .background(theme.groupedBackground)
         .onAppear {
             viewModel.loadSettings()
         }
