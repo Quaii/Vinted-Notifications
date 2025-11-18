@@ -3,8 +3,8 @@ import {View, useColorScheme, StyleSheet, Dimensions} from 'react-native';
 import {NavigationContainer, DefaultTheme, DarkTheme} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import MaterialIcons from '@react-native-vector-icons/material-icons';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import MaterialIcon from '../components/icons/MaterialIcon';
 import {
   DashboardScreen,
   QueriesScreen,
@@ -66,29 +66,11 @@ const TabNavigator = () => {
               iconName = 'description';
               break;
             default:
-              iconName = 'circle';
+              iconName = 'home';
           }
 
-          // Wrap icon in View for consistent alignment
-          return (
-            <View style={{
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: size, // Force icon container to exact size
-              height: size,
-            }}>
-              <MaterialIcons
-                name={iconName}
-                size={size}
-                color={color}
-                style={{
-                  textAlign: 'center',
-                  width: size,
-                  height: size,
-                }}
-              />
-            </View>
-          );
+          // SVG icons have ZERO font padding - perfect pixel control
+          return <MaterialIcon name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: COLORS.primary,
         tabBarInactiveTintColor: COLORS.textSecondary,
