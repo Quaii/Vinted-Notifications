@@ -539,7 +539,7 @@ struct LogEntryView: View {
                     .foregroundColor(theme.textTertiary)
             }
 
-            Text(log.message)
+            Text(log.message.removingEmojis())
                 .font(.system(size: FontSizes.subheadline))
                 .foregroundColor(theme.text)
                 .lineLimit(2)
@@ -551,31 +551,6 @@ struct LogEntryView: View {
             RoundedRectangle(cornerRadius: BorderRadius.lg)
                 .stroke(theme.separator, lineWidth: 1)
         )
-        .overlay(
-            // Left border accent
-            Rectangle()
-                .fill(log.level.color)
-                .frame(width: 4)
-                .cornerRadius(BorderRadius.lg, corners: [.topLeft, .bottomLeft]),
-            alignment: .leading
-        )
-    }
-}
-
-// Helper for corner radius on specific corners
-extension View {
-    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
-        clipShape(RoundedCorner(radius: radius, corners: corners))
-    }
-}
-
-struct RoundedCorner: Shape {
-    var radius: CGFloat = .infinity
-    var corners: UIRectCorner = .allCorners
-
-    func path(in rect: CGRect) -> Path {
-        let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
-        return Path(path.cgPath)
     }
 }
 
@@ -636,24 +611,22 @@ struct QueriesView: View {
                         }
                     }
 
-                    // FAB button - only show when queries exist
-                    if !viewModel.queries.isEmpty {
-                        VStack {
+                    // FAB button
+                    VStack {
+                        Spacer()
+                        HStack {
                             Spacer()
-                            HStack {
-                                Spacer()
-                                Button(action: { viewModel.showAddSheet = true }) {
-                                    Image(systemName: "plus")
-                                        .font(.system(size: 24, weight: .semibold))
-                                        .foregroundColor(.white)
-                                        .frame(width: 56, height: 56)
-                                        .background(theme.primary)
-                                        .clipShape(Circle())
-                                        .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
-                                }
-                                .padding(.trailing, Spacing.md)
-                                .padding(.bottom, 80)
+                            Button(action: { viewModel.showAddSheet = true }) {
+                                Image(systemName: "plus")
+                                    .font(.system(size: 24, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .frame(width: 56, height: 56)
+                                    .background(theme.primary)
+                                    .clipShape(Circle())
+                                    .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
                             }
+                            .padding(.trailing, Spacing.md)
+                            .padding(.bottom, 120)
                         }
                     }
                 }
@@ -1926,7 +1899,7 @@ struct SettingsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            PageHeader(title: "Settings", showSettings: false, showBack: false, centered: false)
+            PageHeader(title: "Settings", showSettings: false, showBack: false, centered: true)
 
             ScrollView {
                 VStack(spacing: Spacing.xl) {
@@ -1954,6 +1927,22 @@ struct SettingsView: View {
         } message: {
             Text("Your settings have been saved successfully.")
         }
+    }
+}
+
+// String extension to remove emojis from log messages
+extension String {
+    func removingEmojis() -> String {
+        return self.filter { character in
+            !character.isEmoji
+        }
+    }
+}
+
+extension Character {
+    var isEmoji: Bool {
+        guard let scalar = unicodeScalars.first else { return false }
+        return scalar.properties.isEmoji && (scalar.value > 0x238C || unicodeScalars.count > 1)
     }
 }
 
