@@ -1059,6 +1059,38 @@ struct CustomSegmentedControl: View {
     }
 }
 
+// Settings Row with Toggle - Helper view to avoid complex expressions
+struct SettingsToggleRow: View {
+    let title: String
+    let description: String
+    @Binding var isOn: Bool
+    let activeColor: Color
+    let inactiveColor: Color
+
+    @Environment(\.theme) var theme
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: FontSizes.body, weight: .medium))
+                    .foregroundColor(theme.text)
+                Text(description)
+                    .font(.system(size: FontSizes.footnote))
+                    .foregroundColor(theme.textTertiary)
+            }
+            Spacer()
+            CustomToggle(
+                isOn: $isOn,
+                activeColor: activeColor,
+                inactiveColor: inactiveColor
+            )
+        }
+        .padding(Spacing.md)
+        .frame(minHeight: 60)
+    }
+}
+
 // Settings Screen - Custom styling to match React Native
 struct SettingsView: View {
     @StateObject private var viewModel = SettingsViewModel()
@@ -1090,24 +1122,13 @@ struct SettingsView: View {
 
                         VStack(spacing: 0) {
                             // Dark Mode Row
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Dark Mode")
-                                        .font(.system(size: FontSizes.body, weight: .medium))
-                                        .foregroundColor(theme.text)
-                                    Text(themeManager.isDarkMode ? "Dark mode enabled" : "Light mode enabled")
-                                        .font(.system(size: FontSizes.footnote))
-                                        .foregroundColor(theme.textTertiary)
-                                }
-                                Spacer()
-                                CustomToggle(
-                                    isOn: $themeManager.isDarkMode,
-                                    activeColor: toggleActiveColor,
-                                    inactiveColor: toggleInactiveColor
-                                )
-                            }
-                            .padding(Spacing.md)
-                            .frame(minHeight: 60)
+                            SettingsToggleRow(
+                                title: "Dark Mode",
+                                description: themeManager.isDarkMode ? "Dark mode enabled" : "Light mode enabled",
+                                isOn: $themeManager.isDarkMode,
+                                activeColor: toggleActiveColor,
+                                inactiveColor: toggleInactiveColor
+                            )
                             .overlay(
                                 Rectangle()
                                     .fill(theme.separator)
@@ -1267,24 +1288,13 @@ struct SettingsView: View {
                             )
 
                             // Check Proxies
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Check Proxies")
-                                        .font(.system(size: FontSizes.body, weight: .medium))
-                                        .foregroundColor(theme.text)
-                                    Text("Verify proxies before use (slower but more reliable)")
-                                        .font(.system(size: FontSizes.footnote))
-                                        .foregroundColor(theme.textTertiary)
-                                }
-                                Spacer()
-                                CustomToggle(
-                                    isOn: $viewModel.checkProxies,
-                                    activeColor: toggleActiveColor,
-                                    inactiveColor: toggleInactiveColor
-                                )
-                            }
-                            .padding(Spacing.md)
-                            .frame(minHeight: 60)
+                            SettingsToggleRow(
+                                title: "Check Proxies",
+                                description: "Verify proxies before use (slower but more reliable)",
+                                isOn: $viewModel.checkProxies,
+                                activeColor: toggleActiveColor,
+                                inactiveColor: toggleInactiveColor
+                            )
                         }
                         .background(theme.secondaryGroupedBackground)
                         .cornerRadius(BorderRadius.xl)
