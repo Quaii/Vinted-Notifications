@@ -1,9 +1,10 @@
-import React from 'react';
-import {View, useColorScheme, StyleSheet} from 'react-native';
+import React, {useMemo} from 'react';
+import {View, useColorScheme, StyleSheet, Dimensions} from 'react-native';
 import {NavigationContainer, DefaultTheme, DarkTheme} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import MaterialIcons from '@react-native-vector-icons/material-icons';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import MaterialIcon from '../components/icons/MaterialIcon';
 import {
   DashboardScreen,
   QueriesScreen,
@@ -23,10 +24,24 @@ const RootStack = createNativeStackNavigator();
  */
 const TabNavigator = () => {
   const COLORS = useThemeColors();
+  const insets = useSafeAreaInsets();
+  const screenWidth = Dimensions.get('window').width;
+
+  // DEBUG: Log all dimensions and insets
+  console.log('🔍 TAB BAR DEBUG:', {
+    screenWidth,
+    perTabWidth: screenWidth / 5,
+    insets,
+    hasLeftInset: insets.left > 0,
+    hasRightInset: insets.right > 0,
+  });
+
+  // Calculate proper bottom padding for devices with home indicator
+  const tabBarHeight = 49; // Standard iOS tab bar height
+  const bottomPadding = Math.max(insets.bottom, 20); // Use safe area or minimum 20px
 
   return (
     <Tab.Navigator
-      safeAreaInsets={{left: 0, right: 0, bottom: 0, top: 0}}
       sceneContainerStyle={{backgroundColor: COLORS.background}}
       screenOptions={({route}) => ({
         headerShown: false,
@@ -51,41 +66,45 @@ const TabNavigator = () => {
               iconName = 'description';
               break;
             default:
-              iconName = 'circle';
+              iconName = 'home';
           }
 
-          return <MaterialIcons name={iconName} size={size} color={color} />;
+          // SVG icons have ZERO font padding - perfect pixel control
+          return <MaterialIcon name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: COLORS.primary,
         tabBarInactiveTintColor: COLORS.textSecondary,
         tabBarStyle: {
           position: 'absolute',
-          left: 0,
-          right: 0,
           bottom: 0,
+          left: 0,
+          right: 0, // Try both constraints together
+          width: screenWidth, // CRITICAL: Force exact screen width for React 19
           backgroundColor: COLORS.secondaryGroupedBackground,
           borderTopColor: COLORS.border,
-          borderTopWidth: 1,
-          height: 100,
-          paddingBottom: 20,
-          paddingTop: 12,
-          paddingLeft: 0,
+          borderTopWidth: 1, // Use whole number instead of hairline
+          height: tabBarHeight + bottomPadding,
+          paddingBottom: bottomPadding,
+          paddingTop: 8,
+          paddingLeft: 0, // Explicit instead of paddingHorizontal
           paddingRight: 0,
-          width: '100%',
+          marginLeft: 0, // Explicit instead of marginHorizontal
+          marginRight: 0,
         },
         tabBarLabelStyle: {
           fontSize: FONT_SIZES.caption2,
           fontWeight: '600',
-          marginTop: 4,
+          marginTop: 2,
           marginBottom: 0,
         },
         tabBarItemStyle: {
-          flex: 1, // let each tab take equal space
-          paddingVertical: 4,
+          width: screenWidth / 5, // CRITICAL: Explicit width for 5 tabs (React 19 fix)
+          paddingVertical: 0,
           paddingHorizontal: 0,
           marginHorizontal: 0,
-          alignItems: 'center', // center icon+label horizontally
-          justifyContent: 'center', // center vertically within the tab item
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: tabBarHeight,
         },
         tabBarIconStyle: {
           marginTop: 0,
@@ -144,30 +163,42 @@ const AppNavigator = () => {
   const COLORS = useThemeColors();
   const scheme = useColorScheme();
 
-  // Create custom navigation theme using our theme colors
-  const navigationTheme = {
-    ...(scheme === 'dark' ? DarkTheme : DefaultTheme),
-    colors: {
-      ...(scheme === 'dark' ? DarkTheme.colors : DefaultTheme.colors),
-      primary: COLORS.primary,
-      background: COLORS.background,
-      card: COLORS.cardBackground,
-      text: COLORS.text,
-      border: COLORS.border,
-      notification: COLORS.primary,
-    },
-  };
+  // Memoize navigation theme to prevent recreation on every render
+  const navigationTheme = useMemo(
+    () => ({
+      ...(scheme === 'dark' ? DarkTheme : DefaultTheme),
+      colors: {
+        ...(scheme === 'dark' ? DarkTheme.colors : DefaultTheme.colors),
+        primary: COLORS.primary,
+        background: COLORS.background,
+        card: COLORS.cardBackground,
+        text: COLORS.text,
+        border: COLORS.border,
+        notification: COLORS.primary,
+      },
+    }),
+    [scheme, COLORS]
+  );
 
   return (
     <NavigationContainer theme={navigationTheme}>
-      <RootStack.Navigator screenOptions={{headerShown: false}}>
-        <RootStack.Screen name="Tabs" component={TabNavigator} />
-        <RootStack.Screen
-          name="Settings"
-          component={SettingsScreen}
-          options={{presentation: 'modal'}}
-        />
-      </RootStack.Navigator>
+      <View
+        style={{flex: 1}}
+        onLayout={(e) => {
+          console.log('📐 ROOT CONTAINER LAYOUT:', {
+            width: e.nativeEvent.layout.width,
+            height: e.nativeEvent.layout.height,
+          });
+        }}>
+        <RootStack.Navigator screenOptions={{headerShown: false}}>
+          <RootStack.Screen name="Tabs" component={TabNavigator} />
+          <RootStack.Screen
+            name="Settings"
+            component={SettingsScreen}
+            options={{presentation: 'modal'}}
+          />
+        </RootStack.Navigator>
+      </View>
     </NavigationContainer>
   );
 };
