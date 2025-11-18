@@ -10,6 +10,46 @@ import SwiftUI
 
 // MARK: - COMPONENTS
 
+// LoadingView Component - Matches React Native loading screen
+struct LoadingView: View {
+    @Environment(\.theme) var theme
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+
+            // Logo
+            Text("Vinted Notifications")
+                .font(.system(size: 36, weight: .bold))
+                .foregroundColor(theme.text)
+                .kerning(-1)
+                .padding(.bottom, 8)
+
+            // Tagline
+            Text("NEVER MISS A DEAL")
+                .font(.system(size: 14, weight: .regular))
+                .foregroundColor(theme.textTertiary)
+                .kerning(2)
+                .padding(.bottom, 48)
+
+            // Loading indicator
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(tint: theme.primary))
+                .scaleEffect(1.5)
+                .padding(.bottom, 16)
+
+            // Loading text
+            Text("Initializing...")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(theme.textSecondary)
+
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(theme.background)
+    }
+}
+
 // PageHeader Component
 struct PageHeader: View {
     let title: String
@@ -61,47 +101,76 @@ struct PageHeader: View {
     }
 }
 
-// StatWidget Component
+// StatWidget Component - Matches React Native exactly
 struct StatWidget: View {
     let tag: String
     let value: String
     let subheading: String
+    let lastUpdated: String
     let icon: String
     let iconColor: Color
 
     @Environment(\.theme) var theme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.xs) {
+        VStack(alignment: .leading, spacing: 0) {
+            // Header with tag and icon
             HStack {
-                Image(systemName: icon)
-                    .font(.system(size: 20))
-                    .foregroundColor(iconColor)
+                Text(tag)
+                    .font(.system(size: FontSizes.caption1, weight: .bold))
+                    .foregroundColor(theme.textTertiary)
+                    .textCase(.uppercase)
+                    .kerning(0.5)
 
                 Spacer()
 
-                Text(tag)
-                    .font(.system(size: FontSizes.caption2, weight: .bold))
-                    .foregroundColor(theme.textTertiary)
-                    .textCase(.uppercase)
+                // Icon in circular container
+                ZStack {
+                    Circle()
+                        .fill(iconColor.opacity(0.08))
+                        .frame(width: 32, height: 32)
+
+                    Image(systemName: icon)
+                        .font(.system(size: 18))
+                        .foregroundColor(iconColor)
+                }
+            }
+            .padding(.bottom, Spacing.xs)
+
+            Spacer()
+
+            // Content - Value and subheading
+            VStack(alignment: .leading, spacing: 2) {
+                Text(value)
+                    .font(.system(size: 48, weight: .bold))
+                    .foregroundColor(theme.text)
+                    .kerning(-1)
+                    .lineSpacing(52 - 48)
+
+                if !subheading.isEmpty {
+                    Text(subheading)
+                        .font(.system(size: FontSizes.subheadline, weight: .medium))
+                        .foregroundColor(theme.textSecondary)
+                }
             }
 
-            Text(value)
-                .font(.system(size: FontSizes.title1, weight: .bold))
-                .foregroundColor(theme.text)
+            Spacer()
 
-            Text(subheading)
-                .font(.system(size: FontSizes.footnote))
-                .foregroundColor(theme.textSecondary)
+            // Footer - Last updated
+            Text(lastUpdated)
+                .font(.system(size: FontSizes.caption2, weight: .medium))
+                .foregroundColor(theme.textTertiary)
+                .padding(.top, Spacing.xs)
         }
-        .padding(Spacing.md)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Spacing.lg)
+        .frame(maxWidth: .infinity, minHeight: 140, alignment: .leading)
         .background(theme.secondaryGroupedBackground)
-        .cornerRadius(BorderRadius.lg)
+        .cornerRadius(20)
         .overlay(
-            RoundedRectangle(cornerRadius: BorderRadius.lg)
-                .stroke(theme.border, lineWidth: 1)
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(theme.separator, lineWidth: 1)
         )
+        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
 }
 
@@ -305,6 +374,7 @@ struct DashboardView: View {
                             tag: "Total Items",
                             value: "\(viewModel.stats.totalItems)",
                             subheading: viewModel.stats.totalItems == 0 ? "No items yet" : "\(viewModel.stats.totalItems) cached",
+                            lastUpdated: viewModel.stats.lastUpdated,
                             icon: "square.grid.2x2",
                             iconColor: theme.primary
                         )
@@ -313,6 +383,7 @@ struct DashboardView: View {
                             tag: "Items / Day",
                             value: String(format: "%.0f", viewModel.stats.itemsPerDay),
                             subheading: "Last 7 days",
+                            lastUpdated: viewModel.stats.lastUpdated,
                             icon: "chart.line.uptrend.xyaxis",
                             iconColor: theme.primary
                         )

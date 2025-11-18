@@ -17,6 +17,27 @@ class DashboardViewModel: ObservableObject {
         var totalItems: Int = 0
         var itemsPerDay: Double = 0
         var lastItemTime: Date?
+
+        var lastUpdated: String {
+            if let time = lastItemTime {
+                let interval = Date().timeIntervalSince(time)
+                let minutes = Int(interval / 60)
+                let hours = Int(interval / 3600)
+                let days = Int(interval / 86400)
+
+                if minutes < 1 {
+                    return "Just now"
+                } else if minutes < 60 {
+                    return "\(minutes)m ago"
+                } else if hours < 24 {
+                    return "\(hours)h ago"
+                } else {
+                    return "\(days)d ago"
+                }
+            } else {
+                return "No data yet"
+            }
+        }
     }
 
     func loadDashboard() async {
