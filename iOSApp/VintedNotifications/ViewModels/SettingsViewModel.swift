@@ -13,7 +13,7 @@ class SettingsViewModel: ObservableObject {
     @Published var userAgent: String = ""
     @Published var defaultHeaders: String = ""
     @Published var proxyList: String = ""
-    @Published var proxyListLink: String = ""
+    @Published var proxyListURL: String = ""
     @Published var checkProxies: Bool = false
     @Published var allowlist: [String] = []
     @Published var newCountry: String = ""
@@ -26,7 +26,7 @@ class SettingsViewModel: ObservableObject {
         userAgent = DatabaseService.shared.getParameter("user_agent", defaultValue: "")
         defaultHeaders = DatabaseService.shared.getParameter("default_headers", defaultValue: "")
         proxyList = DatabaseService.shared.getParameter("proxy_list", defaultValue: "")
-        proxyListLink = DatabaseService.shared.getParameter("proxy_list_link", defaultValue: "")
+        proxyListURL = DatabaseService.shared.getParameter("proxy_list_link", defaultValue: "")
         checkProxies = DatabaseService.shared.getParameter("check_proxies", defaultValue: "False") == "True"
         allowlist = DatabaseService.shared.getAllowlist()
     }
@@ -39,7 +39,7 @@ class SettingsViewModel: ObservableObject {
         DatabaseService.shared.setParameter("user_agent", value: userAgent)
         DatabaseService.shared.setParameter("default_headers", value: defaultHeaders)
         DatabaseService.shared.setParameter("proxy_list", value: proxyList)
-        DatabaseService.shared.setParameter("proxy_list_link", value: proxyListLink)
+        DatabaseService.shared.setParameter("proxy_list_link", value: proxyListURL)
         DatabaseService.shared.setParameter("check_proxies", value: checkProxies ? "True" : "False")
 
         LogService.shared.info("Settings saved successfully")
@@ -72,6 +72,11 @@ class SettingsViewModel: ObservableObject {
     func deleteAllQueries() {
         DatabaseService.shared.deleteAllQueries()
         LogService.shared.info("All queries deleted")
+    }
+
+    func clearLogs() {
+        LogService.shared.clearLogs()
+        LogService.shared.info("All logs cleared")
     }
 
     func resetAllData() {

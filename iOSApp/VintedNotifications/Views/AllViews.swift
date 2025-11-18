@@ -303,16 +303,27 @@ struct QueryCard: View {
     }
 }
 
-// CustomToggle Component
+// CustomToggle Component - Matches React Native exactly (51x31)
 struct CustomToggle: View {
     @Binding var isOn: Bool
     let activeColor: Color
     let inactiveColor: Color
 
     var body: some View {
-        Toggle("", isOn: $isOn)
-            .labelsHidden()
-            .toggleStyle(SwitchToggleStyle(tint: activeColor))
+        Button(action: { isOn.toggle() }) {
+            ZStack(alignment: isOn ? .trailing : .leading) {
+                RoundedRectangle(cornerRadius: 15.5)
+                    .fill(isOn ? activeColor : inactiveColor)
+                    .frame(width: 51, height: 31)
+
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: 27, height: 27)
+                    .shadow(color: .black.opacity(0.2), radius: 2.5, x: 0, y: 2)
+                    .padding(2)
+            }
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
@@ -438,13 +449,22 @@ struct DashboardView: View {
                                 .foregroundColor(theme.textSecondary)
                             }
 
-                            ForEach(viewModel.recentQueries) { query in
-                                QueryCard(
-                                    query: query,
-                                    onPress: {},
-                                    onDelete: {},
-                                    onEdit: {}
-                                )
+                            if viewModel.recentQueries.isEmpty {
+                                Text("No queries saved")
+                                    .font(.system(size: FontSizes.subheadline))
+                                    .foregroundColor(theme.textTertiary)
+                                    .italic()
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, Spacing.lg)
+                            } else {
+                                ForEach(viewModel.recentQueries) { query in
+                                    QueryCard(
+                                        query: query,
+                                        onPress: {},
+                                        onDelete: {},
+                                        onEdit: {}
+                                    )
+                                }
                             }
                         }
 
@@ -560,74 +580,78 @@ struct QueriesView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                if viewModel.queries.isEmpty {
-                    // Empty state
-                    VStack(spacing: Spacing.xl) {
-                        Image(systemName: "magnifyingglass.circle")
-                            .font(.system(size: 64))
-                            .foregroundColor(theme.textTertiary)
+            VStack(spacing: 0) {
+                // Custom Page Header
+                PageHeader(title: "Queries")
 
-                        Text("No search queries")
-                            .font(.system(size: FontSizes.title3, weight: .semibold))
-                            .foregroundColor(theme.textSecondary)
+                ZStack {
+                    if viewModel.queries.isEmpty {
+                        // Empty state
+                        VStack(spacing: Spacing.xl) {
+                            Image(systemName: "magnifyingglass.circle")
+                                .font(.system(size: 64))
+                                .foregroundColor(theme.textTertiary)
 
-                        Text("Add a Vinted search URL to start tracking new items")
-                            .font(.system(size: FontSizes.subheadline))
-                            .foregroundColor(theme.textTertiary)
-                            .multilineTextAlignment(.center)
+                            Text("No search queries")
+                                .font(.system(size: FontSizes.title3, weight: .semibold))
+                                .foregroundColor(theme.textSecondary)
 
-                        Button(action: { viewModel.showAddSheet = true }) {
-                            Text("Add Your First Query")
-                                .font(.system(size: FontSizes.body, weight: .semibold))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, Spacing.xl)
-                                .padding(.vertical, Spacing.md)
-                                .background(theme.primary)
-                                .cornerRadius(BorderRadius.lg)
-                        }
-                    }
-                    .padding(Spacing.xl)
-                } else {
-                    // List of queries
-                    ScrollView {
-                        LazyVStack(spacing: Spacing.md) {
-                            ForEach(viewModel.queries) { query in
-                                QueryCard(
-                                    query: query,
-                                    onPress: {},
-                                    onDelete: { viewModel.deleteQuery(query) },
-                                    onEdit: { viewModel.startEditing(query) }
-                                )
+                            Text("Add a Vinted search URL to start tracking new items")
+                                .font(.system(size: FontSizes.subheadline))
+                                .foregroundColor(theme.textTertiary)
+                                .multilineTextAlignment(.center)
+
+                            Button(action: { viewModel.showAddSheet = true }) {
+                                Text("Add Your First Query")
+                                    .font(.system(size: FontSizes.body, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, Spacing.xl)
+                                    .padding(.vertical, Spacing.md)
+                                    .background(theme.primary)
+                                    .cornerRadius(BorderRadius.lg)
                             }
                         }
-                        .padding(Spacing.lg)
-                        .padding(.bottom, 100)
-                    }
-                }
-
-                // FAB button
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        Button(action: { viewModel.showAddSheet = true }) {
-                            Image(systemName: "plus")
-                                .font(.system(size: 24, weight: .semibold))
-                                .foregroundColor(.white)
-                                .frame(width: 56, height: 56)
-                                .background(theme.primary)
-                                .clipShape(Circle())
-                                .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
+                        .padding(Spacing.xl)
+                    } else {
+                        // List of queries
+                        ScrollView {
+                            LazyVStack(spacing: Spacing.md) {
+                                ForEach(viewModel.queries) { query in
+                                    QueryCard(
+                                        query: query,
+                                        onPress: {},
+                                        onDelete: { viewModel.deleteQuery(query) },
+                                        onEdit: { viewModel.startEditing(query) }
+                                    )
+                                }
+                            }
+                            .padding(Spacing.lg)
+                            .padding(.bottom, 100)
                         }
-                        .padding(.trailing, Spacing.md)
-                        .padding(.bottom, 80)
+                    }
+
+                    // FAB button
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            Button(action: { viewModel.showAddSheet = true }) {
+                                Image(systemName: "plus")
+                                    .font(.system(size: 24, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .frame(width: 56, height: 56)
+                                    .background(theme.primary)
+                                    .clipShape(Circle())
+                                    .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
+                            }
+                            .padding(.trailing, Spacing.md)
+                            .padding(.bottom, 80)
+                        }
                     }
                 }
+                .background(theme.groupedBackground)
             }
-            .background(theme.groupedBackground)
-            .navigationTitle("Queries")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarHidden(true)
             .sheet(isPresented: $viewModel.showAddSheet) {
                 QuerySheet(viewModel: viewModel)
             }
@@ -700,6 +724,9 @@ struct ItemsView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
+                // Custom Page Header
+                PageHeader(title: "Items")
+
                 // Search bar
                 HStack {
                     Image(systemName: "magnifyingglass")
@@ -726,7 +753,7 @@ struct ItemsView: View {
                         .stroke(theme.border, lineWidth: 1)
                 )
                 .padding(.horizontal, Spacing.lg)
-                .padding(.top, Spacing.md)
+                .padding(.top, Spacing.xs)
 
                 // Toolbar
                 HStack {
@@ -800,8 +827,7 @@ struct ItemsView: View {
                 }
             }
             .background(theme.groupedBackground)
-            .navigationTitle("Items")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarHidden(true)
         }
         .onAppear {
             viewModel.loadItems()
@@ -859,8 +885,12 @@ struct AnalyticsView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: Spacing.xl) {
+            VStack(spacing: 0) {
+                // Custom Page Header
+                PageHeader(title: "Analytics")
+
+                ScrollView {
+                    VStack(spacing: Spacing.xl) {
                     // Overview stats
                     VStack(spacing: Spacing.md) {
                         HStack(spacing: Spacing.md) {
@@ -908,10 +938,10 @@ struct AnalyticsView: View {
                         .frame(height: 100)
                 }
                 .padding(Spacing.lg)
+                }
+                .background(theme.groupedBackground)
             }
-            .background(theme.groupedBackground)
-            .navigationTitle("Analytics")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarHidden(true)
         }
         .task {
             viewModel.loadAnalytics()
@@ -1003,143 +1033,618 @@ struct LogsView: View {
     }
 }
 
-// Settings Screen
+// Custom Segmented Control Component
+struct CustomSegmentedControl: View {
+    let options: [String]
+    @Binding var selectedIndex: Int
+    @Environment(\.theme) var theme
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(0..<options.count, id: \.self) { index in
+                Button(action: { selectedIndex = index }) {
+                    Text(options[index])
+                        .font(.system(size: FontSizes.subheadline, weight: .semibold))
+                        .foregroundColor(selectedIndex == index ? .white : theme.textSecondary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Spacing.xs)
+                }
+                .background(selectedIndex == index ? theme.primary : Color.clear)
+                .cornerRadius(BorderRadius.md)
+            }
+        }
+        .padding(2)
+        .background(theme.buttonFill)
+        .cornerRadius(BorderRadius.lg)
+    }
+}
+
+// Settings Screen - Custom styling to match React Native
 struct SettingsView: View {
     @StateObject private var viewModel = SettingsViewModel()
     @EnvironmentObject var themeManager: ThemeManager
     @Environment(\.theme) var theme
     @Environment(\.dismiss) var dismiss
+    @State private var showSaveConfirmation = false
 
     var body: some View {
-        NavigationStack {
-            Form {
-                // App Settings
-                Section("App Settings") {
-                    HStack {
-                        Text("Dark Mode")
-                        Spacer()
-                        Toggle("", isOn: $themeManager.isDarkMode)
-                            .labelsHidden()
-                    }
+        VStack(spacing: 0) {
+            // Custom Header
+            PageHeader(title: "Settings", showSettings: false, showBack: true, centered: true)
 
-                    VStack(alignment: .leading) {
-                        Text("Notification Mode")
-                        Picker("Mode", selection: $viewModel.notificationMode) {
-                            Text("Precise").tag(NotificationMode.precise)
-                            Text("Compact").tag(NotificationMode.compact)
-                        }
-                        .pickerStyle(.segmented)
-                        .onChange(of: viewModel.notificationMode) { _ in
-                            DatabaseService.shared.setParameter("notification_mode", value: viewModel.notificationMode.rawValue)
-                        }
-                    }
-                }
+            ScrollView {
+                VStack(spacing: Spacing.xl) {
+                    // App Settings Section
+                    VStack(alignment: .leading, spacing: Spacing.md) {
+                        Text("App Settings")
+                            .font(.system(size: FontSizes.title3, weight: .semibold))
+                            .foregroundColor(theme.text)
 
-                // System Settings
-                Section("System Settings") {
-                    HStack {
-                        Text("Items Per Query")
-                        Spacer()
-                        TextField("20", value: $viewModel.itemsPerQuery, format: .number)
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.trailing)
-                            .frame(width: 60)
-                    }
+                        Text("Customize the appearance and behavior of the app")
+                            .font(.system(size: FontSizes.footnote))
+                            .foregroundColor(theme.textTertiary)
 
-                    HStack {
-                        Text("Refresh Delay (sec)")
-                        Spacer()
-                        TextField("60", value: $viewModel.refreshDelay, format: .number)
-                            .keyboardType(.numberPad)
-                            .multilineTextAlignment(.trailing)
-                            .frame(width: 60)
-                    }
-                }
-
-                // Country Allowlist
-                Section("Country Allowlist") {
-                    HStack {
-                        TextField("e.g., US, FR, DE", text: $viewModel.newCountry)
-                            .textCase(.uppercase)
-                            .autocapitalization(.allCharacters)
-
-                        Button(action: viewModel.addCountry) {
-                            Image(systemName: "plus.circle.fill")
-                                .foregroundColor(theme.primary)
-                        }
-                        .disabled(viewModel.newCountry.isEmpty)
-                    }
-
-                    if !viewModel.allowlist.isEmpty {
-                        ForEach(viewModel.allowlist, id: \.self) { code in
+                        VStack(spacing: 0) {
+                            // Dark Mode Row
                             HStack {
-                                Text(code)
-                                Spacer()
-                                Button(action: { viewModel.removeCountry(code) }) {
-                                    Image(systemName: "minus.circle.fill")
-                                        .foregroundColor(.red)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Dark Mode")
+                                        .font(.system(size: FontSizes.body, weight: .medium))
+                                        .foregroundColor(theme.text)
+                                    Text(themeManager.isDarkMode ? "Dark mode enabled" : "Light mode enabled")
+                                        .font(.system(size: FontSizes.footnote))
+                                        .foregroundColor(theme.textTertiary)
                                 }
+                                Spacer()
+                                CustomToggle(
+                                    isOn: $themeManager.isDarkMode,
+                                    activeColor: theme.primary,
+                                    inactiveColor: theme.buttonFill
+                                )
+                            }
+                            .padding(Spacing.md)
+                            .frame(minHeight: 60)
+                            .overlay(
+                                Rectangle()
+                                    .fill(theme.separator)
+                                    .frame(height: 1),
+                                alignment: .bottom
+                            )
+
+                            // Notification Mode Row
+                            VStack(alignment: .leading, spacing: Spacing.md) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Notification Mode")
+                                        .font(.system(size: FontSizes.body, weight: .medium))
+                                        .foregroundColor(theme.text)
+                                    Text(viewModel.notificationMode == .precise
+                                        ? "Precise: Individual notification for each item with details"
+                                        : "Compact: Summary notification (e.g., \"5 new items found\")")
+                                        .font(.system(size: FontSizes.footnote))
+                                        .foregroundColor(theme.textTertiary)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+
+                                CustomSegmentedControl(
+                                    options: ["Precise", "Compact"],
+                                    selectedIndex: Binding(
+                                        get: { viewModel.notificationMode == .precise ? 0 : 1 },
+                                        set: { viewModel.notificationMode = $0 == 0 ? .precise : .compact }
+                                    )
+                                )
+                            }
+                            .padding(Spacing.md)
+                        }
+                        .background(theme.secondaryGroupedBackground)
+                        .cornerRadius(BorderRadius.xl)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: BorderRadius.xl)
+                                .stroke(theme.separator, lineWidth: 1)
+                        )
+                    }
+
+                    // Advanced Settings Section
+                    VStack(alignment: .leading, spacing: Spacing.md) {
+                        Text("Advanced Settings")
+                            .font(.system(size: FontSizes.title3, weight: .semibold))
+                            .foregroundColor(theme.text)
+
+                        Text("Configure advanced options for power users (leave empty for defaults)")
+                            .font(.system(size: FontSizes.footnote))
+                            .foregroundColor(theme.textTertiary)
+
+                        VStack(spacing: 0) {
+                            // User Agent
+                            VStack(alignment: .leading, spacing: Spacing.xs) {
+                                Text("User Agent")
+                                    .font(.system(size: FontSizes.body, weight: .medium))
+                                    .foregroundColor(theme.text)
+                                Text("Custom user agent for API requests")
+                                    .font(.system(size: FontSizes.footnote))
+                                    .foregroundColor(theme.textTertiary)
+                                TextEditor(text: $viewModel.userAgent)
+                                    .frame(minHeight: 80)
+                                    .padding(Spacing.sm)
+                                    .background(theme.cardBackground)
+                                    .cornerRadius(BorderRadius.md)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: BorderRadius.md)
+                                            .stroke(theme.separator, lineWidth: 1)
+                                    )
+                                    .scrollContentBackground(.hidden)
+                            }
+                            .padding(Spacing.md)
+                            .overlay(
+                                Rectangle()
+                                    .fill(theme.separator)
+                                    .frame(height: 1),
+                                alignment: .bottom
+                            )
+
+                            // Default Headers
+                            VStack(alignment: .leading, spacing: Spacing.xs) {
+                                Text("Default Headers")
+                                    .font(.system(size: FontSizes.body, weight: .medium))
+                                    .foregroundColor(theme.text)
+                                Text("Custom HTTP headers (JSON format)")
+                                    .font(.system(size: FontSizes.footnote))
+                                    .foregroundColor(theme.textTertiary)
+                                TextEditor(text: $viewModel.defaultHeaders)
+                                    .frame(minHeight: 80)
+                                    .padding(Spacing.sm)
+                                    .background(theme.cardBackground)
+                                    .cornerRadius(BorderRadius.md)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: BorderRadius.md)
+                                            .stroke(theme.separator, lineWidth: 1)
+                                    )
+                                    .scrollContentBackground(.hidden)
+                            }
+                            .padding(Spacing.md)
+                            .overlay(
+                                Rectangle()
+                                    .fill(theme.separator)
+                                    .frame(height: 1),
+                                alignment: .bottom
+                            )
+
+                            // Proxy List
+                            VStack(alignment: .leading, spacing: Spacing.xs) {
+                                Text("Proxy List")
+                                    .font(.system(size: FontSizes.body, weight: .medium))
+                                    .foregroundColor(theme.text)
+                                Text("Semicolon-separated proxy list (e.g., http://proxy1:port;http://proxy2:port)")
+                                    .font(.system(size: FontSizes.footnote))
+                                    .foregroundColor(theme.textTertiary)
+                                TextEditor(text: $viewModel.proxyList)
+                                    .frame(minHeight: 80)
+                                    .padding(Spacing.sm)
+                                    .background(theme.cardBackground)
+                                    .cornerRadius(BorderRadius.md)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: BorderRadius.md)
+                                            .stroke(theme.separator, lineWidth: 1)
+                                    )
+                                    .scrollContentBackground(.hidden)
+                            }
+                            .padding(Spacing.md)
+                            .overlay(
+                                Rectangle()
+                                    .fill(theme.separator)
+                                    .frame(height: 1),
+                                alignment: .bottom
+                            )
+
+                            // Proxy List URL
+                            VStack(alignment: .leading, spacing: Spacing.xs) {
+                                Text("Proxy List URL")
+                                    .font(.system(size: FontSizes.body, weight: .medium))
+                                    .foregroundColor(theme.text)
+                                Text("URL to fetch proxy list from (one proxy per line)")
+                                    .font(.system(size: FontSizes.footnote))
+                                    .foregroundColor(theme.textTertiary)
+                                TextEditor(text: $viewModel.proxyListURL)
+                                    .frame(minHeight: 80)
+                                    .padding(Spacing.sm)
+                                    .background(theme.cardBackground)
+                                    .cornerRadius(BorderRadius.md)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: BorderRadius.md)
+                                            .stroke(theme.separator, lineWidth: 1)
+                                    )
+                                    .scrollContentBackground(.hidden)
+                            }
+                            .padding(Spacing.md)
+                            .overlay(
+                                Rectangle()
+                                    .fill(theme.separator)
+                                    .frame(height: 1),
+                                alignment: .bottom
+                            )
+
+                            // Check Proxies
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Check Proxies")
+                                        .font(.system(size: FontSizes.body, weight: .medium))
+                                        .foregroundColor(theme.text)
+                                    Text("Verify proxies before use (slower but more reliable)")
+                                        .font(.system(size: FontSizes.footnote))
+                                        .foregroundColor(theme.textTertiary)
+                                }
+                                Spacer()
+                                CustomToggle(
+                                    isOn: $viewModel.checkProxies,
+                                    activeColor: theme.primary,
+                                    inactiveColor: theme.buttonFill
+                                )
+                            }
+                            .padding(Spacing.md)
+                            .frame(minHeight: 60)
+                        }
+                        .background(theme.secondaryGroupedBackground)
+                        .cornerRadius(BorderRadius.xl)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: BorderRadius.xl)
+                                .stroke(theme.separator, lineWidth: 1)
+                        )
+                    }
+
+                    // System Settings Section
+                    VStack(alignment: .leading, spacing: Spacing.md) {
+                        Text("System Settings")
+                            .font(.system(size: FontSizes.title3, weight: .semibold))
+                            .foregroundColor(theme.text)
+
+                        Text("Configure monitoring behavior and filtering")
+                            .font(.system(size: FontSizes.footnote))
+                            .foregroundColor(theme.textTertiary)
+
+                        VStack(spacing: 0) {
+                            // Items Per Query
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Items Per Query")
+                                        .font(.system(size: FontSizes.body, weight: .medium))
+                                        .foregroundColor(theme.text)
+                                    Text("Number of items to fetch per search")
+                                        .font(.system(size: FontSizes.footnote))
+                                        .foregroundColor(theme.textTertiary)
+                                }
+                                Spacer()
+                                TextField("20", value: $viewModel.itemsPerQuery, format: .number)
+                                    .keyboardType(.numberPad)
+                                    .multilineTextAlignment(.right)
+                                    .frame(width: 60)
+                                    .padding(.horizontal, Spacing.sm)
+                                    .padding(.vertical, Spacing.xs)
+                                    .background(theme.cardBackground)
+                                    .cornerRadius(BorderRadius.md)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: BorderRadius.md)
+                                            .stroke(theme.separator, lineWidth: 1)
+                                    )
+                            }
+                            .padding(Spacing.md)
+                            .frame(minHeight: 60)
+                            .overlay(
+                                Rectangle()
+                                    .fill(theme.separator)
+                                    .frame(height: 1),
+                                alignment: .bottom
+                            )
+
+                            // Refresh Delay
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Query Refresh Delay")
+                                        .font(.system(size: FontSizes.body, weight: .medium))
+                                        .foregroundColor(theme.text)
+                                    Text("How often to check for new items")
+                                        .font(.system(size: FontSizes.footnote))
+                                        .foregroundColor(theme.textTertiary)
+                                }
+                                Spacer()
+                                TextField("60", value: $viewModel.refreshDelay, format: .number)
+                                    .keyboardType(.numberPad)
+                                    .multilineTextAlignment(.right)
+                                    .frame(width: 60)
+                                    .padding(.horizontal, Spacing.sm)
+                                    .padding(.vertical, Spacing.xs)
+                                    .background(theme.cardBackground)
+                                    .cornerRadius(BorderRadius.md)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: BorderRadius.md)
+                                            .stroke(theme.separator, lineWidth: 1)
+                                    )
+                                Text("sec")
+                                    .font(.system(size: FontSizes.footnote))
+                                    .foregroundColor(theme.textTertiary)
+                            }
+                            .padding(Spacing.md)
+                            .frame(minHeight: 60)
+                            .overlay(
+                                Rectangle()
+                                    .fill(theme.separator)
+                                    .frame(height: 1),
+                                alignment: .bottom
+                            )
+
+                            // Banned Words
+                            VStack(alignment: .leading, spacing: Spacing.xs) {
+                                Text("Banned Words")
+                                    .font(.system(size: FontSizes.body, weight: .medium))
+                                    .foregroundColor(theme.text)
+                                Text("Filter out items containing these words (separate with |||)")
+                                    .font(.system(size: FontSizes.footnote))
+                                    .foregroundColor(theme.textTertiary)
+                                TextEditor(text: $viewModel.banwords)
+                                    .frame(minHeight: 80)
+                                    .padding(Spacing.sm)
+                                    .background(theme.cardBackground)
+                                    .cornerRadius(BorderRadius.md)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: BorderRadius.md)
+                                            .stroke(theme.separator, lineWidth: 1)
+                                    )
+                                    .scrollContentBackground(.hidden)
+                            }
+                            .padding(Spacing.md)
+                        }
+                        .background(theme.secondaryGroupedBackground)
+                        .cornerRadius(BorderRadius.xl)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: BorderRadius.xl)
+                                .stroke(theme.separator, lineWidth: 1)
+                        )
+                    }
+
+                    // Country Allowlist Section
+                    VStack(alignment: .leading, spacing: Spacing.md) {
+                        HStack {
+                            Text("Country Allowlist")
+                                .font(.system(size: FontSizes.title3, weight: .semibold))
+                                .foregroundColor(theme.text)
+                            Spacer()
+                            if !viewModel.allowlist.isEmpty {
+                                Button("Clear All") {
+                                    viewModel.clearAllowlist()
+                                }
+                                .font(.system(size: FontSizes.subheadline, weight: .semibold))
+                                .foregroundColor(theme.link)
+                            }
+                        }
+
+                        Text("Only show items from sellers in these countries (leave empty to allow all)")
+                            .font(.system(size: FontSizes.footnote))
+                            .foregroundColor(theme.textTertiary)
+
+                        VStack(spacing: Spacing.sm) {
+                            HStack {
+                                TextField("e.g., US, FR, DE", text: $viewModel.newCountry)
+                                    .textCase(.uppercase)
+                                    .autocapitalization(.allCharacters)
+                                    .padding(.horizontal, Spacing.sm)
+                                    .padding(.vertical, Spacing.xs + 2)
+                                    .background(theme.cardBackground)
+                                    .cornerRadius(BorderRadius.md)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: BorderRadius.md)
+                                            .stroke(theme.separator, lineWidth: 1)
+                                    )
+
+                                Button(action: viewModel.addCountry) {
+                                    Image(systemName: "plus")
+                                        .font(.system(size: 20, weight: .semibold))
+                                        .foregroundColor(.white)
+                                        .frame(width: 36, height: 36)
+                                        .background(theme.primary)
+                                        .clipShape(Circle())
+                                }
+                                .disabled(viewModel.newCountry.isEmpty)
+                            }
+
+                            if !viewModel.allowlist.isEmpty {
+                                FlowLayout(spacing: Spacing.xs) {
+                                    ForEach(viewModel.allowlist, id: \.self) { code in
+                                        HStack(spacing: 4) {
+                                            Text(code)
+                                                .font(.system(size: FontSizes.subheadline, weight: .medium))
+                                                .foregroundColor(theme.text)
+
+                                            Button(action: { viewModel.removeCountry(code) }) {
+                                                Image(systemName: "xmark")
+                                                    .font(.system(size: 14))
+                                                    .foregroundColor(theme.textSecondary)
+                                            }
+                                        }
+                                        .padding(.horizontal, Spacing.sm)
+                                        .padding(.vertical, 6)
+                                        .background(theme.buttonFill)
+                                        .cornerRadius(BorderRadius.md)
+                                    }
+                                }
+                            } else {
+                                Text("No countries in allowlist")
+                                    .font(.system(size: FontSizes.footnote))
+                                    .foregroundColor(theme.textTertiary)
+                                    .italic()
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, Spacing.md)
+                            }
+                        }
+                        .padding(Spacing.lg)
+                        .background(theme.secondaryGroupedBackground)
+                        .cornerRadius(BorderRadius.xl)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: BorderRadius.xl)
+                                .stroke(theme.separator, lineWidth: 1)
+                        )
+                    }
+
+                    // Save Button
+                    Button(action: {
+                        viewModel.saveSettings()
+                        showSaveConfirmation = true
+                    }) {
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 20))
+                            Text("Save Settings")
+                                .font(.system(size: FontSizes.headline, weight: .semibold))
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Spacing.md)
+                        .background(theme.primary)
+                        .cornerRadius(BorderRadius.lg)
+                    }
+
+                    // Danger Zone
+                    VStack(alignment: .leading, spacing: Spacing.md) {
+                        Text("Danger Zone")
+                            .font(.system(size: FontSizes.title3, weight: .semibold))
+                            .foregroundColor(theme.text)
+
+                        Text("Dangerous operations that cannot be undone")
+                            .font(.system(size: FontSizes.footnote))
+                            .foregroundColor(theme.textTertiary)
+
+                        VStack(spacing: Spacing.sm) {
+                            Button(action: viewModel.deleteAllItems) {
+                                HStack {
+                                    Image(systemName: "trash.fill")
+                                        .font(.system(size: 20))
+                                    Text("Clear All Items")
+                                        .font(.system(size: FontSizes.headline, weight: .semibold))
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, Spacing.md)
+                                .background(theme.error)
+                                .cornerRadius(BorderRadius.lg)
+                            }
+
+                            Button(action: viewModel.deleteAllQueries) {
+                                HStack {
+                                    Image(systemName: "magnifyingglass.circle")
+                                        .font(.system(size: 20))
+                                    Text("Delete All Queries")
+                                        .font(.system(size: FontSizes.headline, weight: .semibold))
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, Spacing.md)
+                                .background(theme.error)
+                                .cornerRadius(BorderRadius.lg)
+                            }
+
+                            Button(action: viewModel.clearLogs) {
+                                HStack {
+                                    Image(systemName: "doc.text.fill")
+                                        .font(.system(size: 20))
+                                    Text("Clear All Logs")
+                                        .font(.system(size: FontSizes.headline, weight: .semibold))
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, Spacing.md)
+                                .background(theme.error)
+                                .cornerRadius(BorderRadius.lg)
+                            }
+
+                            Button(action: viewModel.resetAllData) {
+                                HStack {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .font(.system(size: 20))
+                                    Text("Reset All Data")
+                                        .font(.system(size: FontSizes.headline, weight: .semibold))
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, Spacing.md)
+                                .background(theme.error)
+                                .cornerRadius(BorderRadius.lg)
                             }
                         }
                     }
-                }
 
-                // Danger Zone
-                Section("Danger Zone") {
-                    Button(action: viewModel.deleteAllItems) {
-                        HStack {
-                            Image(systemName: "trash")
-                            Text("Clear All Items")
-                        }
-                        .foregroundColor(.red)
-                    }
-
-                    Button(action: viewModel.deleteAllQueries) {
-                        HStack {
-                            Image(systemName: "trash")
-                            Text("Delete All Queries")
-                        }
-                        .foregroundColor(.red)
-                    }
-
-                    Button(action: viewModel.resetAllData) {
-                        HStack {
-                            Image(systemName: "exclamationmark.triangle")
-                            Text("Reset All Data")
-                        }
-                        .foregroundColor(.red)
-                    }
-                }
-
-                // Version
-                Section {
-                    HStack {
-                        Spacer()
-                        VStack {
-                            Text("Vinted Notifications")
-                                .font(.system(size: FontSizes.footnote))
+                    // Version Footer
+                    VStack(spacing: Spacing.xs / 2) {
+                        HStack(spacing: Spacing.xs) {
+                            Image(systemName: "info.circle")
+                                .font(.system(size: 14))
                                 .foregroundColor(theme.textTertiary)
-                            Text("v1.0.0 by Quaii")
-                                .font(.system(size: FontSizes.caption2))
+                            Text("v1.0.0")
+                                .font(.system(size: FontSizes.caption1))
                                 .foregroundColor(theme.textTertiary)
                         }
-                        Spacer()
+                        Text("by Quaii")
+                            .font(.system(size: FontSizes.caption2))
+                            .foregroundColor(theme.textTertiary)
                     }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Spacing.lg)
+
+                    Spacer()
+                        .frame(height: 100) // Tab bar spacing
                 }
+                .padding(Spacing.lg)
             }
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") {
-                        viewModel.saveSettings()
-                        dismiss()
-                    }
-                }
-            }
+            .background(theme.groupedBackground)
         }
+        .background(theme.groupedBackground)
         .onAppear {
             viewModel.loadSettings()
+        }
+        .alert("Settings Saved", isPresented: $showSaveConfirmation) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Your settings have been saved successfully.")
+        }
+    }
+}
+
+// FlowLayout for country tags
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let result = FlowResult(in: proposal.replacingUnspecifiedDimensions().width, subviews: subviews, spacing: spacing)
+        return result.size
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let result = FlowResult(in: bounds.width, subviews: subviews, spacing: spacing)
+        for (index, subview) in subviews.enumerated() {
+            subview.place(at: CGPoint(x: bounds.minX + result.frames[index].minX, y: bounds.minY + result.frames[index].minY), proposal: .unspecified)
+        }
+    }
+
+    struct FlowResult {
+        var frames: [CGRect] = []
+        var size: CGSize = .zero
+
+        init(in maxWidth: CGFloat, subviews: Subviews, spacing: CGFloat) {
+            var currentX: CGFloat = 0
+            var currentY: CGFloat = 0
+            var lineHeight: CGFloat = 0
+
+            for subview in subviews {
+                let size = subview.sizeThatFits(.unspecified)
+
+                if currentX + size.width > maxWidth && currentX > 0 {
+                    currentX = 0
+                    currentY += lineHeight + spacing
+                    lineHeight = 0
+                }
+
+                frames.append(CGRect(x: currentX, y: currentY, width: size.width, height: size.height))
+                lineHeight = max(lineHeight, size.height)
+                currentX += size.width + spacing
+            }
+
+            self.size = CGSize(width: maxWidth, height: currentY + lineHeight)
         }
     }
 }
