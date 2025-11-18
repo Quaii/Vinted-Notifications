@@ -526,20 +526,60 @@ struct DashboardView: View {
             await viewModel.loadDashboard()
         }
         .sheet(isPresented: $viewModel.showEditSheet) {
-            if let query = viewModel.editingQuery {
-                QueryEditSheet(
-                    query: query,
-                    onSave: { updatedQuery in
-                        DatabaseService.shared.updateQuery(updatedQuery)
-                        Task {
-                            await viewModel.loadDashboard()
-                        }
-                        viewModel.showEditSheet = false
-                    },
-                    onCancel: {
-                        viewModel.showEditSheet = false
+            DashboardEditQuerySheet(viewModel: viewModel)
+        }
+    }
+}
+
+// Dashboard Edit Query Sheet
+struct DashboardEditQuerySheet: View {
+    @ObservedObject var viewModel: DashboardViewModel
+    @Environment(\.theme) var theme
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Vinted Search URL") {
+                    TextField("https://www.vinted.com/catalog?...", text: $viewModel.newQueryUrl)
+                        .autocapitalization(.none)
+                        .textInputAutocapitalization(.never)
+                }
+
+                Section("Custom Name (Optional)") {
+                    TextField("e.g., Nike Shoes", text: $viewModel.newQueryName)
+                }
+
+                Section {
+                    Text("Paste the full URL from a Vinted search. The app will automatically monitor this search and notify you of new items.")
+                        .font(.system(size: FontSizes.footnote))
+                        .foregroundColor(theme.textTertiary)
+                }
+
+                Button(action: {
+                    viewModel.saveQuery()
+                    if viewModel.errorMessage == nil {
+                        dismiss()
                     }
-                )
+                }) {
+                    Text("Update Query")
+                        .font(.system(size: FontSizes.headline, weight: .semibold))
+                        .frame(maxWidth: .infinity)
+                }
+                .listRowBackground(theme.primary)
+                .foregroundColor(.white)
+            }
+            .navigationTitle("Edit Query")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        viewModel.newQueryUrl = ""
+                        viewModel.newQueryName = ""
+                        viewModel.editingQuery = nil
+                        dismiss()
+                    }
+                }
             }
         }
     }
