@@ -50,7 +50,7 @@ struct LoadingView: View {
     }
 }
 
-// PageHeader Component
+// PageHeader Component - Matches React Native exactly
 struct PageHeader: View {
     let title: String
     var showSettings: Bool = true
@@ -62,7 +62,7 @@ struct PageHeader: View {
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
-        HStack {
+        HStack(alignment: .center) {
             if showBack {
                 Button(action: { dismiss() }) {
                     HStack(spacing: 4) {
@@ -90,13 +90,14 @@ struct PageHeader: View {
             } else if showSettings {
                 NavigationLink(destination: SettingsView()) {
                     Image(systemName: "gearshape.fill")
-                        .font(.system(size: FontSizes.title3))
+                        .font(.system(size: 34))
                         .foregroundColor(theme.primary)
                 }
             }
         }
         .padding(.horizontal, Spacing.lg)
-        .padding(.vertical, Spacing.md)
+        .padding(.top, Spacing.sm)
+        .padding(.bottom, Spacing.md)
         .background(theme.background)
     }
 }
@@ -366,123 +367,116 @@ struct DashboardView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: Spacing.xl) {
-                    // Stats widgets
-                    HStack(spacing: Spacing.md) {
-                        StatWidget(
-                            tag: "Total Items",
-                            value: "\(viewModel.stats.totalItems)",
-                            subheading: viewModel.stats.totalItems == 0 ? "No items yet" : "\(viewModel.stats.totalItems) cached",
-                            lastUpdated: viewModel.stats.lastUpdated,
-                            icon: "square.grid.2x2",
-                            iconColor: theme.primary
-                        )
+            VStack(spacing: 0) {
+                // Custom Page Header
+                PageHeader(title: "Dashboard")
 
-                        StatWidget(
-                            tag: "Items / Day",
-                            value: String(format: "%.0f", viewModel.stats.itemsPerDay),
-                            subheading: "Last 7 days",
-                            lastUpdated: viewModel.stats.lastUpdated,
-                            icon: "chart.line.uptrend.xyaxis",
-                            iconColor: theme.primary
-                        )
-                    }
+                ScrollView {
+                    VStack(spacing: Spacing.xl) {
+                        // Stats widgets
+                        HStack(spacing: Spacing.md) {
+                            StatWidget(
+                                tag: "Total Items",
+                                value: "\(viewModel.stats.totalItems)",
+                                subheading: viewModel.stats.totalItems == 0 ? "No items yet" : "\(viewModel.stats.totalItems) cached",
+                                lastUpdated: viewModel.stats.lastUpdated,
+                                icon: "square.grid.2x2",
+                                iconColor: theme.primary
+                            )
 
-                    // Last found item
-                    VStack(alignment: .leading, spacing: Spacing.md) {
-                        HStack {
-                            Text("Last Found Item")
-                                .font(.system(size: FontSizes.title3, weight: .semibold))
-                                .foregroundColor(theme.text)
-
-                            Spacer()
-
-                            NavigationLink("View All") {
-                                ItemsView()
-                            }
-                            .font(.system(size: FontSizes.subheadline, weight: .semibold))
-                            .foregroundColor(theme.textSecondary)
-                        }
-
-                        if let item = viewModel.lastItem {
-                            ItemCard(item: item, compact: true)
-                        } else {
-                            Text("No items found yet")
-                                .font(.system(size: FontSizes.subheadline))
-                                .foregroundColor(theme.textTertiary)
-                                .italic()
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, Spacing.lg)
-                        }
-                    }
-
-                    // Recent queries
-                    VStack(alignment: .leading, spacing: Spacing.md) {
-                        HStack {
-                            Text("Queries")
-                                .font(.system(size: FontSizes.title3, weight: .semibold))
-                                .foregroundColor(theme.text)
-
-                            Spacer()
-
-                            NavigationLink("Manage") {
-                                QueriesView()
-                            }
-                            .font(.system(size: FontSizes.subheadline, weight: .semibold))
-                            .foregroundColor(theme.textSecondary)
-                        }
-
-                        ForEach(viewModel.recentQueries) { query in
-                            QueryCard(
-                                query: query,
-                                onPress: {},
-                                onDelete: {},
-                                onEdit: {}
+                            StatWidget(
+                                tag: "Items / Day",
+                                value: String(format: "%.0f", viewModel.stats.itemsPerDay),
+                                subheading: "Last 7 days",
+                                lastUpdated: viewModel.stats.lastUpdated,
+                                icon: "chart.line.uptrend.xyaxis",
+                                iconColor: theme.primary
                             )
                         }
-                    }
 
-                    // Recent logs
-                    VStack(alignment: .leading, spacing: Spacing.md) {
-                        HStack {
-                            Text("Recent Logs")
-                                .font(.system(size: FontSizes.title3, weight: .semibold))
-                                .foregroundColor(theme.text)
+                        // Last found item
+                        VStack(alignment: .leading, spacing: Spacing.md) {
+                            HStack {
+                                Text("Last Found Item")
+                                    .font(.system(size: FontSizes.title3, weight: .semibold))
+                                    .foregroundColor(theme.text)
 
-                            Spacer()
+                                Spacer()
 
-                            NavigationLink("View All") {
-                                LogsView()
+                                NavigationLink("View All") {
+                                    ItemsView()
+                                }
+                                .font(.system(size: FontSizes.subheadline, weight: .semibold))
+                                .foregroundColor(theme.textSecondary)
                             }
-                            .font(.system(size: FontSizes.subheadline, weight: .semibold))
-                            .foregroundColor(theme.textSecondary)
+
+                            if let item = viewModel.lastItem {
+                                ItemCard(item: item, compact: true)
+                            } else {
+                                Text("No items found yet")
+                                    .font(.system(size: FontSizes.subheadline))
+                                    .foregroundColor(theme.textTertiary)
+                                    .italic()
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, Spacing.lg)
+                            }
                         }
 
-                        ForEach(viewModel.recentLogs) { log in
-                            LogEntryView(log: log)
-                        }
-                    }
+                        // Recent queries
+                        VStack(alignment: .leading, spacing: Spacing.md) {
+                            HStack {
+                                Text("Queries")
+                                    .font(.system(size: FontSizes.title3, weight: .semibold))
+                                    .foregroundColor(theme.text)
 
-                    Spacer()
-                        .frame(height: 100) // Tab bar spacing
-                }
-                .padding(Spacing.lg)
-            }
-            .background(theme.groupedBackground)
-            .navigationTitle("Dashboard")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        Task {
-                            await MonitoringService.shared.checkNow()
+                                Spacer()
+
+                                NavigationLink("Manage") {
+                                    QueriesView()
+                                }
+                                .font(.system(size: FontSizes.subheadline, weight: .semibold))
+                                .foregroundColor(theme.textSecondary)
+                            }
+
+                            ForEach(viewModel.recentQueries) { query in
+                                QueryCard(
+                                    query: query,
+                                    onPress: {},
+                                    onDelete: {},
+                                    onEdit: {}
+                                )
+                            }
                         }
-                    }) {
-                        Image(systemName: "arrow.clockwise")
+
+                        // Recent logs
+                        VStack(alignment: .leading, spacing: Spacing.md) {
+                            HStack {
+                                Text("Recent Logs")
+                                    .font(.system(size: FontSizes.title3, weight: .semibold))
+                                    .foregroundColor(theme.text)
+
+                                Spacer()
+
+                                NavigationLink("View All") {
+                                    LogsView()
+                                }
+                                .font(.system(size: FontSizes.subheadline, weight: .semibold))
+                                .foregroundColor(theme.textSecondary)
+                            }
+
+                            ForEach(viewModel.recentLogs) { log in
+                                LogEntryView(log: log)
+                            }
+                        }
+
+                        Spacer()
+                            .frame(height: 100) // Tab bar spacing
                     }
+                    .padding(Spacing.lg)
                 }
+                .background(theme.groupedBackground)
             }
+            .navigationBarHidden(true)
         }
         .task {
             await viewModel.loadDashboard()
@@ -493,7 +487,7 @@ struct DashboardView: View {
     }
 }
 
-// Log Entry View
+// Log Entry View - Matches React Native (without icons per user request)
 struct LogEntryView: View {
     let log: LogEntry
     @Environment(\.theme) var theme
@@ -501,11 +495,16 @@ struct LogEntryView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             HStack {
-                Image(systemName: log.level.icon)
-                    .foregroundColor(log.level.color)
-                Text(log.level.rawValue)
-                    .font(.system(size: FontSizes.caption2, weight: .bold))
-                    .foregroundColor(log.level.color)
+                // Level badge without icon
+                HStack(spacing: 4) {
+                    Text(log.level.rawValue)
+                        .font(.system(size: FontSizes.caption2, weight: .bold))
+                        .foregroundColor(log.level.color)
+                }
+                .padding(.horizontal, Spacing.xs)
+                .padding(.vertical, 2)
+                .background(log.level.color.opacity(0.2))
+                .cornerRadius(BorderRadius.sm)
 
                 Spacer()
 
@@ -524,8 +523,33 @@ struct LogEntryView: View {
         .cornerRadius(BorderRadius.lg)
         .overlay(
             RoundedRectangle(cornerRadius: BorderRadius.lg)
-                .stroke(log.level.color.opacity(0.3), lineWidth: 2)
+                .stroke(theme.separator, lineWidth: 1)
         )
+        .overlay(
+            // Left border accent
+            Rectangle()
+                .fill(log.level.color)
+                .frame(width: 4)
+                .cornerRadius(BorderRadius.lg, corners: [.topLeft, .bottomLeft]),
+            alignment: .leading
+        )
+    }
+}
+
+// Helper for corner radius on specific corners
+extension View {
+    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
+        clipShape(RoundedCorner(radius: radius, corners: corners))
+    }
+}
+
+struct RoundedCorner: Shape {
+    var radius: CGFloat = .infinity
+    var corners: UIRectCorner = .allCorners
+
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
+        return Path(path.cgPath)
     }
 }
 
@@ -934,41 +958,47 @@ struct LogsView: View {
 
     var body: some View {
         NavigationStack {
-            if viewModel.logs.isEmpty {
-                VStack(spacing: Spacing.md) {
-                    Image(systemName: "doc.text")
-                        .font(.system(size: 64))
-                        .foregroundColor(theme.textTertiary)
-                    Text("No logs yet")
-                        .font(.system(size: FontSizes.title2, weight: .semibold))
-                        .foregroundColor(theme.textSecondary)
-                    Text("Application events will appear here")
-                        .font(.system(size: FontSizes.body))
-                        .foregroundColor(theme.textTertiary)
-                }
-            } else {
-                ScrollView {
-                    LazyVStack(spacing: Spacing.sm) {
-                        ForEach(viewModel.logs) { log in
-                            LogEntryView(log: log)
+            VStack(spacing: 0) {
+                // Custom Page Header with clear button
+                PageHeader(
+                    title: "Logs",
+                    rightButton: viewModel.logs.isEmpty ? nil : AnyView(
+                        Button(action: viewModel.clearLogs) {
+                            Image(systemName: "trash.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(theme.primary)
                         }
+                    )
+                )
+
+                if viewModel.logs.isEmpty {
+                    Spacer()
+                    VStack(spacing: Spacing.md) {
+                        Image(systemName: "doc.text")
+                            .font(.system(size: 64))
+                            .foregroundColor(theme.textTertiary)
+                        Text("No logs yet")
+                            .font(.system(size: FontSizes.title2, weight: .semibold))
+                            .foregroundColor(theme.textSecondary)
+                        Text("Application events will appear here")
+                            .font(.system(size: FontSizes.body))
+                            .foregroundColor(theme.textTertiary)
                     }
-                    .padding(Spacing.lg)
-                    .padding(.bottom, 100)
+                    Spacer()
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: Spacing.sm) {
+                            ForEach(viewModel.logs) { log in
+                                LogEntryView(log: log)
+                            }
+                        }
+                        .padding(Spacing.lg)
+                        .padding(.bottom, 100)
+                    }
                 }
             }
-        }
-        .background(theme.groupedBackground)
-        .navigationTitle("Logs")
-        .navigationBarTitleDisplayMode(.large)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                if !viewModel.logs.isEmpty {
-                    Button(action: viewModel.clearLogs) {
-                        Image(systemName: "trash")
-                    }
-                }
-            }
+            .background(theme.groupedBackground)
+            .navigationBarHidden(true)
         }
     }
 }
