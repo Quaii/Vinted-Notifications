@@ -89,9 +89,15 @@ struct PageHeader: View {
                 button
             } else if showSettings {
                 NavigationLink(destination: SettingsView()) {
-                    Image(systemName: "gearshape.fill")
-                        .font(.system(size: 34))
-                        .foregroundColor(theme.primary)
+                    ZStack {
+                        Circle()
+                            .fill(theme.primary.opacity(0.15))
+                            .frame(width: 36, height: 36)
+
+                        Image(systemName: "gearshape.fill")
+                            .font(.system(size: 20))
+                            .foregroundColor(theme.primary)
+                    }
                 }
             }
         }
@@ -630,22 +636,24 @@ struct QueriesView: View {
                         }
                     }
 
-                    // FAB button
-                    VStack {
-                        Spacer()
-                        HStack {
+                    // FAB button - only show when queries exist
+                    if !viewModel.queries.isEmpty {
+                        VStack {
                             Spacer()
-                            Button(action: { viewModel.showAddSheet = true }) {
-                                Image(systemName: "plus")
-                                    .font(.system(size: 24, weight: .semibold))
-                                    .foregroundColor(.white)
-                                    .frame(width: 56, height: 56)
-                                    .background(theme.primary)
-                                    .clipShape(Circle())
-                                    .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
+                            HStack {
+                                Spacer()
+                                Button(action: { viewModel.showAddSheet = true }) {
+                                    Image(systemName: "plus")
+                                        .font(.system(size: 24, weight: .semibold))
+                                        .foregroundColor(.white)
+                                        .frame(width: 56, height: 56)
+                                        .background(theme.primary)
+                                        .clipShape(Circle())
+                                        .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
+                                }
+                                .padding(.trailing, Spacing.md)
+                                .padding(.bottom, 80)
                             }
-                            .padding(.trailing, Spacing.md)
-                            .padding(.bottom, 120)
                         }
                     }
                 }
@@ -756,16 +764,18 @@ struct ItemsView: View {
                 .padding(.top, Spacing.xs)
 
                 // Toolbar
-                HStack {
+                HStack(spacing: Spacing.sm) {
                     Button(action: { viewModel.showSortSheet = true }) {
                         HStack {
                             Text(viewModel.sortBy.rawValue)
                                 .font(.system(size: FontSizes.body, weight: .medium))
                             Image(systemName: "chevron.down")
+                                .font(.system(size: FontSizes.subheadline))
                         }
                         .foregroundColor(theme.text)
                         .padding(.horizontal, Spacing.md)
-                        .padding(.vertical, Spacing.md)
+                        .padding(.vertical, Spacing.sm + 2)
+                        .frame(maxWidth: .infinity)
                         .background(theme.secondaryGroupedBackground)
                         .cornerRadius(BorderRadius.lg)
                         .overlay(
@@ -773,8 +783,6 @@ struct ItemsView: View {
                                 .stroke(theme.border, lineWidth: 1)
                         )
                     }
-
-                    Spacer()
 
                     HStack(spacing: 4) {
                         Button(action: { viewModel.viewMode = .list }) {
@@ -1763,8 +1771,8 @@ struct SettingsView: View {
                             }
 
                             if !viewModel.allowlist.isEmpty {
-                                // Country tags with wrapping
-                                LazyVGrid(columns: [GridItem(.adaptive(minimum: 60), spacing: Spacing.xs)], spacing: Spacing.xs) {
+                                // Country tags inline with wrapping
+                                FlowLayout(spacing: Spacing.xs) {
                                     ForEach(viewModel.allowlist, id: \.self) { code in
                                         HStack(spacing: 4) {
                                             Text(code)
@@ -1911,14 +1919,14 @@ struct SettingsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            PageHeader(title: "Settings", showSettings: false, showBack: false, centered: true)
+            PageHeader(title: "Settings", showSettings: false, showBack: false, centered: false)
 
             ScrollView {
                 VStack(spacing: Spacing.xl) {
                     appSettingsSection
-                    advancedSettingsSection
                     systemSettingsSection
                     countryAllowlistSection
+                    advancedSettingsSection
                     saveButton
                     dangerZoneSection
                     versionFooter
@@ -1938,6 +1946,50 @@ struct SettingsView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text("Your settings have been saved successfully.")
+        }
+    }
+}
+
+// FlowLayout - Wrapping horizontal layout for tags
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let result = FlowResult(in: proposal.replacingUnspecifiedDimensions().width, subviews: subviews, spacing: spacing)
+        return result.size
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let result = FlowResult(in: bounds.width, subviews: subviews, spacing: spacing)
+        for (index, subview) in subviews.enumerated() {
+            subview.place(at: CGPoint(x: bounds.minX + result.positions[index].x, y: bounds.minY + result.positions[index].y), proposal: .unspecified)
+        }
+    }
+
+    struct FlowResult {
+        var size: CGSize = .zero
+        var positions: [CGPoint] = []
+
+        init(in maxWidth: CGFloat, subviews: Subviews, spacing: CGFloat) {
+            var x: CGFloat = 0
+            var y: CGFloat = 0
+            var lineHeight: CGFloat = 0
+
+            for subview in subviews {
+                let size = subview.sizeThatFits(.unspecified)
+
+                if x + size.width > maxWidth && x > 0 {
+                    x = 0
+                    y += lineHeight + spacing
+                    lineHeight = 0
+                }
+
+                positions.append(CGPoint(x: x, y: y))
+                lineHeight = max(lineHeight, size.height)
+                x += size.width + spacing
+            }
+
+            self.size = CGSize(width: maxWidth, height: y + lineHeight)
         }
     }
 }
