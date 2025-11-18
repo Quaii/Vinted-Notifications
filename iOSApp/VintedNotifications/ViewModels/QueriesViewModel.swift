@@ -32,6 +32,8 @@ class QueriesViewModel: ObservableObject {
         }
 
         do {
+            let wasEmpty = queries.isEmpty
+
             if let editing = editingQuery {
                 // Update existing query
                 DatabaseService.shared.updateQuery(
@@ -45,11 +47,6 @@ class QueriesViewModel: ObservableObject {
                     query: newQueryUrl.trimmingCharacters(in: .whitespaces),
                     queryName: newQueryName.isEmpty ? nil : newQueryName
                 )
-
-                // Auto-start monitoring if this is the first query
-                if queries.isEmpty {
-                    MonitoringService.shared.startMonitoring()
-                }
             }
 
             newQueryUrl = ""
@@ -57,6 +54,15 @@ class QueriesViewModel: ObservableObject {
             editingQuery = nil
             showAddSheet = false
             loadQueries()
+
+            // Auto-start monitoring if this was the first query
+            // Delay slightly to ensure database transaction completes
+            if wasEmpty {
+                Task {
+                    try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
+                    MonitoringService.shared.startMonitoring()
+                }
+            }
 
         } catch {
             errorMessage = "Failed to save query. It may already exist."
