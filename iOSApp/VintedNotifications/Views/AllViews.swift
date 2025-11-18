@@ -732,7 +732,7 @@ struct ItemsView: View {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(theme.textTertiary)
                     TextField("Search items...", text: $viewModel.searchQuery)
-                        .onChange(of: viewModel.searchQuery) { _ in
+                        .onChange(of: viewModel.searchQuery) {
                             viewModel.applyFilters()
                         }
                     if !viewModel.searchQuery.isEmpty {
@@ -1067,6 +1067,10 @@ struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
     @State private var showSaveConfirmation = false
 
+    // Helper computed properties to avoid complex expressions
+    private var toggleActiveColor: Color { theme.primary }
+    private var toggleInactiveColor: Color { theme.buttonFill }
+
     var body: some View {
         VStack(spacing: 0) {
             // Custom Header
@@ -1098,8 +1102,8 @@ struct SettingsView: View {
                                 Spacer()
                                 CustomToggle(
                                     isOn: $themeManager.isDarkMode,
-                                    activeColor: theme.primary,
-                                    inactiveColor: theme.buttonFill
+                                    activeColor: toggleActiveColor,
+                                    inactiveColor: toggleInactiveColor
                                 )
                             }
                             .padding(Spacing.md)
@@ -1275,8 +1279,8 @@ struct SettingsView: View {
                                 Spacer()
                                 CustomToggle(
                                     isOn: $viewModel.checkProxies,
-                                    activeColor: theme.primary,
-                                    inactiveColor: theme.buttonFill
+                                    activeColor: toggleActiveColor,
+                                    inactiveColor: toggleInactiveColor
                                 )
                             }
                             .padding(Spacing.md)
@@ -1445,7 +1449,8 @@ struct SettingsView: View {
                             }
 
                             if !viewModel.allowlist.isEmpty {
-                                FlowLayout(spacing: Spacing.xs) {
+                                // Country tags with wrapping
+                                LazyVGrid(columns: [GridItem(.adaptive(minimum: 60), spacing: Spacing.xs)], spacing: Spacing.xs) {
                                     ForEach(viewModel.allowlist, id: \.self) { code in
                                         HStack(spacing: 4) {
                                             Text(code)
@@ -1605,46 +1610,3 @@ struct SettingsView: View {
     }
 }
 
-// FlowLayout for country tags
-struct FlowLayout: Layout {
-    var spacing: CGFloat = 8
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let result = FlowResult(in: proposal.replacingUnspecifiedDimensions().width, subviews: subviews, spacing: spacing)
-        return result.size
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let result = FlowResult(in: bounds.width, subviews: subviews, spacing: spacing)
-        for (index, subview) in subviews.enumerated() {
-            subview.place(at: CGPoint(x: bounds.minX + result.frames[index].minX, y: bounds.minY + result.frames[index].minY), proposal: .unspecified)
-        }
-    }
-
-    struct FlowResult {
-        var frames: [CGRect] = []
-        var size: CGSize = .zero
-
-        init(in maxWidth: CGFloat, subviews: Subviews, spacing: CGFloat) {
-            var currentX: CGFloat = 0
-            var currentY: CGFloat = 0
-            var lineHeight: CGFloat = 0
-
-            for subview in subviews {
-                let size = subview.sizeThatFits(.unspecified)
-
-                if currentX + size.width > maxWidth && currentX > 0 {
-                    currentX = 0
-                    currentY += lineHeight + spacing
-                    lineHeight = 0
-                }
-
-                frames.append(CGRect(x: currentX, y: currentY, width: size.width, height: size.height))
-                lineHeight = max(lineHeight, size.height)
-                currentX += size.width + spacing
-            }
-
-            self.size = CGSize(width: maxWidth, height: currentY + lineHeight)
-        }
-    }
-}
