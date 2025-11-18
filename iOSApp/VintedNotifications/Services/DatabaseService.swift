@@ -14,9 +14,6 @@ class DatabaseService: ObservableObject {
     private var db: OpaquePointer?
     private let dbPath: String
 
-    // Serial queue for thread-safe database access
-    private let dbQueue = DispatchQueue(label: "com.vintednotifications.database", qos: .userInitiated)
-
     private init() {
         // Get documents directory
         let fileManager = FileManager.default
