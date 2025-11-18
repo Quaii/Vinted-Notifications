@@ -15,11 +15,11 @@ struct VintedNotificationsApp: App {
 
     init() {
         // Initialize services
-        LogService.shared.info("🚀 Vinted Notifications app starting...")
+        LogService.shared.info("Vinted Notifications app starting...")
 
         // Register background tasks
         MonitoringService.shared.registerBackgroundTasks()
-        LogService.shared.info("✅ Background tasks registered")
+        LogService.shared.info("Background tasks registered")
     }
 
     var body: some Scene {
@@ -34,7 +34,7 @@ struct VintedNotificationsApp: App {
                         let queries = DatabaseService.shared.getQueries(activeOnly: true)
                         if !queries.isEmpty {
                             MonitoringService.shared.startMonitoring()
-                            LogService.shared.info("🔄 Monitoring started (\(queries.count) active queries)")
+                            LogService.shared.info("Monitoring started (\(queries.count) active queries)")
                         }
                     }
             } else {
@@ -45,12 +45,12 @@ struct VintedNotificationsApp: App {
                     .task {
                         // Request notification permissions
                         let granted = await NotificationService.shared.requestAuthorization()
-                        LogService.shared.info("📱 Notification permission: \(granted)")
+                        LogService.shared.info("Notification permission: \(granted)")
 
                         // Simulate initialization delay (can be removed if not needed)
                         try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
 
-                        LogService.shared.info("✨ App initialization complete")
+                        LogService.shared.info("App initialization complete")
                         isReady = true
                     }
             }
