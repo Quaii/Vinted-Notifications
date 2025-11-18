@@ -8,6 +8,7 @@
 import Foundation
 import UserNotifications
 
+@MainActor
 class NotificationService: NSObject, ObservableObject {
     static let shared = NotificationService()
 
@@ -15,17 +16,17 @@ class NotificationService: NSObject, ObservableObject {
 
     private override init() {
         super.init()
-        Task { @MainActor in
-            checkAuthorizationStatus()
-        }
+        checkAuthorizationStatus()
     }
 
     // MARK: - Authorization
 
-    func requestAuthorization() async -> Bool {
+    nonisolated func requestAuthorization() async -> Bool {
         do {
             let granted = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
-            checkAuthorizationStatus()
+            await MainActor.run {
+                checkAuthorizationStatus()
+            }
             LogService.shared.info("[NotificationService] Authorization granted: \(granted)")
             return granted
         } catch {
@@ -34,7 +35,6 @@ class NotificationService: NSObject, ObservableObject {
         }
     }
 
-    @MainActor
     func checkAuthorizationStatus() {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             Task { @MainActor in
