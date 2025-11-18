@@ -16,20 +16,33 @@ class VintedAPI: ObservableObject {
     private var authUrl: String
     private var userAgentsList: [String] = []
     private var defaultHeadersList: [String: String] = [:]
+    private var proxyList: [String] = []
     private let maxRetries = AppConfig.apiMaxRetries
 
     private init() {
-        let config = URLSessionConfiguration.default
-        config.timeoutIntervalForRequest = AppConfig.apiTimeout
-        config.httpCookieAcceptPolicy = .always
-        config.httpShouldSetCookies = true
-        self.session = URLSession(configuration: config)
+        self.currentLocale = "www.vinted.fr"
         self.authUrl = "https://\(currentLocale)/"
+
+        // Temporary session for initialization
+        let tempConfig = URLSessionConfiguration.default
+        self.session = URLSession(configuration: tempConfig)
 
         // Load settings from database
         loadSettings()
 
-        LogService.shared.info("[VintedAPI] Initialized with \(userAgentsList.count) user agents")
+        // Recreate session with proper configuration including proxies
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = AppConfig.apiTimeout
+        config.httpCookieAcceptPolicy = .always
+        config.httpShouldSetCookies = true
+
+        // Note: iOS has limited proxy support via URLSessionConfiguration
+        // Proxies loaded from database are available but not actively used
+        // This maintains API parity with desktop app for future enhancement
+
+        self.session = URLSession(configuration: config)
+
+        LogService.shared.info("[VintedAPI] Initialized with \(userAgentsList.count) user agents, \(proxyList.count) proxies (iOS proxy support limited)")
     }
 
     // MARK: - Settings Management
@@ -52,6 +65,17 @@ class VintedAPI: ObservableObject {
         } else {
             defaultHeadersList = defaultHeaders // Fallback to hardcoded defaults
         }
+
+        // Load proxy list from database (semicolon-separated)
+        let proxyListStr = DatabaseService.shared.getParameter("proxy_list", defaultValue: "")
+        if !proxyListStr.isEmpty {
+            proxyList = proxyListStr.split(separator: ";").map { String($0).trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+        } else {
+            proxyList = []
+        }
+
+        // Note: proxy_list_link fetching and check_proxies validation not implemented
+        // iOS has limited HTTP proxy support compared to desktop Python implementation
     }
 
     func reloadSettings() {
