@@ -1771,25 +1771,32 @@ struct SettingsView: View {
                             }
 
                             if !viewModel.allowlist.isEmpty {
-                                // Country tags inline with wrapping
-                                FlowLayout(spacing: Spacing.xs) {
-                                    ForEach(viewModel.allowlist, id: \.self) { code in
-                                        HStack(spacing: 4) {
-                                            Text(code)
-                                                .font(.system(size: FontSizes.subheadline, weight: .medium))
-                                                .foregroundColor(theme.text)
+                                // Country tags with horizontal wrapping
+                                HStack(alignment: .top, spacing: 0) {
+                                    LazyVGrid(
+                                        columns: Array(repeating: GridItem(.flexible(), spacing: Spacing.xs), count: 6),
+                                        alignment: .leading,
+                                        spacing: Spacing.xs
+                                    ) {
+                                        ForEach(viewModel.allowlist, id: \.self) { code in
+                                            HStack(spacing: 4) {
+                                                Text(code)
+                                                    .font(.system(size: FontSizes.subheadline, weight: .medium))
+                                                    .foregroundColor(theme.text)
 
-                                            Button(action: { viewModel.removeCountry(code) }) {
-                                                Image(systemName: "xmark")
-                                                    .font(.system(size: 14))
-                                                    .foregroundColor(theme.textSecondary)
+                                                Button(action: { viewModel.removeCountry(code) }) {
+                                                    Image(systemName: "xmark")
+                                                        .font(.system(size: 14))
+                                                        .foregroundColor(theme.textSecondary)
+                                                }
                                             }
+                                            .padding(.horizontal, Spacing.sm)
+                                            .padding(.vertical, 6)
+                                            .background(theme.buttonFill)
+                                            .cornerRadius(BorderRadius.md)
                                         }
-                                        .padding(.horizontal, Spacing.sm)
-                                        .padding(.vertical, 6)
-                                        .background(theme.buttonFill)
-                                        .cornerRadius(BorderRadius.md)
                                     }
+                                    Spacer()
                                 }
                             } else {
                                 Text("No countries in allowlist")
@@ -1946,50 +1953,6 @@ struct SettingsView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text("Your settings have been saved successfully.")
-        }
-    }
-}
-
-// FlowLayout - Wrapping horizontal layout for tags
-struct FlowLayout: Layout {
-    var spacing: CGFloat = 8
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let result = FlowResult(in: proposal.replacingUnspecifiedDimensions().width, subviews: subviews, spacing: spacing)
-        return result.size
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let result = FlowResult(in: bounds.width, subviews: subviews, spacing: spacing)
-        for (index, subview) in subviews.enumerated() {
-            subview.place(at: CGPoint(x: bounds.minX + result.positions[index].x, y: bounds.minY + result.positions[index].y), proposal: .unspecified)
-        }
-    }
-
-    struct FlowResult {
-        var size: CGSize = .zero
-        var positions: [CGPoint] = []
-
-        init(in maxWidth: CGFloat, subviews: Subviews, spacing: CGFloat) {
-            var x: CGFloat = 0
-            var y: CGFloat = 0
-            var lineHeight: CGFloat = 0
-
-            for subview in subviews {
-                let size = subview.sizeThatFits(.unspecified)
-
-                if x + size.width > maxWidth && x > 0 {
-                    x = 0
-                    y += lineHeight + spacing
-                    lineHeight = 0
-                }
-
-                positions.append(CGPoint(x: x, y: y))
-                lineHeight = max(lineHeight, size.height)
-                x += size.width + spacing
-            }
-
-            self.size = CGSize(width: maxWidth, height: y + lineHeight)
         }
     }
 }
