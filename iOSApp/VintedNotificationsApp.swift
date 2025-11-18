@@ -2,7 +2,8 @@
 //  VintedNotificationsApp.swift
 //  Vinted Notifications
 //
-//  Main app entry point
+//  Main app entry point - Production Ready
+//  iOS 17+ Compatible
 //
 
 import SwiftUI
@@ -12,80 +13,58 @@ struct VintedNotificationsApp: App {
     @StateObject private var themeManager = ThemeManager()
 
     init() {
-        // App initialization will happen here
-        // Services will be initialized when implemented:
-        // - DatabaseService
-        // - NotificationService
-        // - MonitoringService
-        // - LogService
+        // Initialize services
+        LogService.shared.info("🚀 Vinted Notifications app starting...")
 
-        print("Vinted Notifications app starting...")
+        // Register background tasks
+        MonitoringService.shared.registerBackgroundTasks()
+        LogService.shared.info("✅ Background tasks registered")
+
+        // Request notification permissions
+        Task {
+            let granted = await NotificationService.shared.requestAuthorization()
+            LogService.shared.info("📱 Notification permission: \(granted)")
+        }
+
+        LogService.shared.info("✨ App initialization complete")
     }
 
     var body: some Scene {
         WindowGroup {
-            // Placeholder view until MainTabView is implemented
-            ZStack {
-                themeManager.currentTheme.background
-                    .ignoresSafeArea()
-
-                VStack(spacing: Spacing.xl) {
-                    Image(systemName: "tag.fill")
-                        .font(.system(size: 80))
-                        .foregroundColor(themeManager.currentTheme.primary)
-
-                    Text("Vinted Notifications")
-                        .font(.system(size: FontSizes.largeTitle, weight: .bold))
-                        .foregroundColor(themeManager.currentTheme.text)
-
-                    Text("Swift/SwiftUI Implementation")
-                        .font(.system(size: FontSizes.title3))
-                        .foregroundColor(themeManager.currentTheme.textSecondary)
-
-                    Spacer()
-                        .frame(height: 40)
-
-                    Text("Architecture Complete")
-                        .font(.system(size: FontSizes.headline, weight: .semibold))
-                        .foregroundColor(themeManager.currentTheme.primary)
-
-                    Text("Ready for full implementation")
-                        .font(.system(size: FontSizes.subheadline))
-                        .foregroundColor(themeManager.currentTheme.textTertiary)
-
-                    Spacer()
-                        .frame(height: 60)
-
-                    Button(action: {
-                        themeManager.toggleTheme()
-                    }) {
-                        HStack {
-                            Image(systemName: themeManager.isDarkMode ? "moon.fill" : "sun.max.fill")
-                            Text("Toggle \(themeManager.isDarkMode ? "Light" : "Dark") Mode")
-                        }
-                        .font(.system(size: FontSizes.body, weight: .semibold))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, Spacing.xl)
-                        .padding(.vertical, Spacing.md)
-                        .background(themeManager.currentTheme.primary)
-                        .cornerRadius(BorderRadius.lg)
+            MainTabView()
+                .environmentObject(themeManager)
+                .environment(\.theme, themeManager.currentTheme)
+                .preferredColorScheme(themeManager.isDarkMode ? .dark : .light)
+                .onAppear {
+                    // Start monitoring if there are queries
+                    let queries = DatabaseService.shared.getQueries(activeOnly: true)
+                    if !queries.isEmpty {
+                        MonitoringService.shared.startMonitoring()
+                        LogService.shared.info("🔄 Monitoring started (\(queries.count) active queries)")
                     }
                 }
-                .padding(Spacing.xl)
-            }
-            .preferredColorScheme(themeManager.isDarkMode ? .dark : .light)
-
-            // Once implemented, replace with:
-            // MainTabView()
-            //     .environmentObject(themeManager)
-            //     .environment(\.theme, themeManager.currentTheme)
-            //     .preferredColorScheme(themeManager.isDarkMode ? .dark : .light)
         }
     }
 }
 
-// Preview
-#Preview {
-    VintedNotificationsApp()
+// MARK: - Previews
+
+#Preview("Light Mode") {
+    let themeManager = ThemeManager()
+    themeManager.isDarkMode = false
+
+    return MainTabView()
+        .environmentObject(themeManager)
+        .environment(\.theme, themeManager.currentTheme)
+        .preferredColorScheme(.light)
+}
+
+#Preview("Dark Mode") {
+    let themeManager = ThemeManager()
+    themeManager.isDarkMode = true
+
+    return MainTabView()
+        .environmentObject(themeManager)
+        .environment(\.theme, themeManager.currentTheme)
         .preferredColorScheme(.dark)
 }
