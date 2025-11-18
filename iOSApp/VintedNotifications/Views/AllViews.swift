@@ -500,6 +500,7 @@ struct DashboardView: View {
                     }
                     .padding(Spacing.lg)
                 }
+                .scrollIndicators(.hidden)
                 .background(theme.groupedBackground)
             }
             .navigationBarHidden(true)
@@ -609,6 +610,7 @@ struct QueriesView: View {
                             .padding(Spacing.lg)
                             .padding(.bottom, 100)
                         }
+                        .scrollIndicators(.hidden)
                     }
 
                     // FAB button
@@ -742,13 +744,14 @@ struct ItemsView: View {
                         HStack {
                             Text(viewModel.sortBy.rawValue)
                                 .font(.system(size: FontSizes.body, weight: .medium))
+                            Spacer()
                             Image(systemName: "chevron.down")
                                 .font(.system(size: FontSizes.subheadline))
                         }
                         .foregroundColor(theme.text)
                         .padding(.horizontal, Spacing.md)
-                        .padding(.vertical, Spacing.sm + 2)
-                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Spacing.sm)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         .background(theme.secondaryGroupedBackground)
                         .cornerRadius(BorderRadius.lg)
                         .overlay(
@@ -805,6 +808,7 @@ struct ItemsView: View {
                         .padding(Spacing.lg)
                         .padding(.bottom, 100)
                     }
+                    .scrollIndicators(.hidden)
                 }
             }
             .background(theme.groupedBackground)
@@ -901,6 +905,7 @@ struct AnalyticsView: View {
                 }
                 .padding(Spacing.lg)
                 }
+                .scrollIndicators(.hidden)
                 .background(theme.groupedBackground)
             }
             .navigationBarHidden(true)
@@ -1310,6 +1315,7 @@ struct LogsView: View {
                         .padding(Spacing.lg)
                         .padding(.bottom, 100)
                     }
+                    .scrollIndicators(.hidden)
                 }
             }
             .background(theme.groupedBackground)
@@ -1916,6 +1922,7 @@ struct SettingsView: View {
                 }
                 .padding(Spacing.lg)
             }
+            .scrollIndicators(.hidden)
             .background(theme.groupedBackground)
         }
         .background(theme.groupedBackground)
