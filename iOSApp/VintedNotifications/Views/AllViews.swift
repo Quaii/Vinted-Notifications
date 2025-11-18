@@ -1106,15 +1106,9 @@ struct SettingsView: View {
         themeManager.isDarkMode ? "Dark mode enabled" : "Light mode enabled"
     }
 
-    var body: some View {
-        VStack(spacing: 0) {
-            // Custom Header
-            PageHeader(title: "Settings", showSettings: false, showBack: true, centered: true)
-
-            ScrollView {
-                VStack(spacing: Spacing.xl) {
-                    // App Settings Section
-                    VStack(alignment: .leading, spacing: Spacing.md) {
+    // MARK: - Sections
+    private var appSettingsSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
                         Text("App Settings")
                             .font(.system(size: FontSizes.title3, weight: .semibold))
                             .foregroundColor(theme.text)
@@ -1169,10 +1163,11 @@ struct SettingsView: View {
                             RoundedRectangle(cornerRadius: BorderRadius.xl)
                                 .stroke(theme.separator, lineWidth: 1)
                         )
-                    }
+        }
+    }
 
-                    // Advanced Settings Section
-                    VStack(alignment: .leading, spacing: Spacing.md) {
+    private var advancedSettingsSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
                         Text("Advanced Settings")
                             .font(.system(size: FontSizes.title3, weight: .semibold))
                             .foregroundColor(theme.text)
@@ -1305,10 +1300,11 @@ struct SettingsView: View {
                             RoundedRectangle(cornerRadius: BorderRadius.xl)
                                 .stroke(theme.separator, lineWidth: 1)
                         )
-                    }
+        }
+    }
 
-                    // System Settings Section
-                    VStack(alignment: .leading, spacing: Spacing.md) {
+    private var systemSettingsSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
                         Text("System Settings")
                             .font(.system(size: FontSizes.title3, weight: .semibold))
                             .foregroundColor(theme.text)
@@ -1414,10 +1410,11 @@ struct SettingsView: View {
                             RoundedRectangle(cornerRadius: BorderRadius.xl)
                                 .stroke(theme.separator, lineWidth: 1)
                         )
-                    }
+        }
+    }
 
-                    // Country Allowlist Section
-                    VStack(alignment: .leading, spacing: Spacing.md) {
+    private var countryAllowlistSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
                         HStack {
                             Text("Country Allowlist")
                                 .font(.system(size: FontSizes.title3, weight: .semibold))
@@ -1498,10 +1495,11 @@ struct SettingsView: View {
                             RoundedRectangle(cornerRadius: BorderRadius.xl)
                                 .stroke(theme.separator, lineWidth: 1)
                         )
-                    }
+        }
+    }
 
-                    // Save Button
-                    Button(action: {
+    private var saveButton: some View {
+        Button(action: {
                         viewModel.saveSettings()
                         showSaveConfirmation = true
                     }) {
@@ -1516,10 +1514,11 @@ struct SettingsView: View {
                         .padding(.vertical, Spacing.md)
                         .background(theme.primary)
                         .cornerRadius(BorderRadius.lg)
-                    }
+        }
+    }
 
-                    // Danger Zone
-                    VStack(alignment: .leading, spacing: Spacing.md) {
+    private var dangerZoneSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
                         Text("Danger Zone")
                             .font(.system(size: FontSizes.title3, weight: .semibold))
                             .foregroundColor(theme.text)
@@ -1585,10 +1584,11 @@ struct SettingsView: View {
                                 .cornerRadius(BorderRadius.lg)
                             }
                         }
-                    }
+        }
+    }
 
-                    // Version Footer
-                    VStack(spacing: Spacing.xs / 2) {
+    private var versionFooter: some View {
+        VStack(spacing: Spacing.xs / 2) {
                         HStack(spacing: Spacing.xs) {
                             Image(systemName: "info.circle")
                                 .font(.system(size: 14))
@@ -1600,12 +1600,27 @@ struct SettingsView: View {
                         Text("by Quaii")
                             .font(.system(size: FontSizes.caption2))
                             .foregroundColor(theme.textTertiary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, Spacing.lg)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, Spacing.lg)
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            PageHeader(title: "Settings", showSettings: false, showBack: true, centered: true)
+
+            ScrollView {
+                VStack(spacing: Spacing.xl) {
+                    appSettingsSection
+                    advancedSettingsSection
+                    systemSettingsSection
+                    countryAllowlistSection
+                    saveButton
+                    dangerZoneSection
+                    versionFooter
 
                     Spacer()
-                        .frame(height: 100) // Tab bar spacing
+                        .frame(height: 100)
                 }
                 .padding(Spacing.lg)
             }
