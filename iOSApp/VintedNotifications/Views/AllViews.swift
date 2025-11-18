@@ -1233,7 +1233,7 @@ struct SimpleBarChart: View {
 
 struct SimplePriceDistribution: View {
     let data: [AnalyticsViewModel.PriceRange]
-    let theme: AppTheme
+    let theme: AppColors
 
     var body: some View {
         let sortedData = data.sorted { $0.name < $1.name }
