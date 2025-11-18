@@ -12,6 +12,8 @@ class DashboardViewModel: ObservableObject {
     @Published var recentQueries: [VintedQuery] = []
     @Published var recentLogs: [LogEntry] = []
     @Published var isLoading = false
+    @Published var editingQuery: VintedQuery?
+    @Published var showEditSheet = false
 
     struct Stats {
         var totalItems: Int = 0
@@ -71,5 +73,17 @@ class DashboardViewModel: ObservableObject {
             self.recentLogs = logs
             self.isLoading = false
         }
+    }
+
+    func deleteQuery(_ query: VintedQuery) {
+        DatabaseService.shared.deleteQuery(query)
+        Task {
+            await loadDashboard()
+        }
+    }
+
+    func startEditing(_ query: VintedQuery) {
+        editingQuery = query
+        showEditSheet = true
     }
 }
