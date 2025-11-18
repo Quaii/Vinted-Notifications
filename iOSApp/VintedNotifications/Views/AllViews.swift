@@ -628,7 +628,7 @@ struct QueriesView: View {
                                     .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
                             }
                             .padding(.trailing, Spacing.md)
-                            .padding(.bottom, 120)
+                            .padding(.bottom, 80)
                         }
                     }
                 }
@@ -1905,7 +1905,7 @@ struct SettingsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            PageHeader(title: "Settings", showSettings: false, showBack: false, centered: true)
+            PageHeader(title: "Settings", showSettings: false, showBack: false, centered: false)
 
             ScrollView {
                 VStack(spacing: Spacing.xl) {
