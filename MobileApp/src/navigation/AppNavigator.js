@@ -27,6 +27,15 @@ const TabNavigator = () => {
   const insets = useSafeAreaInsets();
   const screenWidth = Dimensions.get('window').width;
 
+  // DEBUG: Log all dimensions and insets
+  console.log('🔍 TAB BAR DEBUG:', {
+    screenWidth,
+    perTabWidth: screenWidth / 5,
+    insets,
+    hasLeftInset: insets.left > 0,
+    hasRightInset: insets.right > 0,
+  });
+
   // Calculate proper bottom padding for devices with home indicator
   const tabBarHeight = 49; // Standard iOS tab bar height
   const bottomPadding = Math.max(insets.bottom, 20); // Use safe area or minimum 20px
@@ -62,8 +71,22 @@ const TabNavigator = () => {
 
           // Wrap icon in View for consistent alignment
           return (
-            <View style={{alignItems: 'center', justifyContent: 'center'}}>
-              <MaterialIcons name={iconName} size={size} color={color} />
+            <View style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: size, // Force icon container to exact size
+              height: size,
+            }}>
+              <MaterialIcons
+                name={iconName}
+                size={size}
+                color={color}
+                style={{
+                  textAlign: 'center',
+                  width: size,
+                  height: size,
+                }}
+              />
             </View>
           );
         },
@@ -73,15 +96,18 @@ const TabNavigator = () => {
           position: 'absolute',
           bottom: 0,
           left: 0,
+          right: 0, // Try both constraints together
           width: screenWidth, // CRITICAL: Force exact screen width for React 19
           backgroundColor: COLORS.secondaryGroupedBackground,
           borderTopColor: COLORS.border,
-          borderTopWidth: StyleSheet.hairlineWidth,
+          borderTopWidth: 1, // Use whole number instead of hairline
           height: tabBarHeight + bottomPadding,
           paddingBottom: bottomPadding,
           paddingTop: 8,
-          paddingHorizontal: 0,
-          marginHorizontal: 0,
+          paddingLeft: 0, // Explicit instead of paddingHorizontal
+          paddingRight: 0,
+          marginLeft: 0, // Explicit instead of marginHorizontal
+          marginRight: 0,
         },
         tabBarLabelStyle: {
           fontSize: FONT_SIZES.caption2,
@@ -174,14 +200,23 @@ const AppNavigator = () => {
 
   return (
     <NavigationContainer theme={navigationTheme}>
-      <RootStack.Navigator screenOptions={{headerShown: false}}>
-        <RootStack.Screen name="Tabs" component={TabNavigator} />
-        <RootStack.Screen
-          name="Settings"
-          component={SettingsScreen}
-          options={{presentation: 'modal'}}
-        />
-      </RootStack.Navigator>
+      <View
+        style={{flex: 1}}
+        onLayout={(e) => {
+          console.log('📐 ROOT CONTAINER LAYOUT:', {
+            width: e.nativeEvent.layout.width,
+            height: e.nativeEvent.layout.height,
+          });
+        }}>
+        <RootStack.Navigator screenOptions={{headerShown: false}}>
+          <RootStack.Screen name="Tabs" component={TabNavigator} />
+          <RootStack.Screen
+            name="Settings"
+            component={SettingsScreen}
+            options={{presentation: 'modal'}}
+          />
+        </RootStack.Navigator>
+      </View>
     </NavigationContainer>
   );
 };
