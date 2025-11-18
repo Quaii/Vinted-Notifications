@@ -258,45 +258,27 @@ struct ItemCard: View {
 struct QueryCard: View {
     let query: VintedQuery
     let onPress: () -> Void
-    let onDelete: () -> Void
-    let onEdit: () -> Void
 
     @Environment(\.theme) var theme
 
     var body: some View {
         Button(action: onPress) {
             VStack(alignment: .leading, spacing: Spacing.sm) {
-                HStack {
-                    VStack(alignment: .leading, spacing: Spacing.xs) {
-                        Text(query.queryName)
-                            .font(.system(size: FontSizes.headline, weight: .semibold))
-                            .foregroundColor(theme.text)
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(query.queryName)
+                        .font(.system(size: FontSizes.headline, weight: .semibold))
+                        .foregroundColor(theme.text)
 
-                        Text(query.domain())
-                            .font(.system(size: FontSizes.subheadline))
-                            .foregroundColor(theme.textSecondary)
-                    }
-
-                    Spacer()
-
-                    Menu {
-                        Button(action: onEdit) {
-                            Label("Edit", systemImage: "pencil")
-                        }
-                        Button(role: .destructive, action: onDelete) {
-                            Label("Delete", systemImage: "trash")
-                        }
-                    } label: {
-                        Image(systemName: "ellipsis.circle.fill")
-                            .font(.system(size: FontSizes.title3))
-                            .foregroundColor(theme.textSecondary)
-                    }
+                    Text(query.domain())
+                        .font(.system(size: FontSizes.subheadline))
+                        .foregroundColor(theme.textSecondary)
                 }
 
                 Text("Last item: \(query.lastItemTime())")
                     .font(.system(size: FontSizes.caption1))
                     .foregroundColor(theme.textTertiary)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(Spacing.md)
             .background(theme.secondaryGroupedBackground)
             .cornerRadius(BorderRadius.lg)
@@ -466,24 +448,8 @@ struct DashboardView: View {
                                 ForEach(viewModel.recentQueries) { query in
                                     QueryCard(
                                         query: query,
-                                        onPress: {},
-                                        onDelete: { viewModel.deleteQuery(query) },
-                                        onEdit: { viewModel.startEditing(query) }
+                                        onPress: {}
                                     )
-                                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                        Button(role: .destructive) {
-                                            viewModel.deleteQuery(query)
-                                        } label: {
-                                            Label("Delete", systemImage: "trash")
-                                        }
-
-                                        Button {
-                                            viewModel.startEditing(query)
-                                        } label: {
-                                            Label("Edit", systemImage: "pencil")
-                                        }
-                                        .tint(.blue)
-                                    }
                                 }
                             }
                         }
@@ -524,63 +490,6 @@ struct DashboardView: View {
         }
         .refreshable {
             await viewModel.loadDashboard()
-        }
-        .sheet(isPresented: $viewModel.showEditSheet) {
-            DashboardEditQuerySheet(viewModel: viewModel)
-        }
-    }
-}
-
-// Dashboard Edit Query Sheet
-struct DashboardEditQuerySheet: View {
-    @ObservedObject var viewModel: DashboardViewModel
-    @Environment(\.theme) var theme
-    @Environment(\.dismiss) var dismiss
-
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section("Vinted Search URL") {
-                    TextField("https://www.vinted.com/catalog?...", text: $viewModel.newQueryUrl)
-                        .autocapitalization(.none)
-                        .textInputAutocapitalization(.never)
-                }
-
-                Section("Custom Name (Optional)") {
-                    TextField("e.g., Nike Shoes", text: $viewModel.newQueryName)
-                }
-
-                Section {
-                    Text("Paste the full URL from a Vinted search. The app will automatically monitor this search and notify you of new items.")
-                        .font(.system(size: FontSizes.footnote))
-                        .foregroundColor(theme.textTertiary)
-                }
-
-                Button(action: {
-                    viewModel.saveQuery()
-                    if viewModel.errorMessage == nil {
-                        dismiss()
-                    }
-                }) {
-                    Text("Update Query")
-                        .font(.system(size: FontSizes.headline, weight: .semibold))
-                        .frame(maxWidth: .infinity)
-                }
-                .listRowBackground(theme.primary)
-                .foregroundColor(.white)
-            }
-            .navigationTitle("Edit Query")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        viewModel.newQueryUrl = ""
-                        viewModel.newQueryName = ""
-                        viewModel.editingQuery = nil
-                        dismiss()
-                    }
-                }
-            }
         }
     }
 }
@@ -667,35 +576,34 @@ struct QueriesView: View {
                         .padding(Spacing.xl)
                     } else {
                         // List of queries
-                        ScrollView {
-                            LazyVStack(spacing: Spacing.md) {
-                                ForEach(viewModel.queries) { query in
-                                    QueryCard(
-                                        query: query,
-                                        onPress: {},
-                                        onDelete: { viewModel.deleteQuery(query) },
-                                        onEdit: { viewModel.startEditing(query) }
-                                    )
-                                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                        Button(role: .destructive) {
-                                            viewModel.deleteQuery(query)
-                                        } label: {
-                                            Label("Delete", systemImage: "trash")
-                                        }
-
-                                        Button {
-                                            viewModel.startEditing(query)
-                                        } label: {
-                                            Label("Edit", systemImage: "pencil")
-                                        }
-                                        .tint(.blue)
+                        List {
+                            ForEach(viewModel.queries) { query in
+                                QueryCard(
+                                    query: query,
+                                    onPress: {}
+                                )
+                                .listRowInsets(EdgeInsets(top: Spacing.sm, leading: Spacing.lg, bottom: Spacing.sm, trailing: Spacing.lg))
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(Color.clear)
+                                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                    Button(role: .destructive) {
+                                        viewModel.deleteQuery(query)
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
                                     }
+
+                                    Button {
+                                        viewModel.startEditing(query)
+                                    } label: {
+                                        Label("Edit", systemImage: "pencil")
+                                    }
+                                    .tint(.blue)
                                 }
                             }
-                            .padding(Spacing.lg)
-                            .padding(.bottom, 100)
                         }
-                        .scrollIndicators(.hidden)
+                        .listStyle(.plain)
+                        .scrollContentBackground(.hidden)
+                        .background(theme.groupedBackground)
                     }
 
                     // FAB button
