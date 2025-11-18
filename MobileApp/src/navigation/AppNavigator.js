@@ -1,5 +1,5 @@
 import React, {useMemo} from 'react';
-import {View, useColorScheme, StyleSheet} from 'react-native';
+import {View, useColorScheme, StyleSheet, Dimensions} from 'react-native';
 import {NavigationContainer, DefaultTheme, DarkTheme} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -25,6 +25,7 @@ const RootStack = createNativeStackNavigator();
 const TabNavigator = () => {
   const COLORS = useThemeColors();
   const insets = useSafeAreaInsets();
+  const screenWidth = Dimensions.get('window').width;
 
   // Calculate proper bottom padding for devices with home indicator
   const tabBarHeight = 49; // Standard iOS tab bar height
@@ -70,9 +71,9 @@ const TabNavigator = () => {
         tabBarInactiveTintColor: COLORS.textSecondary,
         tabBarStyle: {
           position: 'absolute',
-          left: 0,
-          right: 0,
           bottom: 0,
+          left: 0,
+          width: screenWidth, // CRITICAL: Force exact screen width for React 19
           backgroundColor: COLORS.secondaryGroupedBackground,
           borderTopColor: COLORS.border,
           borderTopWidth: StyleSheet.hairlineWidth,
@@ -80,6 +81,7 @@ const TabNavigator = () => {
           paddingBottom: bottomPadding,
           paddingTop: 8,
           paddingHorizontal: 0,
+          marginHorizontal: 0,
         },
         tabBarLabelStyle: {
           fontSize: FONT_SIZES.caption2,
@@ -88,7 +90,7 @@ const TabNavigator = () => {
           marginBottom: 0,
         },
         tabBarItemStyle: {
-          flex: 1,
+          width: screenWidth / 5, // CRITICAL: Explicit width for 5 tabs (React 19 fix)
           paddingVertical: 0,
           paddingHorizontal: 0,
           marginHorizontal: 0,
