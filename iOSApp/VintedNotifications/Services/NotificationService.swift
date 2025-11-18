@@ -15,7 +15,9 @@ class NotificationService: NSObject, ObservableObject {
 
     private override init() {
         super.init()
-        checkAuthorizationStatus()
+        Task { @MainActor in
+            checkAuthorizationStatus()
+        }
     }
 
     // MARK: - Authorization
@@ -23,7 +25,7 @@ class NotificationService: NSObject, ObservableObject {
     func requestAuthorization() async -> Bool {
         do {
             let granted = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
-            await checkAuthorizationStatus()
+            checkAuthorizationStatus()
             LogService.shared.info("[NotificationService] Authorization granted: \(granted)")
             return granted
         } catch {
@@ -34,9 +36,9 @@ class NotificationService: NSObject, ObservableObject {
 
     @MainActor
     func checkAuthorizationStatus() {
-        UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
-            DispatchQueue.main.async {
-                self?.authorizationStatus = settings.authorizationStatus
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            Task { @MainActor in
+                self.authorizationStatus = settings.authorizationStatus
             }
         }
     }
