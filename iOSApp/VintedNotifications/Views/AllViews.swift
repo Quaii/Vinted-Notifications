@@ -1102,6 +1102,9 @@ struct SettingsView: View {
     // Helper computed properties to avoid complex expressions
     private var toggleActiveColor: Color { theme.primary }
     private var toggleInactiveColor: Color { theme.buttonFill }
+    private var darkModeDescription: String {
+        themeManager.isDarkMode ? "Dark mode enabled" : "Light mode enabled"
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -1124,7 +1127,7 @@ struct SettingsView: View {
                             // Dark Mode Row
                             SettingsToggleRow(
                                 title: "Dark Mode",
-                                description: themeManager.isDarkMode ? "Dark mode enabled" : "Light mode enabled",
+                                description: darkModeDescription,
                                 isOn: $themeManager.isDarkMode,
                                 activeColor: toggleActiveColor,
                                 inactiveColor: toggleInactiveColor
