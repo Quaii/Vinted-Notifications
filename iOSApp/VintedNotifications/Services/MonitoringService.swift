@@ -2,11 +2,12 @@
 //  MonitoringService.swift
 //  Vinted Notifications
 //
-//  Background monitoring service using BGTaskScheduler
+//  Monitoring service with foreground and background support
 //
 
 import Foundation
 import BackgroundTasks
+import UIKit
 
 class MonitoringService: ObservableObject {
     static let shared = MonitoringService()
@@ -15,8 +16,49 @@ class MonitoringService: ObservableObject {
     @Published var isMonitoring = false
     @Published var lastCheckTime: Date?
 
+    // Foreground monitoring
+    private var monitoringTask: Task<Void, Never>?
+    private var isInForeground = true
+
     private init() {
         LogService.shared.info("[MonitoringService] Initialized")
+        setupAppLifecycleObservers()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    // MARK: - App Lifecycle Observers
+
+    private func setupAppLifecycleObservers() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appDidEnterBackground),
+            name: UIApplication.didEnterBackgroundNotification,
+            object: nil
+        )
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appWillEnterForeground),
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
+    }
+
+    @objc private func appDidEnterBackground() {
+        isInForeground = false
+        stopForegroundMonitoring()
+        LogService.shared.info("[MonitoringService] App entered background, stopping foreground monitoring")
+    }
+
+    @objc private func appWillEnterForeground() {
+        isInForeground = true
+        if isMonitoring {
+            startForegroundMonitoring()
+            LogService.shared.info("[MonitoringService] App entered foreground, starting foreground monitoring")
+        }
     }
 
     // MARK: - Banwords Filtering
@@ -167,16 +209,56 @@ class MonitoringService: ObservableObject {
         await performBackgroundFetch()
     }
 
+    // MARK: - Foreground Monitoring Loop
+
+    private func startForegroundMonitoring() {
+        // Cancel any existing monitoring task
+        stopForegroundMonitoring()
+
+        monitoringTask = Task {
+            while !Task.isCancelled && isMonitoring && isInForeground {
+                // Perform fetch
+                await performBackgroundFetch()
+
+                // Get refresh delay from settings
+                let refreshDelay = Int(DatabaseService.shared.getParameter("query_refresh_delay", defaultValue: "\(AppConfig.defaultRefreshDelay)")) ?? AppConfig.defaultRefreshDelay
+
+                // Wait for the configured delay (in seconds)
+                do {
+                    try await Task.sleep(nanoseconds: UInt64(refreshDelay) * 1_000_000_000)
+                } catch {
+                    // Task was cancelled
+                    break
+                }
+            }
+        }
+
+        LogService.shared.info("[MonitoringService] Foreground monitoring loop started")
+    }
+
+    private func stopForegroundMonitoring() {
+        monitoringTask?.cancel()
+        monitoringTask = nil
+        LogService.shared.info("[MonitoringService] Foreground monitoring loop stopped")
+    }
+
     // MARK: - Start/Stop Monitoring
 
     func startMonitoring() {
         isMonitoring = true
         scheduleBackgroundFetch()
-        LogService.shared.info("[MonitoringService] Monitoring started")
+
+        // Start foreground monitoring if app is in foreground
+        if isInForeground {
+            startForegroundMonitoring()
+        }
+
+        LogService.shared.info("[MonitoringService] Monitoring started (foreground: \(isInForeground))")
     }
 
     func stopMonitoring() {
         isMonitoring = false
+        stopForegroundMonitoring()
         BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: taskIdentifier)
         LogService.shared.info("[MonitoringService] Monitoring stopped")
     }
