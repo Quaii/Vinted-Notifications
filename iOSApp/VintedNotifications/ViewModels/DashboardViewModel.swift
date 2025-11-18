@@ -12,11 +12,6 @@ class DashboardViewModel: ObservableObject {
     @Published var recentQueries: [VintedQuery] = []
     @Published var recentLogs: [LogEntry] = []
     @Published var isLoading = false
-    @Published var editingQuery: VintedQuery?
-    @Published var showEditSheet = false
-    @Published var newQueryUrl = ""
-    @Published var newQueryName = ""
-    @Published var errorMessage: String?
 
     struct Stats {
         var totalItems: Int = 0
@@ -78,48 +73,4 @@ class DashboardViewModel: ObservableObject {
         }
     }
 
-    func deleteQuery(_ query: VintedQuery) {
-        guard let id = query.id else { return }
-        DatabaseService.shared.deleteQuery(id: id)
-        Task {
-            await loadDashboard()
-        }
-    }
-
-    func startEditing(_ query: VintedQuery) {
-        editingQuery = query
-        newQueryUrl = query.vintedUrl
-        newQueryName = query.queryName
-        showEditSheet = true
-    }
-
-    func saveQuery() {
-        guard !newQueryUrl.trimmingCharacters(in: .whitespaces).isEmpty else {
-            errorMessage = "Please enter a Vinted URL"
-            return
-        }
-
-        guard VintedAPI.shared.isValidVintedUrl(newQueryUrl) else {
-            errorMessage = "Please enter a valid Vinted search URL"
-            return
-        }
-
-        if let editing = editingQuery {
-            // Update existing query
-            DatabaseService.shared.updateQuery(
-                id: editing.id!,
-                query: newQueryUrl.trimmingCharacters(in: .whitespaces),
-                queryName: newQueryName.isEmpty ? nil : newQueryName
-            )
-        }
-
-        newQueryUrl = ""
-        newQueryName = ""
-        editingQuery = nil
-        showEditSheet = false
-
-        Task {
-            await loadDashboard()
-        }
-    }
 }
