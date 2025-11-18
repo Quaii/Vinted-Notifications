@@ -467,9 +467,23 @@ struct DashboardView: View {
                                     QueryCard(
                                         query: query,
                                         onPress: {},
-                                        onDelete: {},
-                                        onEdit: {}
+                                        onDelete: { viewModel.deleteQuery(query) },
+                                        onEdit: { viewModel.startEditing(query) }
                                     )
+                                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                        Button(role: .destructive) {
+                                            viewModel.deleteQuery(query)
+                                        } label: {
+                                            Label("Delete", systemImage: "trash")
+                                        }
+
+                                        Button {
+                                            viewModel.startEditing(query)
+                                        } label: {
+                                            Label("Edit", systemImage: "pencil")
+                                        }
+                                        .tint(.blue)
+                                    }
                                 }
                             }
                         }
@@ -510,6 +524,23 @@ struct DashboardView: View {
         }
         .refreshable {
             await viewModel.loadDashboard()
+        }
+        .sheet(isPresented: $viewModel.showEditSheet) {
+            if let query = viewModel.editingQuery {
+                QueryEditSheet(
+                    query: query,
+                    onSave: { updatedQuery in
+                        DatabaseService.shared.updateQuery(updatedQuery)
+                        Task {
+                            await viewModel.loadDashboard()
+                        }
+                        viewModel.showEditSheet = false
+                    },
+                    onCancel: {
+                        viewModel.showEditSheet = false
+                    }
+                )
+            }
         }
     }
 }
@@ -605,6 +636,20 @@ struct QueriesView: View {
                                         onDelete: { viewModel.deleteQuery(query) },
                                         onEdit: { viewModel.startEditing(query) }
                                     )
+                                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                        Button(role: .destructive) {
+                                            viewModel.deleteQuery(query)
+                                        } label: {
+                                            Label("Delete", systemImage: "trash")
+                                        }
+
+                                        Button {
+                                            viewModel.startEditing(query)
+                                        } label: {
+                                            Label("Edit", systemImage: "pencil")
+                                        }
+                                        .tint(.blue)
+                                    }
                                 }
                             }
                             .padding(Spacing.lg)
@@ -628,7 +673,7 @@ struct QueriesView: View {
                                     .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
                             }
                             .padding(.trailing, Spacing.md)
-                            .padding(.bottom, 80)
+                            .padding(.bottom, 50)
                         }
                     }
                 }
