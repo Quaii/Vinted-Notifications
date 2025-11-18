@@ -23,11 +23,11 @@ class SettingsViewModel: ObservableObject {
         itemsPerQuery = Int(DatabaseService.shared.getParameter("items_per_query", defaultValue: "\(AppConfig.defaultItemsPerQuery)")) ?? AppConfig.defaultItemsPerQuery
         banwords = DatabaseService.shared.getParameter("banwords", defaultValue: "")
         notificationMode = NotificationMode(rawValue: DatabaseService.shared.getParameter("notification_mode", defaultValue: NotificationMode.precise.rawValue)) ?? .precise
-        userAgent = DatabaseService.shared.getParameter("user_agent", defaultValue: "")
+        userAgent = DatabaseService.shared.getParameter("user_agents", defaultValue: "")
         defaultHeaders = DatabaseService.shared.getParameter("default_headers", defaultValue: "")
         proxyList = DatabaseService.shared.getParameter("proxy_list", defaultValue: "")
         proxyListURL = DatabaseService.shared.getParameter("proxy_list_link", defaultValue: "")
-        checkProxies = DatabaseService.shared.getParameter("check_proxies", defaultValue: "False") == "True"
+        checkProxies = DatabaseService.shared.getParameter("check_proxies", defaultValue: "0") == "1"
         allowlist = DatabaseService.shared.getAllowlist()
     }
 
@@ -36,11 +36,14 @@ class SettingsViewModel: ObservableObject {
         DatabaseService.shared.setParameter("items_per_query", value: "\(itemsPerQuery)")
         DatabaseService.shared.setParameter("banwords", value: banwords)
         DatabaseService.shared.setParameter("notification_mode", value: notificationMode.rawValue)
-        DatabaseService.shared.setParameter("user_agent", value: userAgent)
+        DatabaseService.shared.setParameter("user_agents", value: userAgent)
         DatabaseService.shared.setParameter("default_headers", value: defaultHeaders)
         DatabaseService.shared.setParameter("proxy_list", value: proxyList)
         DatabaseService.shared.setParameter("proxy_list_link", value: proxyListURL)
-        DatabaseService.shared.setParameter("check_proxies", value: checkProxies ? "True" : "False")
+        DatabaseService.shared.setParameter("check_proxies", value: checkProxies ? "1" : "0")
+
+        // Reload VintedAPI settings to apply changes
+        VintedAPI.shared.reloadSettings()
 
         LogService.shared.info("Settings saved successfully")
     }

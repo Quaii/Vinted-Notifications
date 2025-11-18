@@ -14,8 +14,8 @@ class VintedAPI: ObservableObject {
     private var session: URLSession
     private var currentLocale: String = "www.vinted.fr"
     private var authUrl: String
-    private var userAgentsList: [String] = userAgents
-    private var defaultHeadersList: [String: String] = defaultHeaders
+    private var userAgentsList: [String] = []
+    private var defaultHeadersList: [String: String] = [:]
     private let maxRetries = AppConfig.apiMaxRetries
 
     private init() {
@@ -26,13 +26,43 @@ class VintedAPI: ObservableObject {
         self.session = URLSession(configuration: config)
         self.authUrl = "https://\(currentLocale)/"
 
-        LogService.shared.info("[VintedAPI] Initialized")
+        // Load settings from database
+        loadSettings()
+
+        LogService.shared.info("[VintedAPI] Initialized with \(userAgentsList.count) user agents")
+    }
+
+    // MARK: - Settings Management
+
+    private func loadSettings() {
+        // Load user agents from database
+        let userAgentsJSON = DatabaseService.shared.getParameter("user_agents", defaultValue: "[]")
+        if let data = userAgentsJSON.data(using: .utf8),
+           let agents = try? JSONSerialization.jsonObject(with: data) as? [String], !agents.isEmpty {
+            userAgentsList = agents
+        } else {
+            userAgentsList = userAgents // Fallback to hardcoded defaults
+        }
+
+        // Load default headers from database
+        let headersJSON = DatabaseService.shared.getParameter("default_headers", defaultValue: "{}")
+        if let data = headersJSON.data(using: .utf8),
+           let headers = try? JSONSerialization.jsonObject(with: data) as? [String: String], !headers.isEmpty {
+            defaultHeadersList = headers
+        } else {
+            defaultHeadersList = defaultHeaders // Fallback to hardcoded defaults
+        }
+    }
+
+    func reloadSettings() {
+        loadSettings()
+        LogService.shared.info("[VintedAPI] Settings reloaded")
     }
 
     // MARK: - Session Management
 
     private func getRandomUserAgent() -> String {
-        return userAgentsList.randomElement() ?? userAgents[0]
+        return userAgentsList.randomElement() ?? (userAgents.first ?? "Mozilla/5.0")
     }
 
     private func setLocale(from url: String) {

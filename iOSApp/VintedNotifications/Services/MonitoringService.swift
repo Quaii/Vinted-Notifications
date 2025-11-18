@@ -19,6 +19,22 @@ class MonitoringService: ObservableObject {
         LogService.shared.info("[MonitoringService] Initialized")
     }
 
+    // MARK: - Banwords Filtering
+
+    private func containsBanwords(_ title: String) -> Bool {
+        let banwordsStr = DatabaseService.shared.getParameter("banwords", defaultValue: "")
+        guard !banwordsStr.isEmpty else { return false }
+
+        // Split by ||| delimiter
+        let banwords = banwordsStr.split(separator: "|||").map { $0.trimmingCharacters(in: .whitespaces).lowercased() }
+        guard !banwords.isEmpty else { return false }
+
+        let titleLower = title.lowercased()
+        return banwords.contains { word in
+            !word.isEmpty && titleLower.contains(word)
+        }
+    }
+
     // MARK: - Register Background Tasks
 
     func registerBackgroundTasks() {
@@ -89,12 +105,22 @@ class MonitoringService: ObservableObject {
                 // Filter new items
                 var newItems: [VintedItem] = []
                 for item in items {
-                    if !DatabaseService.shared.itemExists(itemId: item.id) {
-                        var itemWithQuery = item
-                        itemWithQuery.queryId = query.id
-                        DatabaseService.shared.addItem(itemWithQuery)
-                        newItems.append(itemWithQuery)
+                    // Skip if item already exists
+                    if DatabaseService.shared.itemExists(itemId: item.id) {
+                        continue
                     }
+
+                    // Skip if title contains banwords
+                    if containsBanwords(item.title) {
+                        LogService.shared.info("[MonitoringService] Skipping item (banword match): \(item.title)")
+                        continue
+                    }
+
+                    // Add item to database and notification queue
+                    var itemWithQuery = item
+                    itemWithQuery.queryId = query.id
+                    DatabaseService.shared.addItem(itemWithQuery)
+                    newItems.append(itemWithQuery)
                 }
 
                 if !newItems.isEmpty {

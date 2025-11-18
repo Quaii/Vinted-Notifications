@@ -103,6 +103,13 @@ class DatabaseService: ObservableObject {
     }
 
     private func initializeParameters() {
+        // Convert userAgents array and defaultHeaders dict to JSON strings
+        let userAgentsJSON = try? JSONSerialization.data(withJSONObject: userAgents, options: [])
+        let userAgentsString = userAgentsJSON.flatMap { String(data: $0, encoding: .utf8) } ?? "[]"
+
+        let defaultHeadersJSON = try? JSONSerialization.data(withJSONObject: defaultHeaders, options: [])
+        let defaultHeadersString = defaultHeadersJSON.flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
+
         let defaultParams: [(String, String)] = [
             ("items_per_query", "\(AppConfig.defaultItemsPerQuery)"),
             ("query_refresh_delay", "\(AppConfig.defaultRefreshDelay)"),
@@ -110,7 +117,12 @@ class DatabaseService: ObservableObject {
             ("banwords", ""),
             ("time_window", "\(AppConfig.defaultTimeWindow)"),
             ("notifications_enabled", "1"),
-            ("notification_mode", NotificationMode.precise.rawValue)
+            ("notification_mode", NotificationMode.precise.rawValue),
+            ("user_agents", userAgentsString),
+            ("default_headers", defaultHeadersString),
+            ("proxy_list", ""),
+            ("proxy_list_link", ""),
+            ("check_proxies", "0")
         ]
 
         for (key, value) in defaultParams {
