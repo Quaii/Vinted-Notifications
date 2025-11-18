@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-enum LogLevel: String, CaseIterable {
+enum LogLevel: String, CaseIterable, Codable {
     case info = "INFO"
     case warning = "WARNING"
     case error = "ERROR"
