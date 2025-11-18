@@ -1950,7 +1950,7 @@ struct SettingsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            PageHeader(title: "Settings", showSettings: false, showBack: false, centered: false)
+            PageHeader(title: "Settings", showSettings: false, showBack: true, centered: false)
 
             ScrollView {
                 VStack(spacing: Spacing.xl) {
