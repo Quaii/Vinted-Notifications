@@ -23,12 +23,39 @@ class SettingsViewModel: ObservableObject {
         itemsPerQuery = Int(DatabaseService.shared.getParameter("items_per_query", defaultValue: "\(AppConfig.defaultItemsPerQuery)")) ?? AppConfig.defaultItemsPerQuery
         banwords = DatabaseService.shared.getParameter("banwords", defaultValue: "")
         notificationMode = NotificationMode(rawValue: DatabaseService.shared.getParameter("notification_mode", defaultValue: NotificationMode.precise.rawValue)) ?? .precise
-        userAgent = DatabaseService.shared.getParameter("user_agents", defaultValue: "")
-        defaultHeaders = DatabaseService.shared.getParameter("default_headers", defaultValue: "")
+
+        // Load and pretty-print user agents
+        let userAgentsJSON = DatabaseService.shared.getParameter("user_agents", defaultValue: "[]")
+        userAgent = prettyPrintJSON(userAgentsJSON) ?? userAgentsJSON
+
+        // Load and pretty-print default headers
+        let defaultHeadersJSON = DatabaseService.shared.getParameter("default_headers", defaultValue: "{}")
+        defaultHeaders = prettyPrintJSON(defaultHeadersJSON) ?? defaultHeadersJSON
+
         proxyList = DatabaseService.shared.getParameter("proxy_list", defaultValue: "")
         proxyListURL = DatabaseService.shared.getParameter("proxy_list_link", defaultValue: "")
         checkProxies = DatabaseService.shared.getParameter("check_proxies", defaultValue: "0") == "1"
         allowlist = DatabaseService.shared.getAllowlist()
+    }
+
+    private func prettyPrintJSON(_ jsonString: String) -> String? {
+        guard let data = jsonString.data(using: .utf8),
+              let jsonObject = try? JSONSerialization.jsonObject(with: data),
+              let prettyData = try? JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted, .sortedKeys]),
+              let prettyString = String(data: prettyData, encoding: .utf8) else {
+            return nil
+        }
+        return prettyString
+    }
+
+    private func compactJSON(_ jsonString: String) -> String? {
+        guard let data = jsonString.data(using: .utf8),
+              let jsonObject = try? JSONSerialization.jsonObject(with: data),
+              let compactData = try? JSONSerialization.data(withJSONObject: jsonObject, options: []),
+              let compactString = String(data: compactData, encoding: .utf8) else {
+            return nil
+        }
+        return compactString
     }
 
     func saveSettings() {
@@ -36,8 +63,13 @@ class SettingsViewModel: ObservableObject {
         DatabaseService.shared.setParameter("items_per_query", value: "\(itemsPerQuery)")
         DatabaseService.shared.setParameter("banwords", value: banwords)
         DatabaseService.shared.setParameter("notification_mode", value: notificationMode.rawValue)
-        DatabaseService.shared.setParameter("user_agents", value: userAgent)
-        DatabaseService.shared.setParameter("default_headers", value: defaultHeaders)
+
+        // Compact JSON before saving
+        let compactUserAgents = compactJSON(userAgent) ?? userAgent
+        let compactHeaders = compactJSON(defaultHeaders) ?? defaultHeaders
+
+        DatabaseService.shared.setParameter("user_agents", value: compactUserAgents)
+        DatabaseService.shared.setParameter("default_headers", value: compactHeaders)
         DatabaseService.shared.setParameter("proxy_list", value: proxyList)
         DatabaseService.shared.setParameter("proxy_list_link", value: proxyListURL)
         DatabaseService.shared.setParameter("check_proxies", value: checkProxies ? "1" : "0")
