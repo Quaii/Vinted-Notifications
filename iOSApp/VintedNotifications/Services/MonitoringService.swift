@@ -234,6 +234,9 @@ class MonitoringService: ObservableObject {
         stopForegroundMonitoring()
 
         monitoringTask = Task {
+            // Small initial delay to ensure database is ready
+            try? await Task.sleep(nanoseconds: 200_000_000) // 0.2 seconds
+
             while !Task.isCancelled && isMonitoring && isInForeground {
                 // Perform fetch
                 await performBackgroundFetch()

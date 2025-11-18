@@ -27,8 +27,9 @@ class DatabaseService: ObservableObject {
     }
 
     private func openDatabase() {
-        if sqlite3_open(dbPath, &db) == SQLITE_OK {
-            LogService.shared.info("Successfully opened database")
+        // Enable SQLite serialized mode for thread safety
+        if sqlite3_open_v2(dbPath, &db, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FULLMUTEX, nil) == SQLITE_OK {
+            LogService.shared.info("Successfully opened database in serialized mode")
         } else {
             LogService.shared.error("Failed to open database")
         }
