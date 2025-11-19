@@ -5,6 +5,13 @@
 
 import Foundation
 
+enum DangerZoneAction {
+    case deleteAllItems
+    case deleteAllQueries
+    case clearLogs
+    case resetAllData
+}
+
 class SettingsViewModel: ObservableObject {
     @Published var refreshDelay: Int = AppConfig.defaultRefreshDelay
     @Published var itemsPerQuery: Int = AppConfig.defaultItemsPerQuery
@@ -17,6 +24,8 @@ class SettingsViewModel: ObservableObject {
     @Published var checkProxies: Bool = false
     @Published var allowlist: [String] = []
     @Published var newCountry: String = ""
+    @Published var showDangerZoneConfirmation = false
+    @Published var pendingDangerZoneAction: DangerZoneAction?
 
     func loadSettings() {
         refreshDelay = Int(DatabaseService.shared.getParameter("query_refresh_delay", defaultValue: "\(AppConfig.defaultRefreshDelay)")) ?? AppConfig.defaultRefreshDelay
@@ -99,27 +108,65 @@ class SettingsViewModel: ObservableObject {
         loadSettings()
     }
 
-    func deleteAllItems() {
-        DatabaseService.shared.deleteAllItems()
-        LogService.shared.info("All items deleted")
+    func requestDeleteAllItems() {
+        pendingDangerZoneAction = .deleteAllItems
+        showDangerZoneConfirmation = true
     }
 
-    func deleteAllQueries() {
-        DatabaseService.shared.deleteAllQueries()
-        LogService.shared.info("All queries deleted")
+    func requestDeleteAllQueries() {
+        pendingDangerZoneAction = .deleteAllQueries
+        showDangerZoneConfirmation = true
     }
 
-    func clearLogs() {
-        LogService.shared.clearLogs()
-        LogService.shared.info("All logs cleared")
+    func requestClearLogs() {
+        pendingDangerZoneAction = .clearLogs
+        showDangerZoneConfirmation = true
     }
 
-    func resetAllData() {
-        DatabaseService.shared.deleteAllItems()
-        DatabaseService.shared.deleteAllQueries()
-        DatabaseService.shared.clearAllowlist()
-        LogService.shared.clearLogs()
-        LogService.shared.info("All data reset to defaults")
-        loadSettings()
+    func requestResetAllData() {
+        pendingDangerZoneAction = .resetAllData
+        showDangerZoneConfirmation = true
+    }
+
+    func executeDangerZoneAction() {
+        guard let action = pendingDangerZoneAction else { return }
+
+        switch action {
+        case .deleteAllItems:
+            DatabaseService.shared.deleteAllItems()
+            LogService.shared.info("All items deleted")
+        case .deleteAllQueries:
+            DatabaseService.shared.deleteAllQueries()
+            LogService.shared.info("All queries deleted")
+        case .clearLogs:
+            LogService.shared.clearLogs()
+            LogService.shared.info("All logs cleared")
+        case .resetAllData:
+            DatabaseService.shared.deleteAllItems()
+            DatabaseService.shared.deleteAllQueries()
+            DatabaseService.shared.clearAllowlist()
+            LogService.shared.clearLogs()
+            LogService.shared.info("All data reset to defaults")
+            loadSettings()
+        }
+
+        pendingDangerZoneAction = nil
+    }
+
+    func getConfirmationMessage() -> (title: String, message: String) {
+        guard let action = pendingDangerZoneAction else {
+            return ("", "")
+        }
+
+        switch action {
+        case .deleteAllItems:
+            return ("Clear All Items?", "This will permanently delete all cached items. This action cannot be undone.")
+        case .deleteAllQueries:
+            return ("Delete All Queries?", "This will permanently delete all saved search queries. This action cannot be undone.")
+        case .clearLogs:
+            return ("Clear All Logs?", "This will permanently delete all application logs. This action cannot be undone.")
+        case .resetAllData:
+            return ("Reset All Data?", "This will permanently delete ALL items, queries, logs, and settings. This action cannot be undone.")
+        }
     }
 }
