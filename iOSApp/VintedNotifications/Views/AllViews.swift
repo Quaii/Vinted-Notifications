@@ -584,9 +584,9 @@ struct StatWidget: View {
         .padding(Spacing.lg)
         .frame(maxWidth: .infinity, minHeight: 140, alignment: .leading)
         .background(theme.secondaryGroupedBackground)
-        .cornerRadius(20)
+        .cornerRadius(BorderRadius.xl)
         .overlay(
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: BorderRadius.xl)
                 .stroke(theme.separator, lineWidth: 1)
         )
         .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
@@ -646,24 +646,16 @@ struct ItemCard: View {
 
                 Spacer()
 
-                // Price on the right side
-                VStack(alignment: .trailing, spacing: Spacing.xs) {
-                    Text(item.formattedPrice())
-                        .font(.system(size: FontSizes.headline, weight: .bold))
-                        .foregroundColor(theme.primary)
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: FontSizes.footnote))
-                        .foregroundColor(theme.textTertiary)
-                }
+                // Price on the right side - centered and larger
+                Text(item.formattedPrice())
+                    .font(.system(size: FontSizes.title2, weight: .bold))
+                    .foregroundColor(theme.primary)
             }
             .padding(Spacing.md)
             .background(theme.secondaryGroupedBackground)
-            .cornerRadius(BorderRadius.lg)
+            .cornerRadius(BorderRadius.xl)
             .overlay(
-                RoundedRectangle(cornerRadius: BorderRadius.lg)
+                RoundedRectangle(cornerRadius: BorderRadius.xl)
                     .stroke(theme.border, lineWidth: 1)
             )
         }
@@ -701,7 +693,7 @@ struct ItemGridCard: View {
                 .frame(height: 160)
                 .clipped()
 
-                // Content
+                // Content - fixed height for consistent card sizes
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(item.formattedPrice())
                         .font(.system(size: FontSizes.headline, weight: .bold))
@@ -716,14 +708,18 @@ struct ItemGridCard: View {
                         Text(brand)
                             .font(.system(size: FontSizes.caption1))
                             .foregroundColor(theme.textSecondary)
+                            .lineLimit(1)
                     }
+                    
+                    Spacer(minLength: 0)
                 }
+                .frame(height: 85)
                 .padding(Spacing.sm)
             }
             .background(theme.secondaryGroupedBackground)
-            .cornerRadius(BorderRadius.lg)
+            .cornerRadius(BorderRadius.xl)
             .overlay(
-                RoundedRectangle(cornerRadius: BorderRadius.lg)
+                RoundedRectangle(cornerRadius: BorderRadius.xl)
                     .stroke(theme.border, lineWidth: 1)
             )
         }
@@ -758,9 +754,9 @@ struct QueryCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(Spacing.md)
             .background(theme.secondaryGroupedBackground)
-            .cornerRadius(BorderRadius.lg)
+            .cornerRadius(BorderRadius.xl)
             .overlay(
-                RoundedRectangle(cornerRadius: BorderRadius.lg)
+                RoundedRectangle(cornerRadius: BorderRadius.xl)
                     .stroke(theme.border, lineWidth: 1)
             )
         }
@@ -1139,9 +1135,9 @@ struct LogEntryView: View {
         }
         .padding(Spacing.md)
         .background(theme.secondaryGroupedBackground)
-        .cornerRadius(BorderRadius.lg)
+        .cornerRadius(BorderRadius.xl)
         .overlay(
-            RoundedRectangle(cornerRadius: BorderRadius.lg)
+            RoundedRectangle(cornerRadius: BorderRadius.xl)
                 .stroke(theme.separator, lineWidth: 1)
         )
     }
