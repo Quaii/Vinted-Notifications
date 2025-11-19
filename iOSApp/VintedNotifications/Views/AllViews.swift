@@ -1159,6 +1159,10 @@ struct QueriesView: View {
                 PageHeader(title: "Queries")
 
                 ZStack {
+                    // Background layer - always fills space
+                    Color.clear
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+
                     if viewModel.queries.isEmpty {
                         // Empty state
                         VStack(spacing: Spacing.xl) {
@@ -1186,6 +1190,7 @@ struct QueriesView: View {
                             }
                         }
                         .padding(Spacing.xl)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else {
                         // List of queries
                         List {
@@ -1216,10 +1221,8 @@ struct QueriesView: View {
                         .listStyle(.plain)
                         .scrollContentBackground(.hidden)
                         .background(theme.groupedBackground)
-                    }
 
-                    // FAB button - only show when there are queries
-                    if !viewModel.queries.isEmpty {
+                        // FAB button - only show when there are queries
                         VStack {
                             Spacer()
                             HStack {
