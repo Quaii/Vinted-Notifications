@@ -12,6 +12,7 @@ import SwiftUI
 struct VintedNotificationsApp: App {
     @StateObject private var themeManager = ThemeManager()
     @State private var isReady = false
+    @State private var hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
 
     init() {
         // Initialize services
@@ -24,7 +25,17 @@ struct VintedNotificationsApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if isReady {
+            if !hasCompletedOnboarding {
+                // Show onboarding flow on first launch
+                OnboardingFlow()
+                    .environmentObject(themeManager)
+                    .environment(\.theme, themeManager.currentTheme)
+                    .preferredColorScheme(themeManager.isDarkMode ? .dark : .light)
+                    .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
+                        // Listen for onboarding completion
+                        hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
+                    }
+            } else if isReady {
                 MainTabView()
                     .environmentObject(themeManager)
                     .environment(\.theme, themeManager.currentTheme)
@@ -43,11 +54,7 @@ struct VintedNotificationsApp: App {
                     .environment(\.theme, themeManager.currentTheme)
                     .preferredColorScheme(themeManager.isDarkMode ? .dark : .light)
                     .task {
-                        // Request notification permissions
-                        let granted = await NotificationService.shared.requestAuthorization()
-                        LogService.shared.info("Notification permission: \(granted)")
-
-                        // Simulate initialization delay (can be removed if not needed)
+                        // Simulate initialization delay
                         try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
 
                         LogService.shared.info("App initialization complete")
