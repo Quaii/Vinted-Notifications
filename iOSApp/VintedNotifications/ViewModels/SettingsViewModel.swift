@@ -17,6 +17,7 @@ class SettingsViewModel: ObservableObject {
     @Published var itemsPerQuery: Int = AppConfig.defaultItemsPerQuery
     @Published var banwords: String = ""
     @Published var notificationMode: NotificationMode = .precise
+    @Published var showForegroundNotifications: Bool = true
     @Published var userAgent: String = ""
     @Published var defaultHeaders: String = ""
     @Published var proxyList: String = ""
@@ -32,6 +33,7 @@ class SettingsViewModel: ObservableObject {
         itemsPerQuery = Int(DatabaseService.shared.getParameter("items_per_query", defaultValue: "\(AppConfig.defaultItemsPerQuery)")) ?? AppConfig.defaultItemsPerQuery
         banwords = DatabaseService.shared.getParameter("banwords", defaultValue: "")
         notificationMode = NotificationMode(rawValue: DatabaseService.shared.getParameter("notification_mode", defaultValue: NotificationMode.precise.rawValue)) ?? .precise
+        showForegroundNotifications = DatabaseService.shared.getParameter("show_foreground_notifications", defaultValue: "1") == "1"
 
         // Load and pretty-print user agents
         let userAgentsJSON = DatabaseService.shared.getParameter("user_agents", defaultValue: "[]")
@@ -72,6 +74,7 @@ class SettingsViewModel: ObservableObject {
         DatabaseService.shared.setParameter("items_per_query", value: "\(itemsPerQuery)")
         DatabaseService.shared.setParameter("banwords", value: banwords)
         DatabaseService.shared.setParameter("notification_mode", value: notificationMode.rawValue)
+        DatabaseService.shared.setParameter("show_foreground_notifications", value: showForegroundNotifications ? "1" : "0")
 
         // Compact JSON before saving
         let compactUserAgents = compactJSON(userAgent) ?? userAgent

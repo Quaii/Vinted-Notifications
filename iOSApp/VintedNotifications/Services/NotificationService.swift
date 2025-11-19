@@ -29,8 +29,16 @@ class NotificationService: NSObject, ObservableObject, UNUserNotificationCenterD
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        // Show notification even when app is in foreground
-        completionHandler([.banner, .sound, .badge])
+        // Check if foreground notifications are enabled
+        let showInForeground = DatabaseService.shared.getParameter("show_foreground_notifications", defaultValue: "1") == "1"
+
+        if showInForeground {
+            // Show notification even when app is in foreground
+            completionHandler([.banner, .sound, .badge])
+        } else {
+            // Don't show notification when app is in foreground
+            completionHandler([])
+        }
     }
 
     // This method is called when user taps on a notification

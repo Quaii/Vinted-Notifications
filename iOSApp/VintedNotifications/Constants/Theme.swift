@@ -240,16 +240,77 @@ extension EnvironmentValues {
     }
 }
 
+// MARK: - Appearance Mode
+
+enum AppearanceMode: String, CaseIterable {
+    case system = "system"
+    case light = "light"
+    case dark = "dark"
+
+    var displayName: String {
+        switch self {
+        case .system: return "System"
+        case .light: return "Light"
+        case .dark: return "Dark"
+        }
+    }
+}
+
 // MARK: - Theme Manager
 
 class ThemeManager: ObservableObject {
-    @Published var isDarkMode: Bool = true
+    @Published var appearanceMode: AppearanceMode = .system
+    @Published var systemColorScheme: ColorScheme? = nil
+
+    // Legacy support - computed property based on appearance mode
+    var isDarkMode: Bool {
+        get {
+            switch appearanceMode {
+            case .system:
+                return systemColorScheme == .dark
+            case .light:
+                return false
+            case .dark:
+                return true
+            }
+        }
+        set {
+            // When setting isDarkMode directly, map to appearance mode
+            appearanceMode = newValue ? .dark : .light
+        }
+    }
 
     var currentTheme: AppColors {
         isDarkMode ? darkColors : lightColors
     }
 
+    var preferredColorScheme: ColorScheme? {
+        switch appearanceMode {
+        case .system:
+            return nil  // nil means follow system
+        case .light:
+            return .light
+        case .dark:
+            return .dark
+        }
+    }
+
     func toggleTheme() {
-        isDarkMode.toggle()
+        switch appearanceMode {
+        case .system:
+            appearanceMode = .light
+        case .light:
+            appearanceMode = .dark
+        case .dark:
+            appearanceMode = .system
+        }
+    }
+
+    func setAppearanceMode(_ mode: AppearanceMode) {
+        appearanceMode = mode
+    }
+
+    func updateSystemColorScheme(_ colorScheme: ColorScheme?) {
+        systemColorScheme = colorScheme
     }
 }
