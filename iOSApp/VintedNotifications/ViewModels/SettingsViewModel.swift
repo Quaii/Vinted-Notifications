@@ -175,7 +175,6 @@ class SettingsViewModel: ObservableObject {
     @Published var showDebugCountdown = false
     @Published var debugCountdownMessage = ""
     @Published var debugModeEnabled = false
-    @Published var notificationMode: NotificationMode = .precise
 
     func handleDebugTap() {
         // If already enabled, don't allow re-enabling until app restart
