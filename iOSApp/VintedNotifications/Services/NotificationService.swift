@@ -9,14 +9,47 @@ import Foundation
 import UserNotifications
 
 @MainActor
-class NotificationService: NSObject, ObservableObject {
+class NotificationService: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationService()
 
     @Published var authorizationStatus: UNAuthorizationStatus = .notDetermined
 
     private override init() {
         super.init()
+        // Set self as delegate to receive notifications while app is in foreground
+        UNUserNotificationCenter.current().delegate = self
         checkAuthorizationStatus()
+    }
+
+    // MARK: - UNUserNotificationCenterDelegate
+
+    // This method is called when a notification is delivered while the app is in foreground
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        willPresent notification: UNNotification,
+        withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+    ) {
+        // Show notification even when app is in foreground
+        completionHandler([.banner, .sound, .badge])
+    }
+
+    // This method is called when user taps on a notification
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        let userInfo = response.notification.request.content.userInfo
+
+        // Handle notification tap
+        if let urlString = userInfo["url"] as? String, let url = URL(string: urlString) {
+            Task { @MainActor in
+                // Open URL if needed
+                LogService.shared.info("[NotificationService] User tapped notification with URL: \(urlString)")
+            }
+        }
+
+        completionHandler()
     }
 
     // MARK: - Authorization

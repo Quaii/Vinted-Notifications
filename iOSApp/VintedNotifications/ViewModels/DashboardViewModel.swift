@@ -12,6 +12,11 @@ class DashboardViewModel: ObservableObject {
     @Published var recentQueries: [VintedQuery] = []
     @Published var recentLogs: [LogEntry] = []
     @Published var isLoading = false
+    @Published var showEditSheet = false
+    @Published var editingQuery: VintedQuery?
+    @Published var newQueryUrl = ""
+    @Published var newQueryName = ""
+    @Published var errorMessage: String?
 
     struct Stats {
         var totalItems: Int = 0
@@ -54,7 +59,7 @@ class DashboardViewModel: ObservableObject {
         let itemsPerDay = recentItems.count > 0 ? Double(recentItems.count) / 7.0 : 0
         let lastItemTime = items.first.map { Date(timeIntervalSince1970: Double($0.createdAtTs) / 1000.0) }
 
-        // Load queries
+        // Load queries - limit to 1 query (most recently added)
         let queries = DatabaseService.shared.getQueries(activeOnly: true)
 
         // Load logs
@@ -67,9 +72,58 @@ class DashboardViewModel: ObservableObject {
                 lastItemTime: lastItemTime
             )
             self.lastItem = items.first
-            self.recentQueries = Array(queries.prefix(2))
+            self.recentQueries = Array(queries.prefix(1))
             self.recentLogs = logs
             self.isLoading = false
+        }
+    }
+
+    func deleteQuery(_ query: VintedQuery) {
+        DatabaseService.shared.deleteQuery(id: query.id ?? 0)
+        LogService.shared.info("[Dashboard] Query deleted: \(query.queryName)")
+        Task {
+            await loadDashboard()
+        }
+    }
+
+    func startEditing(_ query: VintedQuery) {
+        editingQuery = query
+        newQueryUrl = query.vintedUrl
+        newQueryName = query.queryName
+        errorMessage = nil
+        showEditSheet = true
+    }
+
+    func updateQuery() {
+        guard let query = editingQuery, let id = query.id else { return }
+
+        // Validate URL
+        guard !newQueryUrl.isEmpty else {
+            errorMessage = "URL cannot be empty"
+            return
+        }
+
+        guard newQueryUrl.contains("vinted.") else {
+            errorMessage = "Please enter a valid Vinted URL"
+            return
+        }
+
+        // Update query
+        var updatedQuery = query
+        updatedQuery.vintedUrl = newQueryUrl
+        updatedQuery.queryName = newQueryName.isEmpty ? "Custom Search" : newQueryName
+
+        DatabaseService.shared.updateQuery(updatedQuery)
+        LogService.shared.info("[Dashboard] Query updated: \(updatedQuery.queryName)")
+
+        // Clear form and reload
+        newQueryUrl = ""
+        newQueryName = ""
+        editingQuery = nil
+        errorMessage = nil
+
+        Task {
+            await loadDashboard()
         }
     }
 

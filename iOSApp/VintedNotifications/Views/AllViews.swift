@@ -196,7 +196,7 @@ struct ItemCard: View {
             }
         }) {
             HStack(spacing: Spacing.md) {
-                // Photo
+                // Photo - Larger size for better visibility
                 AsyncImage(url: URL(string: item.photo ?? "")) { image in
                     image
                         .resizable()
@@ -209,15 +209,11 @@ struct ItemCard: View {
                                 .foregroundColor(theme.textTertiary)
                         )
                 }
-                .frame(width: compact ? 60 : 80, height: compact ? 60 : 80)
+                .frame(width: compact ? 80 : 100, height: compact ? 80 : 100)
                 .cornerRadius(BorderRadius.md)
 
-                // Content
+                // Content - Title, brand, and time on the left
                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(item.formattedPrice())
-                        .font(.system(size: FontSizes.headline, weight: .bold))
-                        .foregroundColor(theme.primary)
-
                     Text(item.title)
                         .font(.system(size: FontSizes.body, weight: .medium))
                         .foregroundColor(theme.text)
@@ -238,11 +234,80 @@ struct ItemCard: View {
 
                 Spacer()
 
-                Image(systemName: "chevron.right")
-                    .font(.system(size: FontSizes.footnote))
-                    .foregroundColor(theme.textTertiary)
+                // Price on the right side
+                VStack(alignment: .trailing, spacing: Spacing.xs) {
+                    Text(item.formattedPrice())
+                        .font(.system(size: FontSizes.headline, weight: .bold))
+                        .foregroundColor(theme.primary)
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: FontSizes.footnote))
+                        .foregroundColor(theme.textTertiary)
+                }
             }
             .padding(Spacing.md)
+            .background(theme.secondaryGroupedBackground)
+            .cornerRadius(BorderRadius.lg)
+            .overlay(
+                RoundedRectangle(cornerRadius: BorderRadius.lg)
+                    .stroke(theme.border, lineWidth: 1)
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
+
+// ItemGridCard Component - for grid view
+struct ItemGridCard: View {
+    let item: VintedItem
+
+    @Environment(\.theme) var theme
+    @Environment(\.openURL) var openURL
+
+    var body: some View {
+        Button(action: {
+            if let urlString = item.url, let url = URL(string: urlString) {
+                openURL(url)
+            }
+        }) {
+            VStack(alignment: .leading, spacing: 0) {
+                // Photo
+                AsyncImage(url: URL(string: item.photo ?? "")) { image in
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    Rectangle()
+                        .fill(theme.buttonFill)
+                        .overlay(
+                            Image(systemName: "photo")
+                                .foregroundColor(theme.textTertiary)
+                        )
+                }
+                .frame(height: 160)
+                .clipped()
+
+                // Content
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(item.formattedPrice())
+                        .font(.system(size: FontSizes.headline, weight: .bold))
+                        .foregroundColor(theme.primary)
+
+                    Text(item.title)
+                        .font(.system(size: FontSizes.subheadline, weight: .medium))
+                        .foregroundColor(theme.text)
+                        .lineLimit(2)
+
+                    if let brand = item.brandTitle, !brand.isEmpty {
+                        Text(brand)
+                            .font(.system(size: FontSizes.caption1))
+                            .foregroundColor(theme.textSecondary)
+                    }
+                }
+                .padding(Spacing.sm)
+            }
             .background(theme.secondaryGroupedBackground)
             .cornerRadius(BorderRadius.lg)
             .overlay(
@@ -445,12 +510,35 @@ struct DashboardView: View {
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, Spacing.lg)
                             } else {
-                                ForEach(viewModel.recentQueries) { query in
-                                    QueryCard(
-                                        query: query,
-                                        onPress: {}
-                                    )
+                                List {
+                                    ForEach(viewModel.recentQueries) { query in
+                                        QueryCard(
+                                            query: query,
+                                            onPress: {}
+                                        )
+                                        .listRowInsets(EdgeInsets(top: Spacing.sm, leading: 0, bottom: Spacing.sm, trailing: 0))
+                                        .listRowSeparator(.hidden)
+                                        .listRowBackground(Color.clear)
+                                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                            Button(role: .destructive) {
+                                                viewModel.deleteQuery(query)
+                                            } label: {
+                                                Label("Delete", systemImage: "trash")
+                                            }
+
+                                            Button {
+                                                viewModel.startEditing(query)
+                                            } label: {
+                                                Label("Edit", systemImage: "pencil")
+                                            }
+                                            .tint(.blue)
+                                        }
+                                    }
                                 }
+                                .listStyle(.plain)
+                                .scrollContentBackground(.hidden)
+                                .scrollDisabled(true)
+                                .frame(height: CGFloat(viewModel.recentQueries.count) * 100)
                             }
                         }
 
@@ -491,6 +579,118 @@ struct DashboardView: View {
         .refreshable {
             await viewModel.loadDashboard()
         }
+        .sheet(isPresented: $viewModel.showEditSheet) {
+            DashboardQueryEditSheet(viewModel: viewModel)
+        }
+    }
+}
+
+// Dashboard Query Edit Sheet
+struct DashboardQueryEditSheet: View {
+    @ObservedObject var viewModel: DashboardViewModel
+    @Environment(\.theme) var theme
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Custom Header
+            HStack {
+                Button(action: {
+                    viewModel.newQueryUrl = ""
+                    viewModel.newQueryName = ""
+                    viewModel.editingQuery = nil
+                    dismiss()
+                }) {
+                    Text("Cancel")
+                        .font(.system(size: FontSizes.body))
+                        .foregroundColor(theme.primary)
+                }
+
+                Spacer()
+
+                Text("Edit Query")
+                    .font(.system(size: FontSizes.headline, weight: .bold))
+                    .foregroundColor(theme.text)
+
+                Spacer()
+
+                Button(action: {
+                    viewModel.updateQuery()
+                    if viewModel.errorMessage == nil {
+                        dismiss()
+                    }
+                }) {
+                    Text("Update")
+                        .font(.system(size: FontSizes.body, weight: .semibold))
+                        .foregroundColor(theme.primary)
+                }
+            }
+            .padding(.horizontal, Spacing.lg)
+            .padding(.vertical, Spacing.md)
+            .background(theme.background)
+
+            Divider()
+
+            ScrollView {
+                VStack(spacing: Spacing.xl) {
+                    // URL Input Section
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        Text("Vinted Search URL")
+                            .font(.system(size: FontSizes.subheadline, weight: .semibold))
+                            .foregroundColor(theme.text)
+
+                        TextField("https://www.vinted.com/catalog?...", text: $viewModel.newQueryUrl)
+                            .font(.system(size: FontSizes.body))
+                            .autocapitalization(.none)
+                            .textInputAutocapitalization(.never)
+                            .padding(Spacing.md)
+                            .background(theme.secondaryGroupedBackground)
+                            .cornerRadius(BorderRadius.lg)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: BorderRadius.lg)
+                                    .stroke(theme.border, lineWidth: 1)
+                            )
+                    }
+
+                    // Name Input Section
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        Text("Custom Name (Optional)")
+                            .font(.system(size: FontSizes.subheadline, weight: .semibold))
+                            .foregroundColor(theme.text)
+
+                        TextField("e.g., Nike Shoes", text: $viewModel.newQueryName)
+                            .font(.system(size: FontSizes.body))
+                            .padding(Spacing.md)
+                            .background(theme.secondaryGroupedBackground)
+                            .cornerRadius(BorderRadius.lg)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: BorderRadius.lg)
+                                    .stroke(theme.border, lineWidth: 1)
+                            )
+                    }
+
+                    // Error Message
+                    if let error = viewModel.errorMessage {
+                        HStack(alignment: .top, spacing: Spacing.sm) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .font(.system(size: FontSizes.body))
+                                .foregroundColor(.red)
+
+                            Text(error)
+                                .font(.system(size: FontSizes.footnote))
+                                .foregroundColor(.red)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(Spacing.md)
+                        .background(Color.red.opacity(0.1))
+                        .cornerRadius(BorderRadius.lg)
+                    }
+                }
+                .padding(Spacing.lg)
+            }
+            .background(theme.groupedBackground)
+        }
+        .background(theme.groupedBackground)
     }
 }
 
@@ -865,13 +1065,26 @@ struct ItemsView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     ScrollView {
-                        LazyVStack(spacing: Spacing.md) {
-                            ForEach(viewModel.filteredItems) { item in
-                                ItemCard(item: item)
+                        if viewModel.viewMode == .list {
+                            LazyVStack(spacing: Spacing.md) {
+                                ForEach(viewModel.filteredItems) { item in
+                                    ItemCard(item: item)
+                                }
                             }
+                            .padding(Spacing.lg)
+                            .padding(.bottom, 100)
+                        } else {
+                            LazyVGrid(columns: [
+                                GridItem(.flexible(), spacing: Spacing.md),
+                                GridItem(.flexible(), spacing: Spacing.md)
+                            ], spacing: Spacing.md) {
+                                ForEach(viewModel.filteredItems) { item in
+                                    ItemGridCard(item: item)
+                                }
+                            }
+                            .padding(Spacing.lg)
+                            .padding(.bottom, 100)
                         }
-                        .padding(Spacing.lg)
-                        .padding(.bottom, 100)
                     }
                     .scrollIndicators(.hidden)
                 }
@@ -1891,7 +2104,7 @@ struct SettingsView: View {
                             .foregroundColor(theme.textTertiary)
 
                         VStack(spacing: Spacing.sm) {
-                            Button(action: viewModel.deleteAllItems) {
+                            Button(action: viewModel.requestDeleteAllItems) {
                                 HStack {
                                     Image(systemName: "trash.fill")
                                         .font(.system(size: 20))
@@ -1905,7 +2118,7 @@ struct SettingsView: View {
                                 .cornerRadius(BorderRadius.lg)
                             }
 
-                            Button(action: viewModel.deleteAllQueries) {
+                            Button(action: viewModel.requestDeleteAllQueries) {
                                 HStack {
                                     Image(systemName: "magnifyingglass.circle")
                                         .font(.system(size: 20))
@@ -1919,7 +2132,7 @@ struct SettingsView: View {
                                 .cornerRadius(BorderRadius.lg)
                             }
 
-                            Button(action: viewModel.clearLogs) {
+                            Button(action: viewModel.requestClearLogs) {
                                 HStack {
                                     Image(systemName: "doc.text.fill")
                                         .font(.system(size: 20))
@@ -1933,7 +2146,7 @@ struct SettingsView: View {
                                 .cornerRadius(BorderRadius.lg)
                             }
 
-                            Button(action: viewModel.resetAllData) {
+                            Button(action: viewModel.requestResetAllData) {
                                 HStack {
                                     Image(systemName: "exclamationmark.triangle.fill")
                                         .font(.system(size: 20))
@@ -1979,11 +2192,9 @@ struct SettingsView: View {
                     saveButton
                     dangerZoneSection
                     versionFooter
-
-                    Spacer()
-                        .frame(height: 100)
                 }
                 .padding(Spacing.lg)
+                .padding(.bottom, Spacing.xl)
             }
             .scrollIndicators(.hidden)
             .background(theme.groupedBackground)
@@ -1997,6 +2208,16 @@ struct SettingsView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text("Your settings have been saved successfully.")
+        }
+        .alert(viewModel.getConfirmationMessage().title, isPresented: $viewModel.showDangerZoneConfirmation) {
+            Button("Cancel", role: .cancel) {
+                viewModel.pendingDangerZoneAction = nil
+            }
+            Button("Confirm", role: .destructive) {
+                viewModel.executeDangerZoneAction()
+            }
+        } message: {
+            Text(viewModel.getConfirmationMessage().message)
         }
     }
 }
