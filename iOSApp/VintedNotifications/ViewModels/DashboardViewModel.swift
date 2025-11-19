@@ -108,13 +108,10 @@ class DashboardViewModel: ObservableObject {
             return
         }
 
-        // Update query
-        var updatedQuery = query
-        updatedQuery.vintedUrl = newQueryUrl
-        updatedQuery.queryName = newQueryName.isEmpty ? "Custom Search" : newQueryName
-
-        DatabaseService.shared.updateQuery(updatedQuery)
-        LogService.shared.info("[Dashboard] Query updated: \(updatedQuery.queryName)")
+        // Update query using DatabaseService
+        let finalName = newQueryName.isEmpty ? "Custom Search" : newQueryName
+        DatabaseService.shared.updateQuery(id: id, query: newQueryUrl, queryName: finalName)
+        LogService.shared.info("[Dashboard] Query updated: \(finalName)")
 
         // Clear form and reload
         newQueryUrl = ""
