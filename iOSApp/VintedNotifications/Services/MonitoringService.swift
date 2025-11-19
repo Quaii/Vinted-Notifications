@@ -12,7 +12,8 @@ import UIKit
 class MonitoringService: ObservableObject {
     static let shared = MonitoringService()
 
-    private let taskIdentifier = "com.vintednotifications.refresh"
+    private let refreshTaskIdentifier = "com.vintednotifications.refresh"
+    private let processingTaskIdentifier = "com.vintednotifications.processing"
     @Published var isMonitoring = false
     @Published var lastCheckTime: Date?
 
@@ -113,22 +114,38 @@ class MonitoringService: ObservableObject {
     // MARK: - Register Background Tasks
 
     func registerBackgroundTasks() {
-        BGTaskScheduler.shared.register(forTaskWithIdentifier: taskIdentifier, using: nil) { task in
-            self.handleBackgroundTask(task as! BGAppRefreshTask)
+        // Register BGAppRefreshTask (for quick refreshes)
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: refreshTaskIdentifier, using: nil) { task in
+            self.handleBackgroundRefreshTask(task as! BGAppRefreshTask)
         }
-        LogService.shared.info("[MonitoringService] Background tasks registered")
+        
+        // Register BGProcessingTask (more reliable, can run longer)
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: processingTaskIdentifier, using: nil) { task in
+            self.handleBackgroundProcessingTask(task as! BGProcessingTask)
+        }
+        
+        LogService.shared.info("[MonitoringService] Background tasks registered (refresh + processing)")
     }
 
     // MARK: - Schedule Background Fetch
 
     func scheduleBackgroundFetch() {
-        // Cancel any existing scheduled tasks first
-        BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: taskIdentifier)
+        // Get refresh delay from settings (user preference, default 30 minutes)
+        let refreshDelay = Int(DatabaseService.shared.getParameter("query_refresh_delay", defaultValue: "\(AppConfig.defaultRefreshDelay)")) ?? AppConfig.defaultRefreshDelay
+        let interval = TimeInterval(refreshDelay * 60) // Convert to seconds
+        
+        // Schedule BGAppRefreshTask (quick refresh)
+        scheduleRefreshTask(interval: interval)
+        
+        // Schedule BGProcessingTask (more reliable, runs longer)
+        scheduleProcessingTask(interval: interval)
+    }
+    
+    private func scheduleRefreshTask(interval: TimeInterval) {
+        // Cancel any existing scheduled refresh tasks
+        BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: refreshTaskIdentifier)
 
-        let request = BGAppRefreshTaskRequest(identifier: taskIdentifier)
-        // Use a shorter interval to increase chances of execution
-        // iOS controls when tasks actually run, but shorter intervals help
-        let interval = min(AppConfig.backgroundFetchInterval, 15 * 60) // Max 15 minutes
+        let request = BGAppRefreshTaskRequest(identifier: refreshTaskIdentifier)
         request.earliestBeginDate = Date(timeIntervalSinceNow: interval)
 
         do {
@@ -137,33 +154,45 @@ class MonitoringService: ObservableObject {
             let formatter = DateFormatter()
             formatter.dateStyle = .short
             formatter.timeStyle = .medium
-            LogService.shared.info("[MonitoringService] ✅ Background fetch scheduled for: \(formatter.string(from: nextDate)) (in \(Int(interval/60)) minutes)")
+            LogService.shared.info("[MonitoringService] ✅ Refresh task scheduled for: \(formatter.string(from: nextDate)) (in \(Int(interval/60)) minutes)")
+        } catch {
+            LogService.shared.error("[MonitoringService] ❌ Failed to schedule refresh task: \(error.localizedDescription)")
+        }
+    }
+    
+    private func scheduleProcessingTask(interval: TimeInterval) {
+        // Cancel any existing scheduled processing tasks
+        BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: processingTaskIdentifier)
+
+        let request = BGProcessingTaskRequest(identifier: processingTaskIdentifier)
+        request.earliestBeginDate = Date(timeIntervalSinceNow: interval)
+        // Processing tasks can require network access
+        request.requiresNetworkConnectivity = true
+
+        do {
+            try BGTaskScheduler.shared.submit(request)
+            let nextDate = request.earliestBeginDate ?? Date()
+            let formatter = DateFormatter()
+            formatter.dateStyle = .short
+            formatter.timeStyle = .medium
+            LogService.shared.info("[MonitoringService] ✅ Processing task scheduled for: \(formatter.string(from: nextDate)) (in \(Int(interval/60)) minutes)")
             
             // Log pending tasks for debugging
             BGTaskScheduler.shared.getPendingTaskRequests { requests in
-                let pendingCount = requests.filter { $0.identifier == self.taskIdentifier }.count
-                LogService.shared.info("[MonitoringService] Pending background tasks: \(pendingCount)")
+                let refreshCount = requests.filter { $0.identifier == self.refreshTaskIdentifier }.count
+                let processingCount = requests.filter { $0.identifier == self.processingTaskIdentifier }.count
+                LogService.shared.info("[MonitoringService] Pending tasks - Refresh: \(refreshCount), Processing: \(processingCount)")
             }
         } catch {
-            LogService.shared.error("[MonitoringService] ❌ Failed to schedule background fetch: \(error.localizedDescription)")
-
-            // If scheduling fails, try again with a shorter time
-            let retryRequest = BGAppRefreshTaskRequest(identifier: taskIdentifier)
-            retryRequest.earliestBeginDate = Date(timeIntervalSinceNow: 5 * 60) // Try in 5 minutes
-            do {
-                try BGTaskScheduler.shared.submit(retryRequest)
-                LogService.shared.info("[MonitoringService] ✅ Retry: Background fetch scheduled for 5 minutes")
-            } catch {
-                LogService.shared.error("[MonitoringService] ❌ Retry also failed: \(error.localizedDescription)")
-            }
+            LogService.shared.error("[MonitoringService] ❌ Failed to schedule processing task: \(error.localizedDescription)")
         }
     }
 
-    // MARK: - Handle Background Task
+    // MARK: - Handle Background Tasks
 
-    private func handleBackgroundTask(_ task: BGAppRefreshTask) {
+    private func handleBackgroundRefreshTask(_ task: BGAppRefreshTask) {
         let startTime = Date()
-        LogService.shared.info("[MonitoringService] 🎯 Background task STARTED at \(DateFormatter.localizedString(from: startTime, dateStyle: .none, timeStyle: .medium))")
+        LogService.shared.info("[MonitoringService] 🎯 Background REFRESH task STARTED at \(DateFormatter.localizedString(from: startTime, dateStyle: .none, timeStyle: .medium))")
 
         // Schedule next fetch BEFORE performing current fetch
         // This ensures we always have a task scheduled
@@ -173,12 +202,34 @@ class MonitoringService: ObservableObject {
             let success = await performBackgroundFetch()
             task.setTaskCompleted(success: success)
             let duration = Date().timeIntervalSince(startTime)
-            LogService.shared.info("[MonitoringService] ✅ Background task COMPLETED in \(String(format: "%.1f", duration))s")
+            LogService.shared.info("[MonitoringService] ✅ Background REFRESH task COMPLETED in \(String(format: "%.1f", duration))s")
         }
 
         // Set expiration handler
         task.expirationHandler = {
-            LogService.shared.warning("[MonitoringService] ⚠️ Background task EXPIRED - task took too long")
+            LogService.shared.warning("[MonitoringService] ⚠️ Background REFRESH task EXPIRED - task took too long")
+            task.setTaskCompleted(success: false)
+        }
+    }
+    
+    private func handleBackgroundProcessingTask(_ task: BGProcessingTask) {
+        let startTime = Date()
+        LogService.shared.info("[MonitoringService] 🎯 Background PROCESSING task STARTED at \(DateFormatter.localizedString(from: startTime, dateStyle: .none, timeStyle: .medium))")
+
+        // Schedule next fetch BEFORE performing current fetch
+        // This ensures we always have a task scheduled
+        scheduleBackgroundFetch()
+
+        Task {
+            let success = await performBackgroundFetch()
+            task.setTaskCompleted(success: success)
+            let duration = Date().timeIntervalSince(startTime)
+            LogService.shared.info("[MonitoringService] ✅ Background PROCESSING task COMPLETED in \(String(format: "%.1f", duration))s")
+        }
+
+        // Set expiration handler (processing tasks have longer timeout)
+        task.expirationHandler = {
+            LogService.shared.warning("[MonitoringService] ⚠️ Background PROCESSING task EXPIRED - task took too long")
             task.setTaskCompleted(success: false)
         }
     }
@@ -346,18 +397,46 @@ class MonitoringService: ObservableObject {
         }
 
         LogService.shared.info("[MonitoringService] Monitoring started (foreground: \(isInForeground))")
+        
+        // Check and log background refresh status
+        let refreshStatus = checkBackgroundRefreshStatus()
+        LogService.shared.info("[MonitoringService] Background Refresh Status: \(refreshStatus)")
+        
+        if refreshStatus != "Enabled" {
+            LogService.shared.warning("[MonitoringService] ⚠️ WARNING: Background App Refresh is not enabled!")
+            LogService.shared.warning("[MonitoringService] To enable: Settings > General > Background App Refresh > Vinted Notifications")
+        }
+        
         LogService.shared.info("[MonitoringService] ⚠️ IMPORTANT: iOS controls when background tasks run.")
-        LogService.shared.info("[MonitoringService] Background tasks may be delayed by hours or days if:")
-        LogService.shared.info("[MonitoringService] - App is not used frequently")
-        LogService.shared.info("[MonitoringService] - Device is in low power mode")
-        LogService.shared.info("[MonitoringService] - System decides app doesn't need background refresh")
+        LogService.shared.info("[MonitoringService] Using dual-task approach (Refresh + Processing) for better reliability.")
+        let refreshDelayMinutes = Int(DatabaseService.shared.getParameter("query_refresh_delay", defaultValue: "\(AppConfig.defaultRefreshDelay)")) ?? AppConfig.defaultRefreshDelay
+        LogService.shared.info("[MonitoringService] Tasks scheduled every \(refreshDelayMinutes) minutes.")
         LogService.shared.info("[MonitoringService] The app will reschedule tasks when you open it to improve reliability.")
     }
 
     func stopMonitoring() {
         isMonitoring = false
         stopForegroundMonitoring()
-        BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: taskIdentifier)
-        LogService.shared.info("[MonitoringService] Monitoring stopped")
+        BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: refreshTaskIdentifier)
+        BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: processingTaskIdentifier)
+        LogService.shared.info("[MonitoringService] Monitoring stopped (both tasks cancelled)")
+    }
+    
+    // MARK: - Background Refresh Status
+    
+    func checkBackgroundRefreshStatus() -> String {
+        // Check if background app refresh is enabled for this app
+        // Note: This is a system-level setting that users can disable
+        let status = UIApplication.shared.backgroundRefreshStatus
+        switch status {
+        case .available:
+            return "Enabled"
+        case .restricted:
+            return "Restricted (parental controls)"
+        case .denied:
+            return "Disabled (check Settings > General > Background App Refresh)"
+        @unknown default:
+            return "Unknown"
+        }
     }
 }
