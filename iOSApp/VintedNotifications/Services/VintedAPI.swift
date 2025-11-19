@@ -47,6 +47,12 @@ class VintedAPI: ObservableObject {
     private init() {
         self.currentLocale = "www.vinted.fr"
         self.authUrl = "https://\(currentLocale)/"
+        
+        // Initialize session with default configuration first
+        // (required before calling any instance methods in Swift)
+        let defaultConfig = URLSessionConfiguration.default
+        defaultConfig.timeoutIntervalForRequest = AppConfig.apiTimeout
+        self.session = URLSession(configuration: defaultConfig)
 
         // Load settings from database
         loadSettings()
