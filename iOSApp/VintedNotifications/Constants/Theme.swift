@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 // MARK: - Theme Colors
 
@@ -260,14 +261,23 @@ enum AppearanceMode: String, CaseIterable {
 
 class ThemeManager: ObservableObject {
     @Published var appearanceMode: AppearanceMode = .system
-    @Published var systemColorScheme: ColorScheme? = nil
+    @Published private var _systemColorScheme: ColorScheme = .light
+
+    // Get the actual system color scheme from UITraitCollection
+    private var actualSystemColorScheme: ColorScheme {
+        #if os(iOS)
+        return UITraitCollection.current.userInterfaceStyle == .dark ? .dark : .light
+        #else
+        return .light // Default for other platforms
+        #endif
+    }
 
     // Legacy support - computed property based on appearance mode
     var isDarkMode: Bool {
         get {
             switch appearanceMode {
             case .system:
-                return systemColorScheme == .dark
+                return actualSystemColorScheme == .dark
             case .light:
                 return false
             case .dark:
@@ -295,6 +305,11 @@ class ThemeManager: ObservableObject {
         }
     }
 
+    // Public accessor for system color scheme (for compatibility)
+    var systemColorScheme: ColorScheme? {
+        return _systemColorScheme
+    }
+
     func toggleTheme() {
         switch appearanceMode {
         case .system:
@@ -308,9 +323,24 @@ class ThemeManager: ObservableObject {
 
     func setAppearanceMode(_ mode: AppearanceMode) {
         appearanceMode = mode
+        // Force objectWillChange to trigger UI updates
+        objectWillChange.send()
     }
 
     func updateSystemColorScheme(_ colorScheme: ColorScheme?) {
-        systemColorScheme = colorScheme
+        let newScheme = colorScheme ?? actualSystemColorScheme
+        if _systemColorScheme != newScheme {
+            _systemColorScheme = newScheme
+            // Only trigger update if appearance mode is system
+            if appearanceMode == .system {
+                objectWillChange.send()
+            }
+        }
+    }
+
+    // Method to refresh system color scheme detection
+    func refreshSystemColorScheme() {
+        let currentSystemScheme = actualSystemColorScheme
+        updateSystemColorScheme(currentSystemScheme)
     }
 }
