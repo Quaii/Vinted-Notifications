@@ -7,13 +7,13 @@
 //
 
 import SwiftUI
+import UIKit
 
 @main
 struct VintedNotificationsApp: App {
     @StateObject private var themeManager = ThemeManager()
     @State private var isReady = false
     @State private var hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
-    @Environment(\.colorScheme) var systemColorScheme
 
     init() {
         // Initialize services
@@ -23,8 +23,8 @@ struct VintedNotificationsApp: App {
         MonitoringService.shared.registerBackgroundTasks()
         LogService.shared.info("Background tasks registered")
 
-        // Appearance mode will be loaded in the view's onAppear
-        // (deferred to ensure proper initialization order)
+        // Load appearance mode immediately
+        loadAppearanceMode()
     }
 
     var body: some Scene {
@@ -36,15 +36,15 @@ struct VintedNotificationsApp: App {
                     .environment(\.theme, themeManager.currentTheme)
                     .preferredColorScheme(themeManager.preferredColorScheme)
                     .onAppear {
-                        loadAppearanceMode()
-                        themeManager.updateSystemColorScheme(systemColorScheme)
-                    }
-                    .onChange(of: systemColorScheme) { _, newScheme in
-                        themeManager.updateSystemColorScheme(newScheme)
+                        themeManager.refreshSystemColorScheme()
                     }
                     .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
                         // Listen for onboarding completion
                         hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
+                    }
+                    .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+                        // Refresh system color scheme when app becomes active
+                        themeManager.refreshSystemColorScheme()
                     }
             } else if isReady {
                 MainTabView()
@@ -52,8 +52,7 @@ struct VintedNotificationsApp: App {
                     .environment(\.theme, themeManager.currentTheme)
                     .preferredColorScheme(themeManager.preferredColorScheme)
                     .onAppear {
-                        loadAppearanceMode()
-                        themeManager.updateSystemColorScheme(systemColorScheme)
+                        themeManager.refreshSystemColorScheme()
 
                         // Start monitoring if there are queries
                         let queries = DatabaseService.shared.getQueries(activeOnly: true)
@@ -62,8 +61,9 @@ struct VintedNotificationsApp: App {
                             LogService.shared.info("Monitoring started (\(queries.count) active queries)")
                         }
                     }
-                    .onChange(of: systemColorScheme) { _, newScheme in
-                        themeManager.updateSystemColorScheme(newScheme)
+                    .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+                        // Refresh system color scheme when app becomes active
+                        themeManager.refreshSystemColorScheme()
                     }
             } else {
                 LoadingView()
@@ -71,11 +71,11 @@ struct VintedNotificationsApp: App {
                     .environment(\.theme, themeManager.currentTheme)
                     .preferredColorScheme(themeManager.preferredColorScheme)
                     .onAppear {
-                        loadAppearanceMode()
-                        themeManager.updateSystemColorScheme(systemColorScheme)
+                        themeManager.refreshSystemColorScheme()
                     }
-                    .onChange(of: systemColorScheme) { _, newScheme in
-                        themeManager.updateSystemColorScheme(newScheme)
+                    .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+                        // Refresh system color scheme when app becomes active
+                        themeManager.refreshSystemColorScheme()
                     }
                     .task {
                         // Simulate initialization delay
