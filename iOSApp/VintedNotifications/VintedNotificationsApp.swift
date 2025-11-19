@@ -23,12 +23,8 @@ struct VintedNotificationsApp: App {
         MonitoringService.shared.registerBackgroundTasks()
         LogService.shared.info("Background tasks registered")
 
-        // Load saved appearance mode
-        if let savedMode = UserDefaults.standard.string(forKey: "appearanceMode"),
-           let mode = AppearanceMode(rawValue: savedMode) {
-            // We need to defer this to after initialization
-            // Will be loaded in the view's onAppear
-        }
+        // Appearance mode will be loaded in the view's onAppear
+        // (deferred to ensure proper initialization order)
     }
 
     var body: some Scene {
