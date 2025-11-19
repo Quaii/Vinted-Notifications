@@ -265,11 +265,9 @@ class VintedAPI: ObservableObject {
         // Parse proxy string format: "http://host:port" or "host:port"
         var host: String
         var port: Int
-        var scheme: String = "http"
         
         if proxyString.contains("://") {
             let parts = proxyString.components(separatedBy: "://")
-            scheme = parts[0]
             let address = parts[1]
             let addressParts = address.components(separatedBy: ":")
             host = addressParts[0]
@@ -280,13 +278,11 @@ class VintedAPI: ObservableObject {
             port = Int(parts[1]) ?? 8080
         }
         
+        // iOS only supports HTTP proxy settings (HTTPS proxy constants are unavailable)
         return [
             kCFNetworkProxiesHTTPEnable: true,
             kCFNetworkProxiesHTTPProxy: host,
-            kCFNetworkProxiesHTTPPort: port,
-            kCFNetworkProxiesHTTPSEnable: true,
-            kCFNetworkProxiesHTTPSProxy: host,
-            kCFNetworkProxiesHTTPSPort: port
+            kCFNetworkProxiesHTTPPort: port
         ]
     }
 
@@ -306,7 +302,7 @@ class VintedAPI: ObservableObject {
         // iOS URLSession doesn't support per-request proxy, so we rotate at session level
         if !workingProxies.isEmpty {
             let proxyString = getRandomProxy()
-            if let proxy = proxyString {
+            if proxyString != nil {
                 // Only recreate session if we have a different proxy
                 // For now, we'll recreate every N requests (handled in search method)
                 // This is a simplified approach - full rotation would require tracking
