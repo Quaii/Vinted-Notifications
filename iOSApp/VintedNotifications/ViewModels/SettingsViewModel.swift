@@ -172,20 +172,23 @@ class SettingsViewModel: ObservableObject {
 
     func sendTestNotification() {
         Task {
-            // Create a test item
+            // Create a test item with correct parameter order
             let testItem = VintedItem(
-                id: "test-\(UUID().uuidString)",
+                id: Int64(Date().timeIntervalSince1970 * 1000), // Use timestamp as ID
                 title: "Test Notification Item",
-                price: "25.00",
-                currency: "€",
                 brandTitle: "Test Brand",
                 sizeTitle: "M",
-                url: "https://www.vinted.com",
+                price: "25.00",
+                currency: "€",
                 photo: nil,
+                url: "https://www.vinted.com",
+                buyUrl: "https://www.vinted.com/transaction/buy/new?source_screen=item",
                 createdAtTs: Int64(Date().timeIntervalSince1970 * 1000),
+                rawTimestamp: nil,
+                queryId: nil,
+                notified: false,
                 userId: nil,
-                userCountry: nil,
-                queryId: nil
+                userCountry: nil
             )
 
             await NotificationService.shared.scheduleNotification(for: testItem, mode: notificationMode)
