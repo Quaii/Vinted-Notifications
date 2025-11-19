@@ -1723,6 +1723,21 @@ struct SettingsView: View {
                                         set: { viewModel.notificationMode = $0 == 0 ? .precise : .compact }
                                     )
                                 )
+
+                                // Test notification button
+                                Button(action: viewModel.sendTestNotification) {
+                                    HStack {
+                                        Image(systemName: "bell.badge")
+                                            .font(.system(size: 16))
+                                        Text("Send Test Notification")
+                                            .font(.system(size: FontSizes.subheadline, weight: .medium))
+                                    }
+                                    .foregroundColor(theme.primary)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, Spacing.sm)
+                                    .background(theme.primary.opacity(0.1))
+                                    .cornerRadius(BorderRadius.md)
+                                }
                             }
                             .padding(Spacing.md)
                         }

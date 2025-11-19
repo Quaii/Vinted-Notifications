@@ -57,6 +57,11 @@
 	<array>
 		<string>com.vintednotifications.refresh</string>
 	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>processing</string>
+	</array>
 	<key>NSUserNotificationAlertStyle</key>
 	<string>alert</string>
 </dict>

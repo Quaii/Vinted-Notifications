@@ -169,4 +169,27 @@ class SettingsViewModel: ObservableObject {
             return ("Reset All Data?", "This will permanently delete ALL items, queries, logs, and settings. This action cannot be undone.")
         }
     }
+
+    func sendTestNotification() {
+        Task {
+            // Create a test item
+            let testItem = VintedItem(
+                id: "test-\(UUID().uuidString)",
+                title: "Test Notification Item",
+                price: "25.00",
+                currency: "€",
+                brandTitle: "Test Brand",
+                sizeTitle: "M",
+                url: "https://www.vinted.com",
+                photo: nil,
+                createdAtTs: Int64(Date().timeIntervalSince1970 * 1000),
+                userId: nil,
+                userCountry: nil,
+                queryId: nil
+            )
+
+            await NotificationService.shared.scheduleNotification(for: testItem, mode: notificationMode)
+            LogService.shared.info("[Settings] Test notification sent")
+        }
+    }
 }
