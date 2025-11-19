@@ -1239,6 +1239,7 @@ struct QueriesView: View {
                         }
                     }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(theme.groupedBackground)
             }
             .navigationBarHidden(true)
