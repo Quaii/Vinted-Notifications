@@ -56,6 +56,7 @@
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>com.vintednotifications.refresh</string>
+		<string>com.vintednotifications.processing</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
