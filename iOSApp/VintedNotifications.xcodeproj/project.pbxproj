@@ -24,6 +24,7 @@
 		A100000F000000000000001 /* QueriesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000F000000000000001 /* QueriesViewModel.swift */; };
 		A1000010000000000000001 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000010000000000000001 /* SettingsViewModel.swift */; };
 		A1000011000000000000001 /* AllViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000011000000000000001 /* AllViews.swift */; };
+		A1000012000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2000013000000000000001 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,6 +47,8 @@
 		A2000010000000000000001 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		A2000011000000000000001 /* AllViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllViews.swift; sourceTree = "<group>"; };
 		A2000012000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A2000013000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +80,8 @@
 				A5000007000000000000001 /* ViewModels */,
 				A5000008000000000000001 /* Views */,
 				A2000012000000000000001 /* Info.plist */,
+				A2000013000000000000001 /* Assets.xcassets */,
+
 			);
 			path = VintedNotifications;
 			sourceTree = "<group>";
@@ -199,7 +204,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			);
+							A1000012000000000000001 /* Assets.xcassets in Resources */,
+);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
