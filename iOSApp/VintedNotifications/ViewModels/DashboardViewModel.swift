@@ -5,6 +5,7 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 class DashboardViewModel: ObservableObject {
     @Published var stats = Stats()
@@ -17,6 +18,9 @@ class DashboardViewModel: ObservableObject {
     @Published var newQueryUrl = ""
     @Published var newQueryName = ""
     @Published var errorMessage: String?
+
+    private var refreshTimer: Timer?
+    private var cancellables = Set<AnyCancellable>()
 
     struct Stats {
         var totalItems: Int = 0
@@ -76,6 +80,33 @@ class DashboardViewModel: ObservableObject {
             self.recentLogs = logs
             self.isLoading = false
         }
+    }
+
+    func startAutoRefresh() {
+        // Stop any existing timer
+        stopAutoRefresh()
+
+        // Get refresh delay from settings
+        let refreshDelay = Int(DatabaseService.shared.getParameter("query_refresh_delay", defaultValue: "\(AppConfig.defaultRefreshDelay)")) ?? AppConfig.defaultRefreshDelay
+
+        // Start timer to refresh dashboard periodically
+        refreshTimer = Timer.scheduledTimer(withTimeInterval: TimeInterval(refreshDelay), repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                await self?.loadDashboard()
+            }
+        }
+
+        LogService.shared.info("[Dashboard] Auto-refresh started with interval: \(refreshDelay)s")
+    }
+
+    func stopAutoRefresh() {
+        refreshTimer?.invalidate()
+        refreshTimer = nil
+        LogService.shared.info("[Dashboard] Auto-refresh stopped")
+    }
+
+    deinit {
+        stopAutoRefresh()
     }
 
     func deleteQuery(_ query: VintedQuery) {

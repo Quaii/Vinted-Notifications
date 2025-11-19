@@ -67,8 +67,8 @@ class MonitoringService: ObservableObject {
         let banwordsStr = DatabaseService.shared.getParameter("banwords", defaultValue: "")
         guard !banwordsStr.isEmpty else { return false }
 
-        // Split by ||| delimiter
-        let banwords = banwordsStr.split(separator: "|||").map { $0.trimmingCharacters(in: .whitespaces).lowercased() }
+        // Split by / delimiter
+        let banwords = banwordsStr.split(separator: "/").map { $0.trimmingCharacters(in: .whitespaces).lowercased() }
         guard !banwords.isEmpty else { return false }
 
         let titleLower = title.lowercased()
@@ -89,14 +89,24 @@ class MonitoringService: ObservableObject {
     // MARK: - Schedule Background Fetch
 
     func scheduleBackgroundFetch() {
+        // Cancel any existing scheduled tasks first
+        BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: taskIdentifier)
+
         let request = BGAppRefreshTaskRequest(identifier: taskIdentifier)
+        // Schedule for next background fetch (iOS will determine exact time)
         request.earliestBeginDate = Date(timeIntervalSinceNow: AppConfig.backgroundFetchInterval)
 
         do {
             try BGTaskScheduler.shared.submit(request)
-            LogService.shared.info("[MonitoringService] Background fetch scheduled")
+            let nextDate = request.earliestBeginDate ?? Date()
+            LogService.shared.info("[MonitoringService] Background fetch scheduled for: \(nextDate)")
         } catch {
             LogService.shared.error("[MonitoringService] Failed to schedule background fetch: \(error.localizedDescription)")
+
+            // If scheduling fails, try again with a different time
+            let retryRequest = BGAppRefreshTaskRequest(identifier: taskIdentifier)
+            retryRequest.earliestBeginDate = Date(timeIntervalSinceNow: 60) // Try in 1 minute
+            try? BGTaskScheduler.shared.submit(retryRequest)
         }
     }
 
@@ -266,7 +276,14 @@ class MonitoringService: ObservableObject {
     // MARK: - Start/Stop Monitoring
 
     func startMonitoring() {
+        guard !isMonitoring else {
+            LogService.shared.info("[MonitoringService] Monitoring already active")
+            return
+        }
+
         isMonitoring = true
+
+        // Schedule background fetch for when app is in background
         scheduleBackgroundFetch()
 
         // Start foreground monitoring if app is in foreground
@@ -275,6 +292,7 @@ class MonitoringService: ObservableObject {
         }
 
         LogService.shared.info("[MonitoringService] Monitoring started (foreground: \(isInForeground))")
+        LogService.shared.info("[MonitoringService] Note: Background notifications may be delayed by iOS system constraints")
     }
 
     func stopMonitoring() {

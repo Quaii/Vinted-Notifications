@@ -677,7 +677,7 @@ struct ItemGridCard: View {
             }
         }) {
             VStack(alignment: .leading, spacing: 0) {
-                // Photo
+                // Photo - fixed size for consistent grid layout
                 AsyncImage(url: URL(string: item.photo ?? "")) { image in
                     image
                         .resizable()
@@ -690,32 +690,44 @@ struct ItemGridCard: View {
                                 .foregroundColor(theme.textTertiary)
                         )
                 }
+                .frame(maxWidth: .infinity)
                 .frame(height: 160)
                 .clipped()
 
                 // Content - fixed height for consistent card sizes
                 VStack(alignment: .leading, spacing: Spacing.xs) {
+                    // Price - always present
                     Text(item.formattedPrice())
                         .font(.system(size: FontSizes.headline, weight: .bold))
                         .foregroundColor(theme.primary)
+                        .lineLimit(1)
 
+                    // Title - always 2 lines reserved
                     Text(item.title)
                         .font(.system(size: FontSizes.subheadline, weight: .medium))
                         .foregroundColor(theme.text)
                         .lineLimit(2)
+                        .frame(height: FontSizes.subheadline * 2.4) // Reserve space for 2 lines
 
-                    if let brand = item.brandTitle, !brand.isEmpty {
-                        Text(brand)
-                            .font(.system(size: FontSizes.caption1))
-                            .foregroundColor(theme.textSecondary)
-                            .lineLimit(1)
+                    // Brand - always 1 line reserved (even if empty)
+                    Group {
+                        if let brand = item.brandTitle, !brand.isEmpty {
+                            Text(brand)
+                                .font(.system(size: FontSizes.caption1))
+                                .foregroundColor(theme.textSecondary)
+                                .lineLimit(1)
+                        } else {
+                            Text(" ")
+                                .font(.system(size: FontSizes.caption1))
+                                .lineLimit(1)
+                        }
                     }
-                    
-                    Spacer(minLength: 0)
+                    .frame(height: FontSizes.caption1 * 1.2) // Reserve space for 1 line
                 }
-                .frame(height: 85)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(Spacing.sm)
             }
+            .frame(maxWidth: .infinity)
             .background(theme.secondaryGroupedBackground)
             .cornerRadius(BorderRadius.xl)
             .overlay(
@@ -983,6 +995,12 @@ struct DashboardView: View {
         }
         .task {
             await viewModel.loadDashboard()
+        }
+        .onAppear {
+            viewModel.startAutoRefresh()
+        }
+        .onDisappear {
+            viewModel.stopAutoRefresh()
         }
         .refreshable {
             await viewModel.loadDashboard()
@@ -1256,122 +1274,142 @@ struct QuerySheet: View {
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Custom Header
-            HStack {
-                Button(action: {
-                    viewModel.newQueryUrl = ""
-                    viewModel.newQueryName = ""
-                    viewModel.editingQuery = nil
-                    dismiss()
-                }) {
-                    Text("Cancel")
-                        .font(.system(size: FontSizes.body))
-                        .foregroundColor(theme.primary)
-                }
-
-                Spacer()
-
-                Text(viewModel.editingQuery != nil ? "Edit Query" : "Add Query")
-                    .font(.system(size: FontSizes.headline, weight: .bold))
-                    .foregroundColor(theme.text)
-
-                Spacer()
-
-                Button(action: {
-                    viewModel.addQuery()
-                    if viewModel.errorMessage == nil {
-                        dismiss()
-                    }
-                }) {
-                    Text(viewModel.editingQuery != nil ? "Update" : "Add")
-                        .font(.system(size: FontSizes.body, weight: .semibold))
-                        .foregroundColor(theme.primary)
-                }
-            }
-            .padding(.horizontal, Spacing.lg)
-            .padding(.vertical, Spacing.md)
-            .background(theme.background)
-
-            Divider()
-
+        NavigationStack {
             ScrollView {
                 VStack(spacing: Spacing.xl) {
                     // URL Input Section
                     VStack(alignment: .leading, spacing: Spacing.sm) {
-                        Text("Vinted Search URL")
-                            .font(.system(size: FontSizes.subheadline, weight: .semibold))
-                            .foregroundColor(theme.text)
+                        HStack {
+                            Text("Vinted Search URL")
+                                .font(.system(size: FontSizes.subheadline, weight: .semibold))
+                                .foregroundColor(theme.text)
+
+                            Spacer()
+
+                            Text("Required")
+                                .font(.system(size: FontSizes.caption1))
+                                .foregroundColor(theme.error)
+                        }
 
                         TextField("https://www.vinted.com/catalog?...", text: $viewModel.newQueryUrl)
                             .font(.system(size: FontSizes.body))
                             .autocapitalization(.none)
                             .textInputAutocapitalization(.never)
+                            .keyboardType(.URL)
                             .padding(Spacing.md)
                             .background(theme.secondaryGroupedBackground)
-                            .cornerRadius(BorderRadius.lg)
+                            .cornerRadius(BorderRadius.xl)
                             .overlay(
-                                RoundedRectangle(cornerRadius: BorderRadius.lg)
-                                    .stroke(theme.border, lineWidth: 1)
+                                RoundedRectangle(cornerRadius: BorderRadius.xl)
+                                    .stroke(viewModel.newQueryUrl.isEmpty ? theme.border : theme.primary.opacity(0.3), lineWidth: viewModel.newQueryUrl.isEmpty ? 1 : 2)
                             )
                     }
 
                     // Name Input Section
                     VStack(alignment: .leading, spacing: Spacing.sm) {
-                        Text("Custom Name (Optional)")
-                            .font(.system(size: FontSizes.subheadline, weight: .semibold))
-                            .foregroundColor(theme.text)
+                        HStack {
+                            Text("Custom Name")
+                                .font(.system(size: FontSizes.subheadline, weight: .semibold))
+                                .foregroundColor(theme.text)
 
-                        TextField("e.g., Nike Shoes", text: $viewModel.newQueryName)
+                            Spacer()
+
+                            Text("Optional")
+                                .font(.system(size: FontSizes.caption1))
+                                .foregroundColor(theme.textTertiary)
+                        }
+
+                        TextField("e.g., Nike Sneakers", text: $viewModel.newQueryName)
                             .font(.system(size: FontSizes.body))
                             .padding(Spacing.md)
                             .background(theme.secondaryGroupedBackground)
-                            .cornerRadius(BorderRadius.lg)
+                            .cornerRadius(BorderRadius.xl)
                             .overlay(
-                                RoundedRectangle(cornerRadius: BorderRadius.lg)
+                                RoundedRectangle(cornerRadius: BorderRadius.xl)
                                     .stroke(theme.border, lineWidth: 1)
                             )
                     }
 
                     // Info Section
-                    VStack(alignment: .leading, spacing: Spacing.xs) {
-                        HStack(alignment: .top, spacing: Spacing.sm) {
-                            Image(systemName: "info.circle")
-                                .font(.system(size: FontSizes.body))
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        HStack(spacing: Spacing.sm) {
+                            Image(systemName: "lightbulb.fill")
+                                .font(.system(size: FontSizes.subheadline))
                                 .foregroundColor(theme.primary)
 
-                            Text("Paste the full URL from a Vinted search. The app will automatically monitor this search and notify you of new items.")
-                                .font(.system(size: FontSizes.footnote))
-                                .foregroundColor(theme.textSecondary)
-                                .fixedSize(horizontal: false, vertical: true)
+                            Text("How it works")
+                                .font(.system(size: FontSizes.subheadline, weight: .semibold))
+                                .foregroundColor(theme.text)
                         }
-                        .padding(Spacing.md)
-                        .background(theme.primary.opacity(0.1))
-                        .cornerRadius(BorderRadius.lg)
+
+                        Text("1. Search for items on Vinted\n2. Copy the full URL from your browser\n3. Paste it here to start monitoring\n4. Get notifications when new items appear")
+                            .font(.system(size: FontSizes.footnote))
+                            .foregroundColor(theme.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .lineSpacing(4)
                     }
+                    .padding(Spacing.md)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(theme.primary.opacity(0.08))
+                    .cornerRadius(BorderRadius.xl)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: BorderRadius.xl)
+                            .stroke(theme.primary.opacity(0.2), lineWidth: 1)
+                    )
 
                     // Error Message
                     if let error = viewModel.errorMessage {
                         HStack(alignment: .top, spacing: Spacing.sm) {
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .font(.system(size: FontSizes.body))
-                                .foregroundColor(.red)
+                                .foregroundColor(theme.error)
 
                             Text(error)
                                 .font(.system(size: FontSizes.footnote))
-                                .foregroundColor(.red)
+                                .foregroundColor(theme.error)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         .padding(Spacing.md)
-                        .background(Color.red.opacity(0.1))
-                        .cornerRadius(BorderRadius.lg)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(theme.error.opacity(0.1))
+                        .cornerRadius(BorderRadius.xl)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: BorderRadius.xl)
+                                .stroke(theme.error.opacity(0.3), lineWidth: 1)
+                        )
                     }
                 }
                 .padding(Spacing.lg)
             }
             .background(theme.groupedBackground)
+            .navigationTitle(viewModel.editingQuery != nil ? "Edit Query" : "Add Query")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        viewModel.newQueryUrl = ""
+                        viewModel.newQueryName = ""
+                        viewModel.editingQuery = nil
+                        dismiss()
+                    }
+                    .foregroundColor(theme.textSecondary)
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(viewModel.editingQuery != nil ? "Update" : "Add") {
+                        viewModel.addQuery()
+                        if viewModel.errorMessage == nil {
+                            dismiss()
+                        }
+                    }
+                    .font(.system(size: FontSizes.body, weight: .semibold))
+                    .foregroundColor(viewModel.newQueryUrl.isEmpty ? theme.textTertiary : theme.primary)
+                    .disabled(viewModel.newQueryUrl.isEmpty)
+                }
+            }
         }
-        .background(theme.groupedBackground)
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 }
 
@@ -2082,8 +2120,16 @@ struct SettingsView: View {
     // Helper computed properties to avoid complex expressions
     private var toggleActiveColor: Color { theme.primary }
     private var toggleInactiveColor: Color { theme.buttonFill }
-    private var darkModeDescription: String {
-        themeManager.isDarkMode ? "Dark mode enabled" : "Light mode enabled"
+
+    private func getAppearanceModeDescription() -> String {
+        switch themeManager.appearanceMode {
+        case .system:
+            return "Automatically match system appearance"
+        case .light:
+            return "Light mode enabled"
+        case .dark:
+            return "Dark mode enabled"
+        }
     }
 
     // MARK: - Sections
@@ -2098,14 +2144,34 @@ struct SettingsView: View {
                             .foregroundColor(theme.textTertiary)
 
                         VStack(spacing: 0) {
-                            // Dark Mode Row
-                            SettingsToggleRow(
-                                title: "Dark Mode",
-                                description: darkModeDescription,
-                                isOn: $themeManager.isDarkMode,
-                                activeColor: toggleActiveColor,
-                                inactiveColor: toggleInactiveColor
-                            )
+                            // Appearance Mode Row
+                            VStack(alignment: .leading, spacing: Spacing.md) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Appearance")
+                                        .font(.system(size: FontSizes.body, weight: .medium))
+                                        .foregroundColor(theme.text)
+                                    Text(getAppearanceModeDescription())
+                                        .font(.system(size: FontSizes.footnote))
+                                        .foregroundColor(theme.textTertiary)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+
+                                CustomSegmentedControl(
+                                    options: AppearanceMode.allCases.map { $0.displayName },
+                                    selectedIndex: Binding(
+                                        get: {
+                                            AppearanceMode.allCases.firstIndex(of: themeManager.appearanceMode) ?? 0
+                                        },
+                                        set: { newIndex in
+                                            let newMode = AppearanceMode.allCases[newIndex]
+                                            themeManager.setAppearanceMode(newMode)
+                                            UserDefaults.standard.set(newMode.rawValue, forKey: "appearanceMode")
+                                            LogService.shared.info("Appearance mode changed to: \(newMode.rawValue)")
+                                        }
+                                    )
+                                )
+                            }
+                            .padding(Spacing.md)
                             .overlay(
                                 Rectangle()
                                     .fill(theme.separator)
@@ -2136,6 +2202,23 @@ struct SettingsView: View {
                                 )
                             }
                             .padding(Spacing.md)
+                            .overlay(
+                                Rectangle()
+                                    .fill(theme.separator)
+                                    .frame(height: 1),
+                                alignment: .bottom
+                            )
+
+                            // Show Foreground Notifications Row
+                            SettingsToggleRow(
+                                title: "Foreground Notifications",
+                                description: viewModel.showForegroundNotifications
+                                    ? "Show notifications when app is open"
+                                    : "Hide notifications when app is open",
+                                isOn: $viewModel.showForegroundNotifications,
+                                activeColor: toggleActiveColor,
+                                inactiveColor: toggleInactiveColor
+                            )
                         }
                         .background(theme.secondaryGroupedBackground)
                         .cornerRadius(BorderRadius.xl)
@@ -2368,19 +2451,31 @@ struct SettingsView: View {
                                 Text("Banned Words")
                                     .font(.system(size: FontSizes.body, weight: .medium))
                                     .foregroundColor(theme.text)
-                                Text("Filter out items containing these words (separate with |||)")
+                                Text("Filter out items containing these words (separate with /)")
                                     .font(.system(size: FontSizes.footnote))
                                     .foregroundColor(theme.textTertiary)
-                                TextEditor(text: $viewModel.banwords)
-                                    .frame(minHeight: 80)
-                                    .padding(Spacing.sm)
-                                    .background(theme.cardBackground)
-                                    .cornerRadius(BorderRadius.md)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: BorderRadius.md)
-                                            .stroke(theme.separator, lineWidth: 1)
-                                    )
-                                    .scrollContentBackground(.hidden)
+
+                                ZStack(alignment: .topLeading) {
+                                    // Placeholder text
+                                    if viewModel.banwords.isEmpty {
+                                        Text("e.g., fake / replica / damaged")
+                                            .font(.system(size: FontSizes.body))
+                                            .foregroundColor(theme.placeholder)
+                                            .padding(.horizontal, Spacing.sm + 4)
+                                            .padding(.vertical, Spacing.sm + 8)
+                                    }
+
+                                    TextEditor(text: $viewModel.banwords)
+                                        .frame(minHeight: 80)
+                                        .padding(Spacing.sm)
+                                        .background(theme.cardBackground)
+                                        .cornerRadius(BorderRadius.md)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: BorderRadius.md)
+                                                .stroke(theme.separator, lineWidth: 1)
+                                        )
+                                        .scrollContentBackground(.hidden)
+                                }
                             }
                             .padding(Spacing.md)
                         }
