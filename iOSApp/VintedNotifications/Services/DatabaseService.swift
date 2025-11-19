@@ -123,7 +123,8 @@ class DatabaseService: ObservableObject {
             ("default_headers", defaultHeadersString),
             ("proxy_list", ""),
             ("proxy_list_link", ""),
-            ("check_proxies", "0")
+            ("check_proxies", "False"),
+            ("last_proxy_check_time", "0")
         ]
 
         for (key, value) in defaultParams {
