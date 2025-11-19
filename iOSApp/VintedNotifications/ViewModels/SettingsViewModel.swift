@@ -174,8 +174,15 @@ class SettingsViewModel: ObservableObject {
     @Published var debugTapCount = 0
     @Published var showDebugCountdown = false
     @Published var debugCountdownMessage = ""
+    @Published var debugModeEnabled = false
+    @Published var notificationMode: NotificationMode = .precise
 
     func handleDebugTap() {
+        // If already enabled, don't allow re-enabling until app restart
+        if debugModeEnabled {
+            return
+        }
+
         debugTapCount += 1
 
         if debugTapCount >= 2 && debugTapCount < 5 {
@@ -191,10 +198,11 @@ class SettingsViewModel: ObservableObject {
                 }
             }
         } else if debugTapCount >= 5 {
-            // Reset for next time
+            // Enable debug mode (one-time per app session)
+            debugModeEnabled = true
             debugTapCount = 0
             showDebugCountdown = false
-            // The view will handle showing the debug menu
+            LogService.shared.info("[Debug] Developer mode enabled")
         }
 
         // Reset tap count after 3 seconds of inactivity
@@ -203,6 +211,80 @@ class SettingsViewModel: ObservableObject {
             if debugTapCount < 5 {
                 debugTapCount = 0
             }
+        }
+    }
+
+    func sendTestNotification() {
+        Task {
+            let testItem = VintedItem(
+                id: Int64(Date().timeIntervalSince1970 * 1000),
+                title: "🧪 Debug Test Notification",
+                brandTitle: "Debug Brand",
+                sizeTitle: "L",
+                price: "99.99",
+                currency: "€",
+                photo: nil,
+                url: "https://www.vinted.com",
+                buyUrl: "https://www.vinted.com/transaction/buy/new?source_screen=item",
+                createdAtTs: Int64(Date().timeIntervalSince1970 * 1000),
+                rawTimestamp: nil,
+                queryId: nil,
+                notified: false,
+                userId: nil,
+                userCountry: nil
+            )
+
+            await NotificationService.shared.scheduleNotification(for: testItem, mode: notificationMode)
+            LogService.shared.info("[Debug] Test notification sent")
+        }
+    }
+
+    func sendMultipleNotifications(count: Int) {
+        Task {
+            for i in 1...count {
+                let testItem = VintedItem(
+                    id: Int64(Date().timeIntervalSince1970 * 1000) + Int64(i),
+                    title: "Test Item #\(i)",
+                    brandTitle: "Brand \(i)",
+                    sizeTitle: "M",
+                    price: "\(i * 10).00",
+                    currency: "€",
+                    photo: nil,
+                    url: "https://www.vinted.com",
+                    buyUrl: "https://www.vinted.com/transaction/buy/new?source_screen=item",
+                    createdAtTs: Int64(Date().timeIntervalSince1970 * 1000),
+                    rawTimestamp: nil,
+                    queryId: nil,
+                    notified: false,
+                    userId: nil,
+                    userCountry: nil
+                )
+
+                await NotificationService.shared.scheduleNotification(for: testItem, mode: .precise)
+                try? await Task.sleep(nanoseconds: 200_000_000)
+            }
+            LogService.shared.info("[Debug] Sent \(count) test notifications")
+        }
+    }
+
+    func triggerManualFetch() {
+        Task {
+            LogService.shared.info("[Debug] Manual fetch triggered")
+            await MonitoringService.shared.checkNow()
+        }
+    }
+
+    func clearAllDebugNotifications() {
+        Task { @MainActor in
+            NotificationService.shared.clearAllNotifications()
+            LogService.shared.info("[Debug] All notifications cleared")
+        }
+    }
+
+    func checkDebugAuthorizationStatus() {
+        Task { @MainActor in
+            NotificationService.shared.checkAuthorizationStatus()
+            LogService.shared.info("[Debug] Notification authorization check requested")
         }
     }
     #endif
