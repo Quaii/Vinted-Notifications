@@ -217,7 +217,7 @@ class SettingsViewModel: ObservableObject {
         Task {
             let testItem = VintedItem(
                 id: Int64(Date().timeIntervalSince1970 * 1000),
-                title: "🧪 Debug Test Notification",
+                title: "Debug Test Notification",
                 brandTitle: "Debug Brand",
                 sizeTitle: "L",
                 price: "99.99",
