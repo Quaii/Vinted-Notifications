@@ -42,7 +42,7 @@ class NotificationService: NSObject, ObservableObject, UNUserNotificationCenterD
         let userInfo = response.notification.request.content.userInfo
 
         // Handle notification tap
-        if let urlString = userInfo["url"] as? String, let url = URL(string: urlString) {
+        if let urlString = userInfo["url"] as? String, let _ = URL(string: urlString) {
             Task { @MainActor in
                 // Open URL if needed
                 LogService.shared.info("[NotificationService] User tapped notification with URL: \(urlString)")

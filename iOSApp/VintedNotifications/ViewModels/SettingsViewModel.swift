@@ -170,29 +170,40 @@ class SettingsViewModel: ObservableObject {
         }
     }
 
-    func sendTestNotification() {
-        Task {
-            // Create a test item with correct parameter order
-            let testItem = VintedItem(
-                id: Int64(Date().timeIntervalSince1970 * 1000), // Use timestamp as ID
-                title: "Test Notification Item",
-                brandTitle: "Test Brand",
-                sizeTitle: "M",
-                price: "25.00",
-                currency: "€",
-                photo: nil,
-                url: "https://www.vinted.com",
-                buyUrl: "https://www.vinted.com/transaction/buy/new?source_screen=item",
-                createdAtTs: Int64(Date().timeIntervalSince1970 * 1000),
-                rawTimestamp: nil,
-                queryId: nil,
-                notified: false,
-                userId: nil,
-                userCountry: nil
-            )
+    #if DEBUG
+    @Published var debugTapCount = 0
+    @Published var showDebugCountdown = false
+    @Published var debugCountdownMessage = ""
 
-            await NotificationService.shared.scheduleNotification(for: testItem, mode: notificationMode)
-            LogService.shared.info("[Settings] Test notification sent")
+    func handleDebugTap() {
+        debugTapCount += 1
+
+        if debugTapCount >= 2 && debugTapCount < 5 {
+            let remaining = 5 - debugTapCount
+            debugCountdownMessage = "You are \(remaining) click\(remaining == 1 ? "" : "s") away from enabling Developer mode"
+            showDebugCountdown = true
+
+            // Hide message after 1.5 seconds
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 1_500_000_000)
+                if showDebugCountdown {
+                    showDebugCountdown = false
+                }
+            }
+        } else if debugTapCount >= 5 {
+            // Reset for next time
+            debugTapCount = 0
+            showDebugCountdown = false
+            // The view will handle showing the debug menu
+        }
+
+        // Reset tap count after 3 seconds of inactivity
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            if debugTapCount < 5 {
+                debugTapCount = 0
+            }
         }
     }
+    #endif
 }

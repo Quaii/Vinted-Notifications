@@ -1723,21 +1723,6 @@ struct SettingsView: View {
                                         set: { viewModel.notificationMode = $0 == 0 ? .precise : .compact }
                                     )
                                 )
-
-                                // Test notification button
-                                Button(action: viewModel.sendTestNotification) {
-                                    HStack {
-                                        Image(systemName: "bell.badge")
-                                            .font(.system(size: 16))
-                                        Text("Send Test Notification")
-                                            .font(.system(size: FontSizes.subheadline, weight: .medium))
-                                    }
-                                    .foregroundColor(theme.primary)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, Spacing.sm)
-                                    .background(theme.primary.opacity(0.1))
-                                    .cornerRadius(BorderRadius.md)
-                                }
                             }
                             .padding(Spacing.md)
                         }
@@ -2180,20 +2165,29 @@ struct SettingsView: View {
 
     private var versionFooter: some View {
         VStack(spacing: Spacing.xs / 2) {
-                        HStack(spacing: Spacing.xs) {
-                            Image(systemName: "info.circle")
-                                .font(.system(size: 14))
-                                .foregroundColor(theme.textTertiary)
-                            Text("v1.0.0")
-                                .font(.system(size: FontSizes.caption1))
-                                .foregroundColor(theme.textTertiary)
-                        }
-                        Text("by Quaii")
-                            .font(.system(size: FontSizes.caption2))
-                            .foregroundColor(theme.textTertiary)
+            HStack(spacing: Spacing.xs) {
+                Image(systemName: "info.circle")
+                    .font(.system(size: 14))
+                    .foregroundColor(theme.textTertiary)
+                Text("v1.0.0")
+                    .font(.system(size: FontSizes.caption1))
+                    .foregroundColor(theme.textTertiary)
+            }
+            Text("by Quaii")
+                .font(.system(size: FontSizes.caption2))
+                .foregroundColor(theme.textTertiary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, Spacing.lg)
+        #if DEBUG
+        .onTapGesture {
+            viewModel.handleDebugTap()
+            if viewModel.debugTapCount >= 5 {
+                // Show debug menu
+                viewModel.debugTapCount = 0
+            }
+        }
+        #endif
     }
 
     var body: some View {
@@ -2234,8 +2228,228 @@ struct SettingsView: View {
         } message: {
             Text(viewModel.getConfirmationMessage().message)
         }
+        #if DEBUG
+        .sheet(isPresented: Binding(
+            get: { viewModel.debugTapCount >= 5 },
+            set: { if !$0 { viewModel.debugTapCount = 0 } }
+        )) {
+            DebugMenuView()
+        }
+        .overlay(
+            Group {
+                if viewModel.showDebugCountdown {
+                    VStack {
+                        Spacer()
+                        Text(viewModel.debugCountdownMessage)
+                            .font(.system(size: FontSizes.subheadline, weight: .medium))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, Spacing.lg)
+                            .padding(.vertical, Spacing.md)
+                            .background(Color.black.opacity(0.8))
+                            .cornerRadius(BorderRadius.lg)
+                            .padding(.bottom, 100)
+                    }
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .animation(.easeInOut(duration: 0.3), value: viewModel.showDebugCountdown)
+                }
+            }
+        )
+        #endif
     }
 }
+
+#if DEBUG
+// Debug Menu View - Only available in DEBUG builds
+struct DebugMenuView: View {
+    @StateObject private var viewModel = DebugViewModel()
+    @EnvironmentObject var themeManager: ThemeManager
+    @Environment(\.theme) var theme
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: Spacing.xl) {
+                    // Header warning
+                    HStack(spacing: Spacing.sm) {
+                        Image(systemName: "ladybug.fill")
+                            .font(.system(size: 20))
+                            .foregroundColor(.orange)
+                        Text("Developer Mode")
+                            .font(.system(size: FontSizes.title3, weight: .bold))
+                            .foregroundColor(theme.text)
+                        Spacer()
+                    }
+
+                    Text("This menu is only available in DEBUG builds and provides tools for testing and development.")
+                        .font(.system(size: FontSizes.footnote))
+                        .foregroundColor(theme.textSecondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    // Notification Testing
+                    VStack(alignment: .leading, spacing: Spacing.md) {
+                        Text("Notification Testing")
+                            .font(.system(size: FontSizes.headline, weight: .semibold))
+                            .foregroundColor(theme.text)
+
+                        VStack(spacing: Spacing.sm) {
+                            // Notification mode selector
+                            HStack {
+                                Text("Mode:")
+                                    .font(.system(size: FontSizes.subheadline))
+                                    .foregroundColor(theme.textSecondary)
+                                Spacer()
+                                CustomSegmentedControl(
+                                    options: ["Precise", "Compact"],
+                                    selectedIndex: Binding(
+                                        get: { viewModel.notificationMode == .precise ? 0 : 1 },
+                                        set: { viewModel.notificationMode = $0 == 0 ? .precise : .compact }
+                                    )
+                                )
+                                .frame(width: 200)
+                            }
+
+                            Button(action: viewModel.sendTestNotification) {
+                                HStack {
+                                    Image(systemName: "bell.badge")
+                                    Text("Send Test Notification")
+                                }
+                                .font(.system(size: FontSizes.body, weight: .medium))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, Spacing.md)
+                                .background(theme.primary)
+                                .cornerRadius(BorderRadius.lg)
+                            }
+
+                            Button(action: { viewModel.sendMultipleNotifications(count: 3) }) {
+                                HStack {
+                                    Image(systemName: "bell.badge.fill")
+                                    Text("Send 3 Test Notifications")
+                                }
+                                .font(.system(size: FontSizes.body, weight: .medium))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, Spacing.md)
+                                .background(theme.primary)
+                                .cornerRadius(BorderRadius.lg)
+                            }
+
+                            Button(action: viewModel.clearAllNotifications) {
+                                HStack {
+                                    Image(systemName: "bell.slash")
+                                    Text("Clear All Notifications")
+                                }
+                                .font(.system(size: FontSizes.body, weight: .medium))
+                                .foregroundColor(theme.text)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, Spacing.md)
+                                .background(theme.secondaryGroupedBackground)
+                                .cornerRadius(BorderRadius.lg)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: BorderRadius.lg)
+                                        .stroke(theme.border, lineWidth: 1)
+                                )
+                            }
+
+                            Button(action: viewModel.checkAuthorizationStatus) {
+                                HStack {
+                                    Image(systemName: "checkmark.shield")
+                                    Text("Check Authorization Status")
+                                }
+                                .font(.system(size: FontSizes.body, weight: .medium))
+                                .foregroundColor(theme.text)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, Spacing.md)
+                                .background(theme.secondaryGroupedBackground)
+                                .cornerRadius(BorderRadius.lg)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: BorderRadius.lg)
+                                        .stroke(theme.border, lineWidth: 1)
+                                )
+                            }
+                        }
+                    }
+
+                    // Monitoring Testing
+                    VStack(alignment: .leading, spacing: Spacing.md) {
+                        Text("Monitoring")
+                            .font(.system(size: FontSizes.headline, weight: .semibold))
+                            .foregroundColor(theme.text)
+
+                        Button(action: viewModel.triggerManualFetch) {
+                            HStack {
+                                Image(systemName: "arrow.clockwise")
+                                Text("Trigger Manual Fetch")
+                            }
+                            .font(.system(size: FontSizes.body, weight: .medium))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, Spacing.md)
+                            .background(theme.primary)
+                            .cornerRadius(BorderRadius.lg)
+                        }
+
+                        Text("Manually triggers the monitoring service to check all queries immediately.")
+                            .font(.system(size: FontSizes.caption1))
+                            .foregroundColor(theme.textTertiary)
+                    }
+
+                    // Status Info
+                    VStack(alignment: .leading, spacing: Spacing.md) {
+                        Text("Status Information")
+                            .font(.system(size: FontSizes.headline, weight: .semibold))
+                            .foregroundColor(theme.text)
+
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            StatusRow(label: "Build Configuration", value: "DEBUG")
+                            StatusRow(label: "Monitoring Active", value: MonitoringService.shared.isMonitoring ? "Yes" : "No")
+                            StatusRow(label: "Theme Mode", value: themeManager.isDarkMode ? "Dark" : "Light")
+                        }
+                        .padding(Spacing.md)
+                        .background(theme.secondaryGroupedBackground)
+                        .cornerRadius(BorderRadius.lg)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: BorderRadius.lg)
+                                .stroke(theme.border, lineWidth: 1)
+                        )
+                    }
+                }
+                .padding(Spacing.lg)
+            }
+            .background(theme.groupedBackground)
+            .navigationTitle("Debug Menu")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                    .foregroundColor(theme.primary)
+                }
+            }
+        }
+    }
+}
+
+struct StatusRow: View {
+    let label: String
+    let value: String
+    @Environment(\.theme) var theme
+
+    var body: some View {
+        HStack {
+            Text(label)
+                .font(.system(size: FontSizes.subheadline))
+                .foregroundColor(theme.textSecondary)
+            Spacer()
+            Text(value)
+                .font(.system(size: FontSizes.subheadline, weight: .medium))
+                .foregroundColor(theme.text)
+        }
+    }
+}
+#endif
 
 // String extension to remove emojis from log messages
 extension String {
