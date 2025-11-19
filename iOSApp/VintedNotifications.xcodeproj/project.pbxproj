@@ -23,8 +23,17 @@
 		A100000E000000000000001 /* LogsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000E000000000000001 /* LogsViewModel.swift */; };
 		A100000F000000000000001 /* QueriesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200000F000000000000001 /* QueriesViewModel.swift */; };
 		A1000010000000000000001 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000010000000000000001 /* SettingsViewModel.swift */; };
-		A1000011000000000000001 /* AllViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000011000000000000001 /* AllViews.swift */; };
-		A1000012000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A2000013000000000000001 /* Assets.xcassets */; };
+		A1000011000000000000001 /* AnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000011000000000000001 /* AnalyticsView.swift */; };
+		A1000012000000000000001 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000012000000000000001 /* Components.swift */; };
+		A1000013000000000000001 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000013000000000000001 /* DashboardView.swift */; };
+		A1000014000000000000001 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000014000000000000001 /* Extensions.swift */; };
+		A1000015000000000000001 /* ItemsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000015000000000000001 /* ItemsView.swift */; };
+		A1000016000000000000001 /* LogsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000016000000000000001 /* LogsView.swift */; };
+		A1000017000000000000001 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000017000000000000001 /* MainTabView.swift */; };
+		A1000018000000000000001 /* OnboardingViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000018000000000000001 /* OnboardingViews.swift */; };
+		A1000019000000000000001 /* QueriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000019000000000000001 /* QueriesView.swift */; };
+		A100001A000000000000001 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A200001A000000000000001 /* SettingsView.swift */; };
+		A100001B000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A200001B000000000000001 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,9 +54,18 @@
 		A200000E000000000000001 /* LogsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsViewModel.swift; sourceTree = "<group>"; };
 		A200000F000000000000001 /* QueriesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueriesViewModel.swift; sourceTree = "<group>"; };
 		A2000010000000000000001 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
-		A2000011000000000000001 /* AllViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllViews.swift; sourceTree = "<group>"; };
-		A2000012000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		A2000013000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A2000011000000000000001 /* AnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsView.swift; sourceTree = "<group>"; };
+		A2000012000000000000001 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
+		A2000013000000000000001 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		A2000014000000000000001 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		A2000015000000000000001 /* ItemsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemsView.swift; sourceTree = "<group>"; };
+		A2000016000000000000001 /* LogsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsView.swift; sourceTree = "<group>"; };
+		A2000017000000000000001 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		A2000018000000000000001 /* OnboardingViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViews.swift; sourceTree = "<group>"; };
+		A2000019000000000000001 /* QueriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueriesView.swift; sourceTree = "<group>"; };
+		A200001A000000000000001 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A200001B000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A200001C000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,8 +96,8 @@
 				A5000006000000000000001 /* Services */,
 				A5000007000000000000001 /* ViewModels */,
 				A5000008000000000000001 /* Views */,
-				A2000013000000000000001 /* Assets.xcassets */,
-				A2000012000000000000001 /* Info.plist */,
+				A200001B000000000000001 /* Assets.xcassets */,
+				A200001C000000000000001 /* Info.plist */,
 			);
 			path = VintedNotifications;
 			sourceTree = "<group>";
@@ -138,7 +156,16 @@
 		A5000008000000000000001 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				A2000011000000000000001 /* AllViews.swift */,
+				A2000011000000000000001 /* AnalyticsView.swift */,
+				A2000012000000000000001 /* Components.swift */,
+				A2000013000000000000001 /* DashboardView.swift */,
+				A2000014000000000000001 /* Extensions.swift */,
+				A2000015000000000000001 /* ItemsView.swift */,
+				A2000016000000000000001 /* LogsView.swift */,
+				A2000017000000000000001 /* MainTabView.swift */,
+				A2000018000000000000001 /* OnboardingViews.swift */,
+				A2000019000000000000001 /* QueriesView.swift */,
+				A200001A000000000000001 /* SettingsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -202,7 +229,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1000012000000000000001 /* Assets.xcassets in Resources */,
+				A100001B000000000000001 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -229,7 +256,16 @@
 				A100000E000000000000001 /* LogsViewModel.swift in Sources */,
 				A100000F000000000000001 /* QueriesViewModel.swift in Sources */,
 				A1000010000000000000001 /* SettingsViewModel.swift in Sources */,
-				A1000011000000000000001 /* AllViews.swift in Sources */,
+				A1000011000000000000001 /* AnalyticsView.swift in Sources */,
+				A1000012000000000000001 /* Components.swift in Sources */,
+				A1000013000000000000001 /* DashboardView.swift in Sources */,
+				A1000014000000000000001 /* Extensions.swift in Sources */,
+				A1000015000000000000001 /* ItemsView.swift in Sources */,
+				A1000016000000000000001 /* LogsView.swift in Sources */,
+				A1000017000000000000001 /* MainTabView.swift in Sources */,
+				A1000018000000000000001 /* OnboardingViews.swift in Sources */,
+				A1000019000000000000001 /* QueriesView.swift in Sources */,
+				A100001A000000000000001 /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
