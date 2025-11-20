@@ -18,7 +18,6 @@ class VintedAPI: ObservableObject {
     private var userAgentsList: [String] = []
     private var defaultHeadersList: [String: String] = [:]
     private var proxyList: [String] = []
-    private var currentProxyIndex: Int = 0
     private var workingProxies: [String] = []
     private var lastProxyCheckTime: TimeInterval = 0
     private let maxRetries = AppConfig.apiMaxRetries
@@ -37,8 +36,10 @@ class VintedAPI: ObservableObject {
     
     // Request timing
     private var lastRequestTime: TimeInterval = 0
-    private let minRequestDelay: TimeInterval = 1.0 // Minimum 1 second between requests
-    private let maxRequestDelay: TimeInterval = 3.0 // Maximum 3 seconds between requests
+    private let minRequestDelay: TimeInterval = 0.5 // Minimum 0.5 second between requests (more like desktop)
+    private let maxRequestDelay: TimeInterval = 2.5 // Maximum 2.5 seconds between requests
+    private var requestCount: Int = 0 // Track requests for proxy rotation
+    private var nextProxyRotationAt: Int = 0 // Next request count when to rotate proxy
     
     // Proxy health checking
     private let proxyCheckInterval: TimeInterval = 6 * 60 * 60 // 6 hours
@@ -297,10 +298,9 @@ class VintedAPI: ObservableObject {
             return nil
         }
         
-        // Rotate through proxies
-        let proxy = workingProxies[currentProxyIndex % workingProxies.count]
-        currentProxyIndex += 1
-        return proxy
+        // Use random selection instead of round-robin to avoid patterns
+        // This matches desktop app behavior better
+        return workingProxies.randomElement()
     }
 
     private func ensureProxySession() {
@@ -321,8 +321,26 @@ class VintedAPI: ObservableObject {
         if !workingProxies.isEmpty {
             let proxyString = getRandomProxy()
             self.session = createSession(proxyString: proxyString)
-            LogService.shared.info("[VintedAPI] Rotated to new proxy session")
+            LogService.shared.info("[VintedAPI] Rotated to new proxy session: \(proxyString ?? "none")")
         }
+    }
+    
+    private func shouldRotateProxy() -> Bool {
+        // Rotate proxy more frequently - every 3-5 requests instead of 10
+        // This matches desktop behavior better (desktop rotates per request)
+        if workingProxies.isEmpty {
+            return false
+        }
+        
+        // Rotate when we reach the target count, then set next rotation point
+        if requestCount >= nextProxyRotationAt {
+            // Set next rotation to be 3-5 requests from now
+            let rotationInterval = Int.random(in: 3...5)
+            nextProxyRotationAt = requestCount + rotationInterval
+            return true
+        }
+        
+        return false
     }
 
     // MARK: - Session Management
@@ -356,10 +374,12 @@ class VintedAPI: ObservableObject {
     private func getRandomizedHeaders() -> [String: String] {
         var headers = defaultHeadersList
         
-        // Randomize header order by creating a new dictionary
-        // Add some variation to Accept-Language
-        let languages = ["en-US,en;q=0.9", "en-GB,en;q=0.9", "fr-FR,fr;q=0.9", "de-DE,de;q=0.9"]
-        headers["Accept-Language"] = languages.randomElement() ?? "en-US,en;q=0.9"
+        // Don't override Accept-Language if it's already in defaultHeadersList
+        // Only randomize if not explicitly set
+        if headers["Accept-Language"] == nil {
+            let languages = ["en-US,en;q=0.9", "en-GB,en;q=0.9", "fr-FR,fr;q=0.9", "de-DE,de;q=0.9"]
+            headers["Accept-Language"] = languages.randomElement() ?? "en-US,en;q=0.9"
+        }
         
         return headers
     }
@@ -379,6 +399,15 @@ class VintedAPI: ObservableObject {
 
     private func setCookies() async throws {
         guard let url = URL(string: authUrl) else { return }
+
+        // Clear session cookies first (like desktop app does)
+        if let cookieStorage = session.configuration.httpCookieStorage {
+            if let cookies = cookieStorage.cookies {
+                for cookie in cookies {
+                    cookieStorage.deleteCookie(cookie)
+                }
+            }
+        }
 
         var request = URLRequest(url: url)
         request.httpMethod = "HEAD"
@@ -403,13 +432,19 @@ class VintedAPI: ObservableObject {
         let currentTime = Date().timeIntervalSince1970
         let timeSinceLastRequest = currentTime - lastRequestTime
         
-        // Calculate random delay with jitter
-        let baseDelay = Double.random(in: minRequestDelay...maxRequestDelay)
-        let jitter = Double.random(in: -0.5...0.5)
-        let delay = max(0, baseDelay + jitter - timeSinceLastRequest)
+        // More randomization - sometimes no delay, sometimes longer delay
+        // This mimics human behavior better
+        let shouldDelay = Double.random(in: 0...1) > 0.2 // 80% chance of delay
         
-        if delay > 0 {
-            try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+        if shouldDelay {
+            // Calculate random delay with more variation
+            let baseDelay = Double.random(in: minRequestDelay...maxRequestDelay)
+            let jitter = Double.random(in: -0.3...0.8) // Asymmetric jitter
+            let delay = max(0, baseDelay + jitter - timeSinceLastRequest)
+            
+            if delay > 0 {
+                try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+            }
         }
         
         lastRequestTime = Date().timeIntervalSince1970
@@ -517,22 +552,29 @@ class VintedAPI: ObservableObject {
         // Retry loop with improved error handling
         var tried = 0
         var newSession = false
+        
+        // Increment request count for proxy rotation tracking
+        requestCount += 1
 
         while tried < maxRetries {
             tried += 1
 
+            // Rotate proxy more frequently (every 3-5 requests) to match desktop behavior
+            if tried == 1 && shouldRotateProxy() {
+                rotateProxySession()
+                // Add small delay after proxy rotation to avoid detection
+                try? await Task.sleep(nanoseconds: UInt64(Double.random(in: 0.2...0.5) * 1_000_000_000))
+            }
+
             var request = URLRequest(url: apiUrl, timeoutInterval: AppConfig.apiTimeout)
+            
+            // Set headers in same order as desktop app (User-Agent first, then Host, then others)
             request.setValue(getRandomUserAgent(), forHTTPHeaderField: "User-Agent")
             request.setValue(domain, forHTTPHeaderField: "Host")
 
             let headers = getRandomizedHeaders()
             for (key, value) in headers {
                 request.setValue(value, forHTTPHeaderField: key)
-            }
-
-            // Rotate proxy session periodically (every 10 requests)
-            if tried == 1 && !workingProxies.isEmpty && currentProxyIndex % 10 == 0 {
-                rotateProxySession()
             }
 
             do {
@@ -563,7 +605,14 @@ class VintedAPI: ObservableObject {
                     LogService.shared.warning("[VintedAPI] Got \(httpResponse.statusCode), refreshing cookies (attempt \(tried)/\(maxRetries))")
 
                     if tried < maxRetries {
+                        // Clear cookies and refresh like desktop app does
                         try await setCookies()
+                        
+                        // Rotate proxy on auth errors to avoid detection
+                        if !workingProxies.isEmpty {
+                            rotateProxySession()
+                        }
+                        
                         let delay = exponentialBackoffWithJitter(attempt: tried)
                         try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
                         continue
@@ -575,9 +624,9 @@ class VintedAPI: ObservableObject {
                     let delay = exponentialBackoffWithJitter(attempt: tried, baseDelay: 2.0, maxDelay: 60.0)
                     try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
                     
-                    // Try switching proxy if available
+                    // Try switching proxy if available (rotate immediately on rate limit)
                     if !workingProxies.isEmpty {
-                        currentProxyIndex += 1
+                        rotateProxySession()
                     }
                     
                     if tried < maxRetries {
@@ -585,16 +634,21 @@ class VintedAPI: ObservableObject {
                     }
 
                 case 403:
-                    // Blocked - reset session and try different proxy
+                    // Blocked - reset session and try different proxy (like desktop app)
                     LogService.shared.warning("[VintedAPI] Blocked (403), resetting session...")
                     if !newSession {
                         newSession = true
                         tried = 0
+                        
+                        // Clear cookies and create fresh session like desktop
                         try await setCookies()
                         
-                        // Switch to next proxy
+                        // Switch to next proxy and recreate session
                         if !workingProxies.isEmpty {
-                            currentProxyIndex += 1
+                            rotateProxySession()
+                        } else {
+                            // Even without proxy, recreate session to get fresh cookies
+                            self.session = createSession()
                         }
                         
                         let delay = exponentialBackoffWithJitter(attempt: 1, baseDelay: 5.0)
