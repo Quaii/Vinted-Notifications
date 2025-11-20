@@ -37,8 +37,12 @@ class VintedAPI: ObservableObject {
     
     // Request timing
     private var lastRequestTime: TimeInterval = 0
-    private let minRequestDelay: TimeInterval = 1.0 // Minimum 1 second between requests
-    private let maxRequestDelay: TimeInterval = 3.0 // Maximum 3 seconds between requests
+    private let minRequestDelay: TimeInterval = 2.0 // Minimum 2 seconds between requests (more aggressive)
+    private let maxRequestDelay: TimeInterval = 5.0 // Maximum 5 seconds between requests (more human-like)
+    
+    // Proxy rotation tracking
+    private var requestsSinceProxyRotation: Int = 0
+    private let maxRequestsPerProxy: Int = 5 // Rotate proxy every 5 requests (more aggressive)
     
     // Proxy health checking
     private let proxyCheckInterval: TimeInterval = 6 * 60 * 60 // 6 hours
@@ -530,9 +534,14 @@ class VintedAPI: ObservableObject {
                 request.setValue(value, forHTTPHeaderField: key)
             }
 
-            // Rotate proxy session periodically (every 10 requests)
-            if tried == 1 && !workingProxies.isEmpty && currentProxyIndex % 10 == 0 {
-                rotateProxySession()
+            // Rotate proxy session more aggressively (every 5 requests or on first attempt)
+            if tried == 1 && !workingProxies.isEmpty {
+                requestsSinceProxyRotation += 1
+                if requestsSinceProxyRotation >= maxRequestsPerProxy {
+                    rotateProxySession()
+                    requestsSinceProxyRotation = 0
+                    LogService.shared.info("[VintedAPI] Rotated proxy after \(maxRequestsPerProxy) requests")
+                }
             }
 
             do {
@@ -570,34 +579,45 @@ class VintedAPI: ObservableObject {
                     }
 
                 case 429:
-                    // Rate limiting - exponential backoff with jitter
-                    LogService.shared.warning("[VintedAPI] Rate limited (429), backing off...")
-                    let delay = exponentialBackoffWithJitter(attempt: tried, baseDelay: 2.0, maxDelay: 60.0)
-                    try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                    // Rate limiting - AGGRESSIVE proxy rotation and exponential backoff
+                    LogService.shared.warning("[VintedAPI] Rate limited (429), rotating proxy and backing off...")
                     
-                    // Try switching proxy if available
+                    // Immediately rotate to next proxy
                     if !workingProxies.isEmpty {
-                        currentProxyIndex += 1
+                        rotateProxySession()
+                        requestsSinceProxyRotation = 0
+                        LogService.shared.info("[VintedAPI] Switched to next proxy due to rate limit")
                     }
+                    
+                    // Longer backoff for rate limiting (3-90 seconds)
+                    let delay = exponentialBackoffWithJitter(attempt: tried, baseDelay: 3.0, maxDelay: 90.0)
+                    LogService.shared.info("[VintedAPI] Backing off for \(String(format: "%.1f", delay))s")
+                    try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
                     
                     if tried < maxRetries {
                         continue
                     }
 
                 case 403:
-                    // Blocked - reset session and try different proxy
-                    LogService.shared.warning("[VintedAPI] Blocked (403), resetting session...")
+                    // Blocked - AGGRESSIVE session reset and proxy rotation
+                    LogService.shared.warning("[VintedAPI] Blocked (403), aggressively resetting session...")
                     if !newSession {
                         newSession = true
                         tried = 0
-                        try await setCookies()
                         
-                        // Switch to next proxy
+                        // Immediately rotate to next proxy AND recreate session
                         if !workingProxies.isEmpty {
-                            currentProxyIndex += 1
+                            rotateProxySession()
+                            requestsSinceProxyRotation = 0
+                            LogService.shared.info("[VintedAPI] Switched to next proxy due to 403 block")
                         }
                         
-                        let delay = exponentialBackoffWithJitter(attempt: 1, baseDelay: 5.0)
+                        // Clear cookies and get fresh ones
+                        try await setCookies()
+                        
+                        // Longer delay for blocked requests (5-15 seconds)
+                        let delay = exponentialBackoffWithJitter(attempt: 1, baseDelay: 5.0, maxDelay: 15.0)
+                        LogService.shared.info("[VintedAPI] Waiting \(String(format: "%.1f", delay))s after block")
                         try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
                         continue
                     }

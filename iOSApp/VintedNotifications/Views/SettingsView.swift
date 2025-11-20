@@ -188,6 +188,8 @@ struct SettingsView: View {
                                 .stroke(theme.separator, lineWidth: 1)
                         )
                         .scrollContentBackground(.hidden)
+                        .foregroundColor(theme.text)
+                        .font(.system(size: FontSizes.subheadline))
                 }
                 .padding(Spacing.md)
                 .overlay(
@@ -215,6 +217,8 @@ struct SettingsView: View {
                                 .stroke(theme.separator, lineWidth: 1)
                         )
                         .scrollContentBackground(.hidden)
+                        .foregroundColor(theme.text)
+                        .font(.system(size: FontSizes.subheadline))
                 }
                 .padding(Spacing.md)
                 .overlay(
@@ -242,6 +246,8 @@ struct SettingsView: View {
                                 .stroke(theme.separator, lineWidth: 1)
                         )
                         .scrollContentBackground(.hidden)
+                        .foregroundColor(theme.text)
+                        .font(.system(size: FontSizes.subheadline))
                 }
                 .padding(Spacing.md)
                 .overlay(
@@ -269,6 +275,8 @@ struct SettingsView: View {
                                 .stroke(theme.separator, lineWidth: 1)
                         )
                         .scrollContentBackground(.hidden)
+                        .foregroundColor(theme.text)
+                        .font(.system(size: FontSizes.subheadline))
                 }
                 .padding(Spacing.md)
                 .overlay(
@@ -330,6 +338,8 @@ struct SettingsView: View {
                             RoundedRectangle(cornerRadius: BorderRadius.md)
                                 .stroke(theme.separator, lineWidth: 1)
                         )
+                        .foregroundColor(theme.text)
+                        .font(.system(size: FontSizes.body))
                 }
                 .padding(Spacing.md)
                 .frame(minHeight: 60)
@@ -363,6 +373,8 @@ struct SettingsView: View {
                             RoundedRectangle(cornerRadius: BorderRadius.md)
                                 .stroke(theme.separator, lineWidth: 1)
                         )
+                        .foregroundColor(theme.text)
+                        .font(.system(size: FontSizes.body))
                     Text("sec")
                         .font(.system(size: FontSizes.footnote))
                         .foregroundColor(theme.textTertiary)
@@ -405,6 +417,8 @@ struct SettingsView: View {
                                     .stroke(theme.separator, lineWidth: 1)
                             )
                             .scrollContentBackground(.hidden)
+                            .foregroundColor(theme.text)
+                            .font(.system(size: FontSizes.body))
                     }
                 }
                 .padding(Spacing.md)
@@ -451,6 +465,8 @@ struct SettingsView: View {
                             RoundedRectangle(cornerRadius: BorderRadius.md)
                                 .stroke(theme.separator, lineWidth: 1)
                         )
+                        .foregroundColor(theme.text)
+                        .font(.system(size: FontSizes.body))
 
                     Button(action: viewModel.addCountry) {
                         Image(systemName: "plus")
