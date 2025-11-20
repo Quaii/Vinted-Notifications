@@ -20,6 +20,10 @@ class MonitoringService: ObservableObject {
     // Foreground monitoring
     private var monitoringTask: Task<Void, Never>?
     private var isInForeground = true
+    
+    // Background monitoring - uses background-safe timer
+    private var backgroundMonitoringTimer: Timer?
+    private var backgroundTaskIdentifier: UIBackgroundTaskIdentifier = .invalid
 
     private init() {
         LogService.shared.info("[MonitoringService] Initialized")
@@ -52,17 +56,27 @@ class MonitoringService: ObservableObject {
         isInForeground = false
         stopForegroundMonitoring()
         
-        // Ensure background task is scheduled when going to background
+        // CRITICAL FIX: Start background monitoring immediately
+        // Don't rely solely on iOS background tasks which are unreliable
         if isMonitoring {
+            // Schedule background tasks as backup
             scheduleBackgroundFetch()
-            LogService.shared.info("[MonitoringService] App entered background - ensured background task is scheduled")
+            
+            // Start background-safe monitoring with extended background time
+            startBackgroundMonitoring()
+            
+            LogService.shared.info("[MonitoringService] App entered background - started active background monitoring")
         }
         
-        LogService.shared.info("[MonitoringService] App entered background, stopping foreground monitoring")
+        LogService.shared.info("[MonitoringService] App entered background, switched to background monitoring mode")
     }
 
     @objc private func appWillEnterForeground() {
         isInForeground = true
+        
+        // CRITICAL FIX: Stop background monitoring when returning to foreground
+        stopBackgroundMonitoring()
+        
         if isMonitoring {
             // CRITICAL: Reschedule background tasks every time app enters foreground
             // iOS may not run background tasks for hours/days, so we need to reschedule
@@ -91,7 +105,7 @@ class MonitoringService: ObservableObject {
             }
             
             startForegroundMonitoring()
-            LogService.shared.info("[MonitoringService] App entered foreground, starting foreground monitoring")
+            LogService.shared.info("[MonitoringService] App entered foreground, switched to foreground monitoring")
         }
     }
 
@@ -342,6 +356,78 @@ class MonitoringService: ObservableObject {
         _ = await performBackgroundFetch()
     }
 
+    // MARK: - Background Monitoring (iOS Background-Safe)
+    
+    private func startBackgroundMonitoring() {
+        LogService.shared.info("[MonitoringService] Starting background monitoring...")
+        
+        // Begin background task to get extended execution time
+        beginBackgroundTask()
+        
+        // Get refresh delay from settings
+        let refreshDelay = Int(DatabaseService.shared.getParameter("query_refresh_delay", defaultValue: "\(AppConfig.defaultRefreshDelay)")) ?? AppConfig.defaultRefreshDelay
+        let interval = TimeInterval(refreshDelay)
+        
+        // Perform immediate check when entering background
+        Task {
+            await performBackgroundFetch()
+            
+            // After first check, schedule repeating timer on main thread
+            await MainActor.run {
+                // Create timer that fires periodically while app is backgrounded
+                // This works during the extended background execution time
+                self.backgroundMonitoringTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
+                    guard let self = self, !self.isInForeground, self.isMonitoring else {
+                        return
+                    }
+                    
+                    // Renew background task before each check
+                    self.beginBackgroundTask()
+                    
+                    Task {
+                        await self.performBackgroundFetch()
+                    }
+                }
+                
+                // Ensure timer runs in background
+                RunLoop.main.add(self.backgroundMonitoringTimer!, forMode: .common)
+                
+                LogService.shared.info("[MonitoringService] Background monitoring timer started (interval: \(interval)s)")
+            }
+        }
+    }
+    
+    private func stopBackgroundMonitoring() {
+        backgroundMonitoringTimer?.invalidate()
+        backgroundMonitoringTimer = nil
+        endBackgroundTask()
+        LogService.shared.info("[MonitoringService] Background monitoring stopped")
+    }
+    
+    private func beginBackgroundTask() {
+        // End previous background task if exists
+        endBackgroundTask()
+        
+        // Request extended background execution time
+        backgroundTaskIdentifier = UIApplication.shared.beginBackgroundTask { [weak self] in
+            // Called when time expires - cleanup
+            LogService.shared.warning("[MonitoringService] Background task time expired")
+            self?.endBackgroundTask()
+        }
+        
+        if backgroundTaskIdentifier != .invalid {
+            LogService.shared.info("[MonitoringService] Background task started (ID: \(backgroundTaskIdentifier.rawValue))")
+        }
+    }
+    
+    private func endBackgroundTask() {
+        if backgroundTaskIdentifier != .invalid {
+            LogService.shared.info("[MonitoringService] Ending background task (ID: \(backgroundTaskIdentifier.rawValue))")
+            UIApplication.shared.endBackgroundTask(backgroundTaskIdentifier)
+            backgroundTaskIdentifier = .invalid
+        }
+    }
+
     // MARK: - Foreground Monitoring Loop
 
     private func startForegroundMonitoring() {
@@ -417,9 +503,10 @@ class MonitoringService: ObservableObject {
     func stopMonitoring() {
         isMonitoring = false
         stopForegroundMonitoring()
+        stopBackgroundMonitoring()
         BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: refreshTaskIdentifier)
         BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: processingTaskIdentifier)
-        LogService.shared.info("[MonitoringService] Monitoring stopped (both tasks cancelled)")
+        LogService.shared.info("[MonitoringService] Monitoring stopped (all modes cancelled)")
     }
     
     // MARK: - Background Refresh Status

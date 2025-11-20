@@ -316,20 +316,25 @@ struct ItemGridCard: View {
             }
         }) {
             VStack(alignment: .leading, spacing: 0) {
-                // Photo - fixed size for consistent grid layout
-                AsyncImage(url: URL(string: item.photo ?? "")) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    Rectangle()
-                        .fill(theme.buttonFill)
-                        .overlay(
-                            Image(systemName: "photo")
-                                .foregroundColor(theme.textTertiary)
-                        )
+                // Photo - fixed size for consistent grid layout with proper aspect ratio
+                // FIXED: Added explicit width constraint and proper clipping order
+                GeometryReader { geometry in
+                    AsyncImage(url: URL(string: item.photo ?? "")) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: geometry.size.width, height: 160)
+                            .clipped()
+                    } placeholder: {
+                        Rectangle()
+                            .fill(theme.buttonFill)
+                            .overlay(
+                                Image(systemName: "photo")
+                                    .foregroundColor(theme.textTertiary)
+                            )
+                            .frame(width: geometry.size.width, height: 160)
+                    }
                 }
-                .frame(maxWidth: .infinity)
                 .frame(height: 160)
                 .clipped()
 
